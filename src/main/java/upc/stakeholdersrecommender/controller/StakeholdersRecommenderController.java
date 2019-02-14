@@ -13,11 +13,15 @@ import upc.stakeholdersrecommender.domain.PersonList;
 import upc.stakeholdersrecommender.domain.RequirementList;
 import upc.stakeholdersrecommender.entity.Person;
 import upc.stakeholdersrecommender.entity.Requirement;
+import upc.stakeholdersrecommender.entity.ReturnObject;
 import upc.stakeholdersrecommender.repository.PersonRepository;
 import upc.stakeholdersrecommender.repository.RequirementRepository;
 import upc.stakeholdersrecommender.service.ReplanService;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
+import java.util.List;
+
+@SuppressWarnings("ALL")
 @RestController
 @RequestMapping("/upc/stakeholders-recommender")
 @Api(value = "Stakeholders Recommender API", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -30,32 +34,32 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "requirements", method = RequestMethod.POST)
     public ResponseEntity addRequirements(@RequestBody RequirementList requirementList) {
-        stakeholdersRecommenderService.addRequirements(requirementList);
+      //  stakeholdersRecommenderService.addRequirements(requirementList); TODO once scope is defined
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "requirements/{id}", method = RequestMethod.GET)
     public ResponseEntity<Requirement> getRequirement(@PathVariable String id) {
-        Requirement r = stakeholdersRecommenderService.getRequirement(id);
-        return new ResponseEntity<>(r, HttpStatus.OK);
+       // Requirement r = stakeholdersRecommenderService.getRequirement(id); TODO once scope is defined
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(value = "persons", method = RequestMethod.POST)
     public ResponseEntity addPersons(@RequestBody PersonList personList) {
-        stakeholdersRecommenderService.addPersons(personList);
+      //  stakeholdersRecommenderService.addPersons(personList); TODO once scope is defined
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "persons/{id}", method = RequestMethod.GET)
     public ResponseEntity<Person> getPerson(@PathVariable String id) {
-        Person p = stakeholdersRecommenderService.getPerson(id);
-        return new ResponseEntity<>(p, HttpStatus.OK);
+        // Person p = stakeholdersRecommenderService.getPerson(id);  TODO once scope is defined
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
     public ResponseEntity recommend(@RequestBody OpenReqSchema request) {
-        stakeholdersRecommenderService.recommend(request);
-        return new ResponseEntity<>(HttpStatus.OK);
+        List<ReturnObject> ret=stakeholdersRecommenderService.recommend(request);
+        return new ResponseEntity<>(ret,HttpStatus.OK);
     }
 
 }

@@ -6,26 +6,15 @@ import upc.stakeholdersrecommender.domain.OpenReqSchema;
 import upc.stakeholdersrecommender.domain.PersonList;
 import upc.stakeholdersrecommender.domain.RequirementList;
 import upc.stakeholdersrecommender.domain.replan.*;
-import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.Project;
-import upc.stakeholdersrecommender.entity.Requirement;
-import upc.stakeholdersrecommender.entity.Skill;
+import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.PersonRepository;
 import upc.stakeholdersrecommender.repository.RequirementRepository;
 import upc.stakeholdersrecommender.repository.SkillRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class StakeholdersRecommenderService {
-
-    @Autowired
-    RequirementRepository requirementRepository;
-
-    @Autowired
-    PersonRepository personRepository;
 
     @Autowired
     SkillRepository skillRepository;
@@ -34,35 +23,33 @@ public class StakeholdersRecommenderService {
     ReplanService replanService;
 
     public void addRequirements(RequirementList requirementList) {
-        requirementRepository.saveAll(requirementList.getRequirements());
     }
 
-    public Requirement getRequirement(String id) {
-        return requirementRepository.getOne(id);
+    public void getRequirement(String id) {
     }
 
     public void addPersons(PersonList personList) {
-        personRepository.saveAll(personList.getPersons());
     }
 
-    public Person getPerson(String id) {
-        return personRepository.getOne(id);
+    public void getPerson(String id) {
     }
 
-    public void recommend(OpenReqSchema request) {
+    public List<ReturnObject> recommend(OpenReqSchema request) {
 
-        initializeData();
-
+        initializeSkills(request);
+        List<ReturnObject> realreturn=new ArrayList<ReturnObject>();
         //FIXME now we assume 1 project, N requirements and M persons, all belonging to project
         for (Project p : request.getProjects()) {
-
+            //Traductors from Replan Ids to stakeholder-recommender Ids
+            HashMap<Integer,Requirement> requirementToFeature=new HashMap<Integer,Requirement>();
             //Create the project at Replan Service
             ProjectReplan projectReplan = replanService.createProject(p);
 
             List<Skill> skills = skillRepository.findAll();
-            List<SkillReplan> skillReplanList = new ArrayList<>();
+            Map<String,SkillReplan> skillReplanMap= new HashMap<String,SkillReplan>();
             for (Skill s : skills) {
-                skillReplanList.add(replanService.createSkill(s, projectReplan.getId()));
+                SkillReplan aux=replanService.createSkill(s, projectReplan.getId());
+                skillReplanMap.put(s.getName(),aux);
             }
 
             List<ResourceReplan> resourceReplanList = new ArrayList<>();
@@ -70,8 +57,7 @@ public class StakeholdersRecommenderService {
             for (Person person : request.getPersons()) {
                 ResourceReplan resourceReplan = replanService.createResource(person, projectReplan.getId());
                 resourceReplanList.add(resourceReplan);
-                Person personWithSkills = personRepository.getOne(person.getUsername());
-                replanService.addSkillsToPerson(projectReplan.getId(), resourceReplan.getId(), personWithSkills.getSkills(), skillReplanList);
+                replanService.addSkillsToPerson(projectReplan.getId(), resourceReplan.getId(), person.getSkills(), skillReplanMap);
             }
 
             List<FeatureReplan> featureReplanList = new ArrayList<>();
@@ -79,36 +65,46 @@ public class StakeholdersRecommenderService {
             for (Requirement requirement : request.getRequirements()) {
                 FeatureReplan featureReplan = replanService.createRequirement(requirement, projectReplan.getId());
                 featureReplanList.add(featureReplan);
-                Requirement requirementWithSkills = requirementRepository.getOne(requirement.getId());
-                replanService.addSkillsToRequirement(projectReplan.getId(), featureReplan.getId(), requirementWithSkills.getSkills(), skillReplanList);
+                requirementToFeature.put(featureReplan.getId(),requirement);
+                replanService.addSkillsToRequirement(projectReplan.getId(), featureReplan.getId(), requirement.getSkills(), skillReplanMap);
             }
-
             ReleaseReplan releaseReplan = replanService.createRelease(projectReplan.getId());
             replanService.addResourcesToRelease(projectReplan.getId(), releaseReplan.getId(), resourceReplanList);
             replanService.addFeaturesToRelease(projectReplan.getId(), releaseReplan.getId(), featureReplanList);
 
 //            Object plan = replanService.plan(projectReplan.getId(), releaseReplan.getId());
             Plan plan = replanService.plan(projectReplan.getId(), releaseReplan.getId());
-
+            Map<String, Set<String>> output=plan.getRequirementStakeholder();
+            realreturn.addAll(convert(output,requirementToFeature));
             replanService.deleteRelease(projectReplan.getId(), releaseReplan.getId());
             replanService.deleteProject(projectReplan.getId());
 
         }
+        return realreturn;
     }
 
-    private void initializeData() {
+    private List<ReturnObject> convert(Map<String, Set<String>> output, HashMap<Integer,Requirement> requirementToFeature) {
+        List<ReturnObject> toret=new ArrayList<ReturnObject>();
+        for (String i:output.keySet()) {
+            ReturnObject aux= new ReturnObject(i);
+            List<String> helper= new ArrayList<String>();
+            for (String s: output.get(i)) {
+                helper.add(requirementToFeature.get(Integer.parseInt(s)).getId());
+            }
+            aux.setFeatureID(helper);
+            toret.add(aux);
+        }
+        return toret;
+    }
+
+    // Just to put skills since they don't come in the json request yet, skills have to be manually put, replacing the fors if necessary
+    private void initializeSkills(OpenReqSchema r) {
         Skill s1 = new Skill("Java");
         Skill s2 = new Skill("WebServices");
-        Requirement r1 = new Requirement("R1");
-        r1.setSkills(Arrays.asList(s1,s2));
-        Person p1 = new Person("John");
-        p1.setSkills(Arrays.asList(s1));
-        Person p2 = new Person("Michael");
-        p2.setSkills(Arrays.asList(s2));
-        Person p3 = new Person("Alice");
-        p3.setSkills(Arrays.asList(s1,s2));
+        List<Requirement> recsave=r.getRequirements();
+        for (Requirement aux:recsave) aux.setSkills(Arrays.asList(s1,s2));
+        List<Person> persave=r.getPersons();
+        for (Person aux: persave) aux.setSkills(Arrays.asList(s1,s2));
         skillRepository.saveAll(Arrays.asList(s1,s2));
-        personRepository.saveAll(Arrays.asList(p1,p2,p3));
-        requirementRepository.saveAll(Arrays.asList(r1));
     }
 }

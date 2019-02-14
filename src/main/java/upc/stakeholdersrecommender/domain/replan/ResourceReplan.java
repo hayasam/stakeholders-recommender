@@ -5,6 +5,8 @@ import upc.stakeholdersrecommender.entity.Person;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceReplan implements Serializable {
@@ -54,4 +56,15 @@ public class ResourceReplan implements Serializable {
     public void setCalendar(List<DaySlot> calendar) {
         this.calendar = calendar;
     }
-}
+
+    public Set<String> getFeaturesWorkedOn() {
+        TreeSet<String> result=new TreeSet<String>();
+        if (calendar!=null)
+        for (DaySlot day: calendar) {
+            if (day.getFeature_id()!=null) {
+                result.add(day.getFeature_id());
+            }
+        }
+        return result;
+    }
+ }

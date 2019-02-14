@@ -3,8 +3,7 @@ package upc.stakeholdersrecommender.domain.replan;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Plan implements Serializable {
@@ -66,5 +65,13 @@ public class Plan implements Serializable {
 
     public void setResources(List<ResourceReplan> resources) {
         this.resources = resources;
+    }
+
+    public Map<String, Set<String>> getRequirementStakeholder() {
+        TreeMap<String, Set<String>> result=new TreeMap<String,Set<String>>();
+        for (ResourceReplan res: resources) {
+            result.put(res.getName(),res.getFeaturesWorkedOn());
+        }
+        return result;
     }
 }

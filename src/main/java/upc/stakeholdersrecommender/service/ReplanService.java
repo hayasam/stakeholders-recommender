@@ -14,6 +14,7 @@ import upc.stakeholdersrecommender.entity.Skill;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -82,14 +83,13 @@ public class ReplanService {
         return createdReplan;
     }
 
-    public void addSkillsToPerson(Integer projectReplanId, Integer personId, List<Skill> personWithSkills, List<SkillReplan> skillReplanList) {
+    public void addSkillsToPerson(Integer projectReplanId, Integer personId, List<Skill> personWithSkills, Map<String,SkillReplan> skillReplanMap) {
         List<SkillListReplan> skillListReplans = new ArrayList<>();
         for (int i = 0; i < personWithSkills.size(); ++i) {
-            for (int j = 0; j < skillReplanList.size(); ++j) {
-                if (personWithSkills.get(i).getName().equals(skillReplanList.get(j).getName()))
-                    skillListReplans.add(new SkillListReplan(skillReplanList.get(j).getId()));
+            if (skillReplanMap.containsKey(personWithSkills.get(i).getName()))
+                    skillListReplans.add(new SkillListReplan(skillReplanMap.get(personWithSkills.get(i).getName()).getId()));
             }
-        }
+
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
                 skillListReplans,
@@ -97,13 +97,11 @@ public class ReplanService {
 
     }
 
-    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, List<Skill> requirementWithSkills, List<SkillReplan> skillReplanList) {
+    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, List<Skill> requirementWithSkills, Map<String,SkillReplan> skillReplanMap) {
         List<SkillListReplan> skillListReplans = new ArrayList<>();
         for (int i = 0; i < requirementWithSkills.size(); ++i) {
-            for (int j = 0; j < skillReplanList.size(); ++j) {
-                if (requirementWithSkills.get(i).getName().equals(skillReplanList.get(j).getName()))
-                    skillListReplans.add(new SkillListReplan(skillReplanList.get(j).getId()));
-            }
+            if (skillReplanMap.containsKey(requirementWithSkills.get(i).getName()))
+                skillListReplans.add(new SkillListReplan(skillReplanMap.get(requirementWithSkills.get(i).getName()).getId()));
         }
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
@@ -140,10 +138,11 @@ public class ReplanService {
     }
 
     public Plan plan(Integer projectReplanId, Integer releaseReplanId) {
-        return Objects.requireNonNull(restTemplate.postForObject(
+        Plan[] plans=restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=false",
-                null,
-                Plan[].class))[0];
+                null,Plan[].class);
+        System.out.println(plans.length);
+        return plans[0];
     }
 
     public void deleteRelease(Integer projectReplanId, Integer releaseReplanId) {
