@@ -10,13 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.stakeholdersrecommender.domain.OpenReqSchema;
 import upc.stakeholdersrecommender.domain.PersonList;
-import upc.stakeholdersrecommender.domain.RequirementList;
+import upc.stakeholdersrecommender.domain.RecommendRejectSchema;
+import upc.stakeholdersrecommender.domain.RecommendSchema;
 import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.Requirement;
 import upc.stakeholdersrecommender.entity.ReturnObject;
-import upc.stakeholdersrecommender.repository.PersonRepository;
-import upc.stakeholdersrecommender.repository.RequirementRepository;
-import upc.stakeholdersrecommender.service.ReplanService;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.util.List;
@@ -32,32 +29,26 @@ public class StakeholdersRecommenderController {
 
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
 
-    @RequestMapping(value = "requirements", method = RequestMethod.POST)
-    public ResponseEntity addRequirements(@RequestBody RequirementList requirementList) {
-      //  stakeholdersRecommenderService.addRequirements(requirementList); TODO once scope is defined
+    @RequestMapping(value = "batch_process", method = RequestMethod.POST)
+    public ResponseEntity addBatch(@RequestBody OpenReqSchema batch) {
+        stakeholdersRecommenderService.addBatch(batch);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "requirements/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Requirement> getRequirement(@PathVariable String id) {
-       // Requirement r = stakeholdersRecommenderService.getRequirement(id); TODO once scope is defined
-        return new ResponseEntity<>(HttpStatus.OK);
+    @RequestMapping(value = "purge", method = RequestMethod.GET)
+    public ResponseEntity addBatch() {
+        stakeholdersRecommenderService.purge();
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "persons", method = RequestMethod.POST)
-    public ResponseEntity addPersons(@RequestBody PersonList personList) {
-      //  stakeholdersRecommenderService.addPersons(personList); TODO once scope is defined
-        return new ResponseEntity(HttpStatus.CREATED);
-    }
-
-    @RequestMapping(value = "persons/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Person> getPerson(@PathVariable String id) {
-        // Person p = stakeholdersRecommenderService.getPerson(id);  TODO once scope is defined
+    @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST)
+    public ResponseEntity<Person> recommend_reject(@RequestBody RecommendRejectSchema request) {
+        stakeholdersRecommenderService.recommend_reject(request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
-    public ResponseEntity recommend(@RequestBody OpenReqSchema request) {
+    public ResponseEntity recommend(@RequestBody RecommendSchema request) {
         List<ReturnObject> ret=stakeholdersRecommenderService.recommend(request);
         return new ResponseEntity<>(ret,HttpStatus.OK);
     }

@@ -18,7 +18,7 @@ public class ProjectReplan implements Serializable {
     }
 
     public ProjectReplan(Project p) {
-        this.name = p.getName();
+        this.name = p.getId();
         this.effort_unit = "hours";
         this.hours_per_effort_unit = 1;
         this.hours_per_week_and_full_time_resource = 40;

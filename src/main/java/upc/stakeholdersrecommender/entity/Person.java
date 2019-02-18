@@ -14,6 +14,8 @@ public class Person implements Serializable {
     @Id
     private String username;
 
+    private String email;
+
     @ManyToMany(
             cascade = CascadeType.ALL
     )
@@ -42,4 +44,8 @@ public class Person implements Serializable {
     public void setSkills(List<Skill> skills) {
         this.skills = skills;
     }
+
+    public void setEmail(String email) {this.email=email;}
+
+    public String getEmail(){ return email; }
 }

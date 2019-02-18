@@ -83,29 +83,22 @@ public class ReplanService {
         return createdReplan;
     }
 
-    public void addSkillsToPerson(Integer projectReplanId, Integer personId, List<Skill> personWithSkills, Map<String,SkillReplan> skillReplanMap) {
-        List<SkillListReplan> skillListReplans = new ArrayList<>();
-        for (int i = 0; i < personWithSkills.size(); ++i) {
-            if (skillReplanMap.containsKey(personWithSkills.get(i).getName()))
-                    skillListReplans.add(new SkillListReplan(skillReplanMap.get(personWithSkills.get(i).getName()).getId()));
-            }
-
+    public void addSkillsToPerson(Integer projectReplanId, Integer personId, SkillListReplan skillListReplans) {
+        List<SkillListReplan> skills=new ArrayList<SkillListReplan>();
+        skills.add(skillListReplans);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
-                skillListReplans,
+                skills,
                 Object.class);
 
     }
 
-    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, List<Skill> requirementWithSkills, Map<String,SkillReplan> skillReplanMap) {
-        List<SkillListReplan> skillListReplans = new ArrayList<>();
-        for (int i = 0; i < requirementWithSkills.size(); ++i) {
-            if (skillReplanMap.containsKey(requirementWithSkills.get(i).getName()))
-                skillListReplans.add(new SkillListReplan(skillReplanMap.get(requirementWithSkills.get(i).getName()).getId()));
-        }
+    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId,SkillListReplan skillListReplans) {
+        List<SkillListReplan> skills=new ArrayList<SkillListReplan>();
+        skills.add(skillListReplans);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
-                skillListReplans,
+                skills,
                 Object.class);
 
     }
@@ -119,21 +112,21 @@ public class ReplanService {
         return createdRelease;
     }
 
-    public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, List<ResourceReplan> resourceReplanList) {
-        List<ResourceListReplan> resourceListReplans = new ArrayList<>();
-        for (ResourceReplan resource : resourceReplanList) resourceListReplans.add(new ResourceListReplan(resource.getId()));
+    public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, ResourceListReplan resourceReplanList) {
+        List<ResourceListReplan> skills=new ArrayList<ResourceListReplan>();
+        skills.add(resourceReplanList);
         restTemplate.postForObject(
                 replanUrl  + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/resources",
-                resourceListReplans,
+                skills,
                 Object.class);
     }
 
-    public void addFeaturesToRelease(Integer projectReplanId, Integer releaseReplanId, List<FeatureReplan> featureReplanList) {
-        List<FeatureListReplan> resourceListReplans = new ArrayList<>();
-        for (FeatureReplan featureReplan : featureReplanList) resourceListReplans.add(new FeatureListReplan(featureReplan.getId()));
+    public void addFeaturesToRelease(Integer projectReplanId, Integer releaseReplanId, FeatureListReplan featureReplanList) {
+        List<FeatureListReplan> skills=new ArrayList<FeatureListReplan>();
+        skills.add(featureReplanList);
         restTemplate.postForObject(
                 replanUrl  + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/features",
-                resourceListReplans,
+                skills,
                 Object.class);
     }
 
@@ -141,11 +134,19 @@ public class ReplanService {
         Plan[] plans=restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=false",
                 null,Plan[].class);
-        System.out.println(plans.length);
         return plans[0];
     }
 
     public void deleteRelease(Integer projectReplanId, Integer releaseReplanId) {
         restTemplate.delete(replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId);
+    }
+
+    public void modifyResource(Person person, Integer id_replan, Integer id) {
+    }
+
+    public void modifyRequirement(Requirement requirement, Integer id_replan, Integer id) {
+    }
+
+    public void modifyProject(Project p, Integer id_replan) {
     }
 }

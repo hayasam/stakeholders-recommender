@@ -9,7 +9,7 @@ import java.util.List;
 public class Project implements Serializable {
 
     private String id;
-    private String name;
+    private Integer created_at;
     private List<String> specifiedRequirements;
 
     public String getId() {
@@ -20,19 +20,14 @@ public class Project implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
+    public Integer getCreated_at() { return created_at; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    public void setCreated_at(Integer created_at) { this.created_at = created_at; }
     public List<String> getSpecifiedRequirements() {
         return specifiedRequirements;
     }
 
     public void setSpecifiedRequirements(List<String> specifiedRequirements) {
-        this.specifiedRequirements = specifiedRequirements;
-    }
+        this.specifiedRequirements = specifiedRequirements; }
+
 }

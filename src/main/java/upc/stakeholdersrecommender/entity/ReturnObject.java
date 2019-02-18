@@ -1,15 +1,17 @@
 package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import upc.stakeholdersrecommender.domain.RequirementList;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 public class ReturnObject implements Serializable {
 
     private String id;
-    private List<String> featureID;
+    private Set<String> requirements;
 
     public ReturnObject() {
 
@@ -27,11 +29,11 @@ public class ReturnObject implements Serializable {
         this.id = id;
     }
 
-    public List<String> getFeatureID() {
-        return featureID;
+    public Set<String> getRequirement() {
+        return requirements;
     }
 
-    public void setFeatureID(List<String> featureID) {
-        this.featureID = featureID;
+    public void setRequirement(Set<String> requirements) {
+        this.requirements = requirements;
     }
 }

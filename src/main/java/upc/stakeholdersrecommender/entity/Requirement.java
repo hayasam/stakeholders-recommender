@@ -19,6 +19,12 @@ public class Requirement implements Serializable {
     )
     private List<Skill> skills;
 
+    private String name;
+
+    private String description;
+
+    private Integer created_at;
+
     public Requirement() {
 
     }
@@ -42,4 +48,17 @@ public class Requirement implements Serializable {
     public void setSkills(List<Skill> skills) {
         this.skills = skills;
     }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public Integer getCreated_at() { return created_at; }
+
+    public void setCreated_at(Integer created_at) { this.created_at = created_at; }
+
 }

@@ -2,15 +2,12 @@ package upc.stakeholdersrecommender.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import upc.stakeholdersrecommender.domain.OpenReqSchema;
-import upc.stakeholdersrecommender.domain.PersonList;
-import upc.stakeholdersrecommender.domain.RequirementList;
+import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
-import upc.stakeholdersrecommender.repository.PersonRepository;
-import upc.stakeholdersrecommender.repository.RequirementRepository;
-import upc.stakeholdersrecommender.repository.SkillRepository;
+import upc.stakeholdersrecommender.repository.*;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Service
@@ -18,93 +15,171 @@ public class StakeholdersRecommenderService {
 
     @Autowired
     SkillRepository skillRepository;
+    @Autowired
+    PersonToPReplanRepository PersonToPReplanRepository;
+    @Autowired
+    ProjectToPReplanRepository ProjectToPReplanRepository;
+    @Autowired
+    RequirementToFeatureRepository RequirementToFeatureRepository;
+    @Autowired
+    RejectedPersonRepository RejectedPersonRepository;
+
+
 
     @Autowired
     ReplanService replanService;
 
-    public void addRequirements(RequirementList requirementList) {
+    public List<ReturnObject> recommend(RecommendSchema request) {
+
+        // Recibo 1 feature, 1 requirement, he de dar lista de gente
+        Project p=request.getProject();
+        Requirement r=request.getRequirement();
+        Integer project_replanID=ProjectToPReplanRepository.getOne(p.getId()).getID_Replan();
+        Integer requirement_replanID=RequirementToFeatureRepository.getOne(r.getId()).getID_Replan();
+        ReleaseReplan release=replanService.createRelease(project_replanID);
+
+        replanService.addFeaturesToRelease(project_replanID,release.getId(),new FeatureListReplan(requirement_replanID));
+        for (PersonToPReplan pers:PersonToPReplanRepository.findAll()) replanService.addResourcesToRelease(project_replanID,release.getId(),new ResourceListReplan(pers.getID_Replan()));
+        Plan plan=replanService.plan(project_replanID,release.getId());
+        Map<String,Set<String>> output=Parse(plan);
+        List<ReturnObject> returnobject=new ArrayList<ReturnObject>();
+        for (String s:output.keySet()) {
+            Set<String> inRetty=Reject(request.getUser().getUsername(),Translate(output.get(s)),s);
+            ReturnObject retty=new ReturnObject(s);
+            retty.setRequirement(inRetty);
+            returnobject.add(retty);
+        }
+        replanService.deleteRelease(project_replanID,release.getId());
+        return returnobject;
     }
 
-    public void getRequirement(String id) {
+
+    public void recommend_reject(RecommendRejectSchema request) {
+        String personRejected=request.getRejected().getUsername();
+        if (RejectedPersonRepository.existsById(request.getUser().getUsername())) {
+            RejectedPerson rejected = RejectedPersonRepository.getOne(request.getUser().getUsername());
+            if (rejected.getDeleted().containsKey(personRejected)) {
+                rejected.getDeleted().get(personRejected).add(request.getRequirement().getId());
+            }
+            else  {
+                Set<String> aux=new HashSet<String>();
+                aux.add(request.getRequirement().getId());
+                rejected.getDeleted().put(personRejected,aux);
+            }
+        }
+        else {
+            RejectedPerson reject= new RejectedPerson(request.getUser().getUsername());
+            HashMap<String,Set<String>> aux=new HashMap<String,Set<String>>();
+            Set<String> auxset=new HashSet<String>();
+            auxset.add(request.getRequirement().getId());
+            aux.put(personRejected,auxset);
+            reject.setDeleted(aux);
+            RejectedPersonRepository.save(reject);
+        }
     }
 
-    public void addPersons(PersonList personList) {
-    }
 
-    public void getPerson(String id) {
-    }
-
-    public List<ReturnObject> recommend(OpenReqSchema request) {
-
-        initializeSkills(request);
-        List<ReturnObject> realreturn=new ArrayList<ReturnObject>();
-        //FIXME now we assume 1 project, N requirements and M persons, all belonging to project
+    public void addBatch(OpenReqSchema request) {
         for (Project p : request.getProjects()) {
-            //Traductors from Replan Ids to stakeholder-recommender Ids
-            HashMap<Integer,Requirement> requirementToFeature=new HashMap<Integer,Requirement>();
-            //Create the project at Replan Service
-            ProjectReplan projectReplan = replanService.createProject(p);
-
-            List<Skill> skills = skillRepository.findAll();
-            Map<String,SkillReplan> skillReplanMap= new HashMap<String,SkillReplan>();
-            for (Skill s : skills) {
-                SkillReplan aux=replanService.createSkill(s, projectReplan.getId());
-                skillReplanMap.put(s.getName(),aux);
-            }
-
-            List<ResourceReplan> resourceReplanList = new ArrayList<>();
+            SkillReplan skill = replanService.createSkill(new Skill("Stuff"), Integer.parseInt(p.getId()));
+            Integer id=instanciateProject(p);
             //For each person in the project, create a resource in the Replan Service
-            for (Person person : request.getPersons()) {
-                ResourceReplan resourceReplan = replanService.createResource(person, projectReplan.getId());
-                resourceReplanList.add(resourceReplan);
-                replanService.addSkillsToPerson(projectReplan.getId(), resourceReplan.getId(), person.getSkills(), skillReplanMap);
-            }
-
-            List<FeatureReplan> featureReplanList = new ArrayList<>();
+            for (Person person : request.getPersons()) { instanciateResources(person, id, skill); }
             //For each requirement in the project, create a feature in the Replan Service
-            for (Requirement requirement : request.getRequirements()) {
-                FeatureReplan featureReplan = replanService.createRequirement(requirement, projectReplan.getId());
-                featureReplanList.add(featureReplan);
-                requirementToFeature.put(featureReplan.getId(),requirement);
-                replanService.addSkillsToRequirement(projectReplan.getId(), featureReplan.getId(), requirement.getSkills(), skillReplanMap);
+            for (Requirement requirement : request.getRequirements()) { instanciateFeatures(requirement, id, skill); }
             }
-            ReleaseReplan releaseReplan = replanService.createRelease(projectReplan.getId());
-            replanService.addResourcesToRelease(projectReplan.getId(), releaseReplan.getId(), resourceReplanList);
-            replanService.addFeaturesToRelease(projectReplan.getId(), releaseReplan.getId(), featureReplanList);
-
-//            Object plan = replanService.plan(projectReplan.getId(), releaseReplan.getId());
-            Plan plan = replanService.plan(projectReplan.getId(), releaseReplan.getId());
-            Map<String, Set<String>> output=plan.getRequirementStakeholder();
-            realreturn.addAll(convert(output,requirementToFeature));
-            replanService.deleteRelease(projectReplan.getId(), releaseReplan.getId());
-            replanService.deleteProject(projectReplan.getId());
-
         }
-        return realreturn;
+
+
+
+    private void instanciateResources(Person person, Integer id,SkillReplan skill) {
+        if (!PersonToPReplanRepository.existsById(person.getUsername())) {
+            ResourceReplan resourceReplan = replanService.createResource(person, id);
+            PersonToPReplan personTrad = new PersonToPReplan(person.getUsername());
+            personTrad.setID_Replan(resourceReplan.getId());
+            PersonToPReplanRepository.save(personTrad);
+
+            //List<SkillReplan> skill = computeSkillsPerson(person);
+            // TODO Add skills to person in replan
+            replanService.addSkillsToPerson(id,resourceReplan.getId(),new SkillListReplan(skill.getId()));
+        } else {
+            replanService.modifyResource(person,PersonToPReplanRepository.getOne(person.getUsername()).getID_Replan(),id);
+        }
+
+    }
+    private void instanciateFeatures(Requirement requirement, Integer id, SkillReplan skill) {
+        if (!RequirementToFeatureRepository.existsById(requirement.getId())) {
+            FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
+            RequirementToFeature requirementTrad = new RequirementToFeature(requirement.getId());
+            requirementTrad.setID_Replan(featureReplan.getId());
+            RequirementToFeatureRepository.save(requirementTrad);
+
+            //  List<SkillReplan> skill = computeSkillsRequirement(requirement);
+            // TODO Add skills to requirements in replan
+            replanService.addSkillsToRequirement(id,featureReplan.getId(),new SkillListReplan(skill.getId()));
+        } else {
+            replanService.modifyRequirement(requirement, RequirementToFeatureRepository.getOne(requirement.getId()).getID_Replan(),id);
+        }
+
     }
 
-    private List<ReturnObject> convert(Map<String, Set<String>> output, HashMap<Integer,Requirement> requirementToFeature) {
-        List<ReturnObject> toret=new ArrayList<ReturnObject>();
-        for (String i:output.keySet()) {
-            ReturnObject aux= new ReturnObject(i);
-            List<String> helper= new ArrayList<String>();
-            for (String s: output.get(i)) {
-                helper.add(requirementToFeature.get(Integer.parseInt(s)).getId());
-            }
-            aux.setFeatureID(helper);
-            toret.add(aux);
+    private Integer instanciateProject(Project p) {
+        Integer id=null;
+        if (!ProjectToPReplanRepository.existsById(p.getId())) {
+            ProjectReplan projectReplan = replanService.createProject(p);
+            id=projectReplan.getId();
+            ProjectToPReplan projectTrad = new ProjectToPReplan(p.getId());
+            projectTrad.setID_Replan(projectReplan.getId());
+            ProjectToPReplanRepository.save(projectTrad);
         }
+        else {
+            id=ProjectToPReplanRepository.getOne(p.getId()).getID_Replan();
+            replanService.modifyProject(p,id);
+        }
+        return id;
+    }
+
+
+    private List<SkillReplan> computeSkillsRequirement(Requirement requirement) {
+        return Arrays.asList(new SkillReplan(new Skill("Stuff")));
+    }
+
+    private List<SkillReplan> computeSkillsPerson(Person person) {
+        return Arrays.asList(new SkillReplan(new Skill("Stuff")));
+    }
+
+    private Map<String,Set<String>> Parse(Plan plan) {
+        List<ResourceReplan> resources=plan.getResources();
+        Map<String,Set<String>> toret=new HashMap<>();
+        for (ResourceReplan res:resources) toret.put(res.getName(),res.getFeaturesWorkedOn());
         return toret;
     }
+    private Set<String>  Reject(String rejector,Set<String> stuff, String person) {
+        if (RejectedPersonRepository.existsById(rejector)) {
+            RejectedPerson rej = RejectedPersonRepository.getOne(rejector);
+            HashMap<String, Set<String>> rejectedRequirements = rej.getDeleted();
+            if (rejectedRequirements.containsKey(person)) {
+                stuff.removeAll(rejectedRequirements.get(person));
+            }
+        }
+        System.out.println("Stuff"+stuff);
+        return stuff;
+    }
 
-    // Just to put skills since they don't come in the json request yet, skills have to be manually put, replacing the fors if necessary
-    private void initializeSkills(OpenReqSchema r) {
-        Skill s1 = new Skill("Java");
-        Skill s2 = new Skill("WebServices");
-        List<Requirement> recsave=r.getRequirements();
-        for (Requirement aux:recsave) aux.setSkills(Arrays.asList(s1,s2));
-        List<Person> persave=r.getPersons();
-        for (Person aux: persave) aux.setSkills(Arrays.asList(s1,s2));
-        skillRepository.saveAll(Arrays.asList(s1,s2));
+    private Set<String> Translate(Set<String> id_replan) {
+        Set<String> aux= new HashSet<String>();
+        for (String s: id_replan) {
+            System.out.println(s);
+            aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID());
+        }
+        return aux;
+    }
+
+    public void purge() {
+        ProjectToPReplanRepository.deleteAll();
+        PersonToPReplanRepository.deleteAll();
+        RequirementToFeatureRepository.deleteAll();
+        RejectedPersonRepository.deleteAll();
+
     }
 }
