@@ -1,7 +1,5 @@
 package upc.stakeholdersrecommender.domain;
 
-import upc.stakeholdersrecommender.entity.Person;
-
 import java.io.Serializable;
 import java.util.List;
 

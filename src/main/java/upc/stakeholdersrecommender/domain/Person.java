@@ -1,24 +1,15 @@
-package upc.stakeholdersrecommender.entity;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package upc.stakeholdersrecommender.domain;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
-@Entity
-@Table(name = "persons")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Person implements Serializable {
 
-    @Id
     private String username;
 
     private String email;
 
-    @ManyToMany(
-            cascade = CascadeType.ALL
-    )
     private List<Skill> skills;
 
     public Person() {

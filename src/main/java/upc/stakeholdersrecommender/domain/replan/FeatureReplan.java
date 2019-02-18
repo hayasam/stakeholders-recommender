@@ -1,7 +1,7 @@
 package upc.stakeholdersrecommender.domain.replan;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import upc.stakeholdersrecommender.entity.Requirement;
+import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.Serializable;
 

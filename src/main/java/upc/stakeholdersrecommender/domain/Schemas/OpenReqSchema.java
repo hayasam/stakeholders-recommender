@@ -1,9 +1,9 @@
-package upc.stakeholdersrecommender.domain;
+package upc.stakeholdersrecommender.domain.Schemas;
 
-import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.Project;
-import upc.stakeholdersrecommender.entity.Requirement;
-import upc.stakeholdersrecommender.entity.Responsible;
+import upc.stakeholdersrecommender.domain.Person;
+import upc.stakeholdersrecommender.domain.Project;
+import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Responsible;
 
 import java.io.Serializable;
 import java.util.List;

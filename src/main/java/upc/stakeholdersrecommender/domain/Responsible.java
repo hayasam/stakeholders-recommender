@@ -1,4 +1,4 @@
-package upc.stakeholdersrecommender.entity;
+package upc.stakeholdersrecommender.domain;
 
 public class Responsible {
 

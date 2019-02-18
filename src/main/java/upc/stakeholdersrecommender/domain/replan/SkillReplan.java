@@ -1,6 +1,6 @@
 package upc.stakeholdersrecommender.domain.replan;
 
-import upc.stakeholdersrecommender.entity.Skill;
+import upc.stakeholdersrecommender.domain.Skill;
 
 import java.io.Serializable;
 

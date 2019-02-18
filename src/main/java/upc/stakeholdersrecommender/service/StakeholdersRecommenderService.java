@@ -3,18 +3,18 @@ package upc.stakeholdersrecommender.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
+import upc.stakeholdersrecommender.domain.Schemas.OpenReqSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendRejectSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 @Service
 public class StakeholdersRecommenderService {
 
-    @Autowired
-    SkillRepository skillRepository;
     @Autowired
     PersonToPReplanRepository PersonToPReplanRepository;
     @Autowired

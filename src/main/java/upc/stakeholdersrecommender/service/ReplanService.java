@@ -7,15 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.replan.*;
-import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.Project;
-import upc.stakeholdersrecommender.entity.Requirement;
-import upc.stakeholdersrecommender.entity.Skill;
+import upc.stakeholdersrecommender.domain.Person;
+import upc.stakeholdersrecommender.domain.Project;
+import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Skill;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Service
 public class ReplanService {

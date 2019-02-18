@@ -1,7 +1,7 @@
-package upc.stakeholdersrecommender.domain;
+package upc.stakeholdersrecommender.domain.Schemas;
 
-import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.Requirement;
+import upc.stakeholdersrecommender.domain.Person;
+import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.Serializable;
 

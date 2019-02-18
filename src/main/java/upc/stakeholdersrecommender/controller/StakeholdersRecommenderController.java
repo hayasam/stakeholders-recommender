@@ -8,12 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.OpenReqSchema;
-import upc.stakeholdersrecommender.domain.PersonList;
-import upc.stakeholdersrecommender.domain.RecommendRejectSchema;
-import upc.stakeholdersrecommender.domain.RecommendSchema;
-import upc.stakeholdersrecommender.entity.Person;
-import upc.stakeholdersrecommender.entity.ReturnObject;
+import upc.stakeholdersrecommender.domain.Schemas.OpenReqSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendRejectSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
+import upc.stakeholdersrecommender.domain.Person;
+import upc.stakeholdersrecommender.domain.ReturnObject;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.util.List;
