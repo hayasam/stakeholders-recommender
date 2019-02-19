@@ -8,7 +8,7 @@ import upc.stakeholdersrecommender.domain.Responsible;
 import java.io.Serializable;
 import java.util.List;
 
-public class OpenReqSchema implements Serializable {
+public class BatchSchema implements Serializable {
 
     List<Project> projects;
     List<Requirement> requirements;

@@ -5,7 +5,7 @@ import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.Serializable;
 
-public class RecommendRejectSchema implements Serializable{
+public class RejectSchema implements Serializable{
 
     private Person user;
     private Person rejected;

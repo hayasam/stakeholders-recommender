@@ -3,8 +3,8 @@ package upc.stakeholdersrecommender.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
-import upc.stakeholdersrecommender.domain.Schemas.OpenReqSchema;
-import upc.stakeholdersrecommender.domain.Schemas.RecommendRejectSchema;
+import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RejectSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
@@ -39,7 +39,9 @@ public class StakeholdersRecommenderService {
         ReleaseReplan release=replanService.createRelease(project_replanID);
 
         replanService.addFeaturesToRelease(project_replanID,release.getId(),new FeatureListReplan(requirement_replanID));
-        for (PersonToPReplan pers:PersonToPReplanRepository.findAll()) replanService.addResourcesToRelease(project_replanID,release.getId(),new ResourceListReplan(pers.getID_Replan()));
+        List<ResourceListReplan> reslist=new ArrayList<ResourceListReplan>();
+        for (PersonToPReplan pers:PersonToPReplanRepository.findAll()) reslist.add(new ResourceListReplan(pers.getID_Replan()));
+        replanService.addResourcesToRelease(project_replanID,release.getId(),reslist);
         Plan plan=replanService.plan(project_replanID,release.getId());
         Map<String,Set<String>> output=Parse(plan);
         List<ReturnObject> returnobject=new ArrayList<ReturnObject>();
@@ -54,7 +56,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public void recommend_reject(RecommendRejectSchema request) {
+    public void recommend_reject(RejectSchema request) {
         String personRejected=request.getRejected().getUsername();
         if (RejectedPersonRepository.existsById(request.getUser().getUsername())) {
             RejectedPerson rejected = RejectedPersonRepository.getOne(request.getUser().getUsername());
@@ -79,13 +81,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public void addBatch(OpenReqSchema request) {
+    public void addBatch(BatchSchema request) {
         for (Project p : request.getProjects()) {
             SkillReplan skill = replanService.createSkill(new Skill("Stuff"), Integer.parseInt(p.getId()));
             Integer id=instanciateProject(p);
-            //For each person in the project, create a resource in the Replan Service
+            //Instanciate people
             for (Person person : request.getPersons()) { instanciateResources(person, id, skill); }
-            //For each requirement in the project, create a feature in the Replan Service
+            //Instanciate Requirements
             for (Requirement requirement : request.getRequirements()) { instanciateFeatures(requirement, id, skill); }
             }
         }
@@ -162,14 +164,12 @@ public class StakeholdersRecommenderService {
                 stuff.removeAll(rejectedRequirements.get(person));
             }
         }
-        System.out.println("Stuff"+stuff);
         return stuff;
     }
 
     private Set<String> Translate(Set<String> id_replan) {
         Set<String> aux= new HashSet<String>();
         for (String s: id_replan) {
-            System.out.println(s);
             aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID());
         }
         return aux;

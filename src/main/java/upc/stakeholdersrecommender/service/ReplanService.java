@@ -110,12 +110,10 @@ public class ReplanService {
         return createdRelease;
     }
 
-    public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, ResourceListReplan resourceReplanList) {
-        List<ResourceListReplan> skills=new ArrayList<ResourceListReplan>();
-        skills.add(resourceReplanList);
+    public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, List<ResourceListReplan> resourceReplanList) {
         restTemplate.postForObject(
                 replanUrl  + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/resources",
-                skills,
+                resourceReplanList,
                 Object.class);
     }
 

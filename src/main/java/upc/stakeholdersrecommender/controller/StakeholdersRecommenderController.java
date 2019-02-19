@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.Schemas.OpenReqSchema;
-import upc.stakeholdersrecommender.domain.Schemas.RecommendRejectSchema;
+import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RejectSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.ReturnObject;
@@ -29,7 +29,7 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST)
-    public ResponseEntity addBatch(@RequestBody OpenReqSchema batch) {
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch) {
         stakeholdersRecommenderService.addBatch(batch);
         return new ResponseEntity(HttpStatus.CREATED);
     }
@@ -41,7 +41,7 @@ public class StakeholdersRecommenderController {
     }
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST)
-    public ResponseEntity<Person> recommend_reject(@RequestBody RecommendRejectSchema request) {
+    public ResponseEntity<Person> recommend_reject(@RequestBody RejectSchema request) {
         stakeholdersRecommenderService.recommend_reject(request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
