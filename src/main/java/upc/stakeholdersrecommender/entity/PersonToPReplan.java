@@ -16,7 +16,7 @@ public class PersonToPReplan {
 
     private Integer projectIdQuery;
 
-    private Integer id_replan;
+    private Integer idReplan;
 
     public PersonToPReplan() {
 
@@ -28,7 +28,7 @@ public class PersonToPReplan {
 
     public PersonToPReplan(PersonId id) {
         this.id=id;
-        id_replan=id.getprojectId();
+        idReplan=id.getprojectId();
     }
 
     public void setId(PersonId id) {
@@ -43,11 +43,11 @@ public class PersonToPReplan {
         this.projectIdQuery = projectId;
     }
 
-    public Integer getId_replan() {
-        return id_replan;
+    public Integer getIdReplan() {
+        return idReplan;
     }
 
-    public void setId_replan(Integer id_replan) {
-        this.id_replan = id_replan;
+    public void setIdReplan(Integer id_replan) {
+        this.idReplan = id_replan;
     }
 }

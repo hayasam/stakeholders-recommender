@@ -12,6 +12,7 @@ import java.util.List;
 public interface PersonToPReplanRepository extends JpaRepository<PersonToPReplan, String> {
     public List<PersonToPReplan> findByProjectIdQuery(Integer projectId);
     public PersonToPReplan findById(PersonId id);
+    public PersonToPReplan findByIdReplan(Integer id);
     @Transactional
     public void deleteByProjectIdQuery(Integer projectId);
 

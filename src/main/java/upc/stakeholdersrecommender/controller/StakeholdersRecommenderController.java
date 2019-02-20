@@ -13,7 +13,6 @@ import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RejectSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.ReturnObject;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.util.List;

@@ -11,7 +11,8 @@ public class Responsible {
 
 
     public Responsible (String person, Set<String> requirement)  {
-        this.person=new Person(person);
+        this.person=new Person();
+        this.person.setEmail(person);
         for (String s:requirement) {
             this.requirements.add(new Requirement(s));
         }

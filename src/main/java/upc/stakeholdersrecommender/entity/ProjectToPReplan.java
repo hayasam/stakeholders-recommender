@@ -14,7 +14,7 @@ public class ProjectToPReplan {
     @Id
     private String id;
 
-    private Integer id_replan;
+    private Integer idReplan;
 
     public ProjectToPReplan() {
 
@@ -28,11 +28,11 @@ public class ProjectToPReplan {
         return id;
     }
 
-    public void setID_Replan(Integer id_replan) {
-        this.id_replan = id_replan;
+    public void setIdReplan(Integer idReplan) {
+        this.idReplan = idReplan;
     }
 
-    public Integer getID_Replan() { return id_replan; }
+    public Integer getIdReplan() { return idReplan; }
 
     public void setID(String id) {
         this.id = id;

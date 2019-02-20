@@ -11,7 +11,6 @@ import java.util.List;
 public class BatchSchema implements Serializable {
 
     List<Project> projects;
-    List<Requirement> requirements;
     List<Person> persons;
     List<Responsible> responsibles;
 
@@ -21,14 +20,6 @@ public class BatchSchema implements Serializable {
 
     public void setProjects(List<Project> projects) {
         this.projects = projects;
-    }
-
-    public List<Requirement> getRequirements() {
-        return requirements;
-    }
-
-    public void setRequirements(List<Requirement> requirements) {
-        this.requirements = requirements;
     }
 
     public List<Person> getPersons() {
