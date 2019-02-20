@@ -6,4 +6,5 @@ import upc.stakeholdersrecommender.entity.RejectedPerson;
 
 @Repository
 public interface RejectedPersonRepository extends JpaRepository<RejectedPerson, String> {
+
 }

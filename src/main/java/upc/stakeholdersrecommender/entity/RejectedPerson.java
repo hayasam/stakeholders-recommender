@@ -17,6 +17,7 @@ public class RejectedPerson {
     private String user;
     private HashMap<String, Set<String>> deleted;
 
+
     public RejectedPerson(){
         user=null;
         deleted=null;

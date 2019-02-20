@@ -1,17 +1,28 @@
 package upc.stakeholdersrecommender.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 public class Responsible {
 
-    private Requirement requirement;
+    private List<Requirement> requirements= new ArrayList<Requirement>();
     private Person person;
 
 
-    public Requirement getRequirement() {
-        return requirement;
+    public Responsible (String person, Set<String> requirement)  {
+        this.person=new Person(person);
+        for (String s:requirement) {
+            this.requirements.add(new Requirement(s));
+        }
     }
 
-    public void setRequirement(Requirement requirement) {
-        this.requirement = requirement;
+    public List<Requirement> getRequirement() {
+        return requirements;
+    }
+
+    public void setRequirement(List<Requirement> requirements) {
+        this.requirements = requirements;
     }
 
     public Person getPerson() {

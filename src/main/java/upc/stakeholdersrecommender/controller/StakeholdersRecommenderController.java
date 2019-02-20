@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RejectSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
@@ -48,7 +49,7 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
     public ResponseEntity recommend(@RequestBody RecommendSchema request) {
-        List<ReturnObject> ret=stakeholdersRecommenderService.recommend(request);
+        List<Responsible> ret=stakeholdersRecommenderService.recommend(request);
         return new ResponseEntity<>(ret,HttpStatus.OK);
     }
 

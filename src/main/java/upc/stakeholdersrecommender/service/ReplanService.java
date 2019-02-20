@@ -126,11 +126,10 @@ public class ReplanService {
                 Object.class);
     }
 
-    public Plan plan(Integer projectReplanId, Integer releaseReplanId) {
-        Plan[] plans=restTemplate.postForObject(
-                replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=false",
+    public Plan[] plan(Integer projectReplanId, Integer releaseReplanId) {
+        return restTemplate.postForObject(
+                replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=true",
                 null,Plan[].class);
-        return plans[0];
     }
 
     public void deleteRelease(Integer projectReplanId, Integer releaseReplanId) {

@@ -11,20 +11,35 @@ import javax.persistence.Id;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RequirementSkills implements Serializable {
     @Id
-    private String requirementId;
+    private Integer requirementId;
+
+    private Integer projectIdQuery;
 
     // TODO set skill representation once it is defined
     //private List<Skill> skills;
 
-    public RequirementSkills(String id) { requirementId=id; }
+    public RequirementSkills(Integer id) { requirementId=id; }
 
     public RequirementSkills(){};
 
-    public String getRequirementId() { return requirementId; }
+    public RequirementSkills(Integer requirementId, Integer projectQuery) {
+        this.requirementId=requirementId;
+        this.projectIdQuery=projectQuery;
+    }
 
-    public void setRequirementId(String requirementId) { this.requirementId = requirementId; }
+    public Integer getRequirementId() { return requirementId; }
+
+    public void setRequirementId(Integer requirementId) { this.requirementId = requirementId; }
 
    // public List<Skill> getSkills() { return skills; }
 
     //public void setSkills(List<Skill> skills) { this.skills = skills; }
+
+    public Integer getProjectIdQuery() {
+        return projectIdQuery;
+    }
+
+    public void setProjectIdQuery(Integer projectIdQuery) {
+        this.projectIdQuery = projectIdQuery;
+    }
 }

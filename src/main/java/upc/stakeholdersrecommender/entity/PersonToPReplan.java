@@ -11,33 +11,43 @@ import java.util.List;
 
 public class PersonToPReplan {
 
-        @Id
-        private String id;
+    @EmbeddedId
+    private PersonId id;
 
-        private Integer id_replan;
+    private Integer projectIdQuery;
 
-        public PersonToPReplan() {
+    private Integer id_replan;
 
-        }
+    public PersonToPReplan() {
 
-        public PersonToPReplan(String id) {
-            this.id = id;
-        }
+    }
 
-        public String getid() {
-            return id;
-        }
+    public PersonId getId() {
+        return id;
+    }
 
-        public void setID_Replan(Integer id_replan) {
-            this.id_replan = id_replan;
-        }
+    public PersonToPReplan(PersonId id) {
+        this.id=id;
+        id_replan=id.getprojectId();
+    }
 
-        public Integer getID_Replan() { return id_replan; }
+    public void setId(PersonId id) {
+        this.id = id;
+    }
 
-        public void setID(String id) {
-            this.id = id;
-        }
+    public Integer getProjectIdQuery() {
+        return projectIdQuery;
+    }
 
+    public void setProjectIdQuery(Integer projectId) {
+        this.projectIdQuery = projectId;
+    }
 
+    public Integer getId_replan() {
+        return id_replan;
+    }
 
+    public void setId_replan(Integer id_replan) {
+        this.id_replan = id_replan;
+    }
 }
