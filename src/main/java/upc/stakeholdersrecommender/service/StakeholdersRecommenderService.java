@@ -46,7 +46,8 @@ public class StakeholdersRecommenderService {
         Plan[] plan=replanService.plan(project_replanID,release.getId());
 
         Map<Integer,Set<String>> output=new HashMap<Integer,Set<String>>();
-        for (Plan auxplan:plan) {
+        for (int i=0;i<plan.length && i<10;++i) {
+            Plan auxplan=plan[i];
             Map<Integer,Set<String>> aux=Parse(auxplan);
             for (Integer s:aux.keySet()) {
                 if (output.containsKey(s)) {
