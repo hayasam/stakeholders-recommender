@@ -35,20 +35,21 @@ public class StakeholdersRecommenderService {
         Project p = request.getProject();
         Requirement r = request.getRequirement();
         Integer project_replanID = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan();
-        Integer requirement_replanID = RequirementToFeatureRepository.getOne(r.getId()).getID_Replan();
+        Integer requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID,r.getId())).getID_Replan();
         ReleaseReplan release = replanService.createRelease(project_replanID);
+        Integer releaseId=release.getId();
         String user = request.getUser().getUsername();
 
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID))
             reslist.add(new ResourceListReplan(pers.getIdReplan()));
-        replanService.addResourcesToRelease(project_replanID, release.getId(), reslist);
-        Plan[] plan = replanService.plan(project_replanID, release.getId());
+        replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
+        Plan[] plan = replanService.plan(project_replanID,releaseId);
 
         Map<Integer, Set<String>> output = fusePlans(plan);
         List<Responsible> returnobject = createOutput(user, output);
-        replanService.deleteRelease(project_replanID, release.getId());
+        replanService.deleteRelease(project_replanID, releaseId);
         return returnobject;
     }
 
@@ -105,7 +106,7 @@ public class StakeholdersRecommenderService {
         List<Responsible> returnobject = new ArrayList<Responsible>();
         for (Integer s : output.keySet()) {
             String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
-            Set<String> inRetty = Reject(user, Translate(output.get(s)), username);
+            Set<String> inRetty = reject(user, translate(output.get(s)), username);
             Responsible retty = new Responsible(username, inRetty);
             returnobject.add(retty);
         }
@@ -116,7 +117,7 @@ public class StakeholdersRecommenderService {
         Map<Integer, Set<String>> output = new HashMap<Integer, Set<String>>();
         for (int i = 0; i < plan.length && i < 10; i++) {
             Plan auxplan = plan[i];
-            Map<Integer, Set<String>> aux = Parse(auxplan);
+            Map<Integer, Set<String>> aux = parse(auxplan);
             for (Integer s : aux.keySet()) {
                 if (output.containsKey(s)) {
                     Set<String> value = output.get(s);
@@ -145,9 +146,9 @@ public class StakeholdersRecommenderService {
     }
 
     private void instanciateFeatures(Requirement requirement, Integer id, Integer skill) {
-        if (!RequirementToFeatureRepository.existsById(requirement.getId())) {
+        if (RequirementToFeatureRepository.findById(new RequirementId(id,requirement.getId()))==null) {
             FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
-            RequirementToFeature requirementTrad = new RequirementToFeature(requirement.getId());
+            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id,requirement.getId()));
             requirementTrad.setID_Replan(featureReplan.getId());
             requirementTrad.setProjectIdQuery(id);
             RequirementToFeatureRepository.save(requirementTrad);
@@ -163,7 +164,7 @@ public class StakeholdersRecommenderService {
         if (ProjectToPReplanRepository.existsById(p.getId())) {
             id = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan();
             replanService.deleteProject(id);
-            DeleteRelated(id);
+            deleteRelated(id);
         }
         ProjectReplan projectReplan = replanService.createProject(p);
         id = projectReplan.getId();
@@ -182,14 +183,14 @@ public class StakeholdersRecommenderService {
         return Arrays.asList(new SkillReplan(new Skill("Stuff")));
     }
 
-    private Map<Integer, Set<String>> Parse(Plan plan) {
+    private Map<Integer, Set<String>> parse(Plan plan) {
         List<ResourceReplan> resources = plan.getResources();
         Map<Integer, Set<String>> toret = new HashMap<>();
         for (ResourceReplan res : resources) toret.put(res.getId(), res.getFeaturesWorkedOn());
         return toret;
     }
 
-    private Set<String> Reject(String rejector, Set<String> stuff, String person) {
+    private Set<String> reject(String rejector, Set<String> stuff, String person) {
         if (RejectedPersonRepository.existsById(rejector)) {
             RejectedPerson rej = RejectedPersonRepository.getOne(rejector);
             HashMap<String, Set<String>> rejectedRequirements = rej.getDeleted();
@@ -200,15 +201,15 @@ public class StakeholdersRecommenderService {
         return stuff;
     }
 
-    private Set<String> Translate(Set<String> id_replan) {
+    private Set<String> translate(Set<String> id_replan) {
         Set<String> aux = new HashSet<String>();
         for (String s : id_replan) {
-            aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID());
+            aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID().getRequirementId());
         }
         return aux;
     }
 
-    private void DeleteRelated(Integer id) {
+    private void deleteRelated(Integer id) {
         RequirementSkillsRepository.deleteByProjectIdQuery(id);
         PersonToPReplanRepository.deleteByProjectIdQuery(id);
         RequirementToFeatureRepository.deleteByProjectIdQuery(id);

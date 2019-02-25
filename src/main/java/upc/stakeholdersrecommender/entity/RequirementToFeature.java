@@ -2,6 +2,7 @@ package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -11,8 +12,8 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RequirementToFeature {
 
-    @Id
-    private String id;
+    @EmbeddedId
+    private RequirementId id;
 
     private Integer idReplan;
 
@@ -23,11 +24,11 @@ public class RequirementToFeature {
 
     }
 
-    public RequirementToFeature(String id) {
+    public RequirementToFeature(RequirementId id) {
         this.id = id;
     }
 
-    public String getID() {
+    public RequirementId getID() {
         return id;
     }
 
@@ -39,15 +40,15 @@ public class RequirementToFeature {
         return idReplan;
     }
 
-    public void setID(String id) {
+    public void setID(RequirementId id) {
         this.id = id;
     }
 
-    public String getId() {
+    public RequirementId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(RequirementId id) {
         this.id = id;
     }
 
