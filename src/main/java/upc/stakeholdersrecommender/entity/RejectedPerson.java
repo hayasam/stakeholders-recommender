@@ -17,7 +17,6 @@ public class RejectedPerson {
     private String user;
     private HashMap<String, Set<String>> deleted;
 
-
     public RejectedPerson(){
         user=null;
         deleted=null;
@@ -25,6 +24,7 @@ public class RejectedPerson {
     public RejectedPerson(String user) {
         this.user=user;
     }
+
     public String getUser() { return user; }
 
     public void setUser(String user) { this.user = user; }
@@ -32,4 +32,5 @@ public class RejectedPerson {
     public HashMap<String,Set<String>> getDeleted() { return deleted; }
 
     public void setDeleted(HashMap<String,Set<String>> deleted) { this.deleted = deleted; }
+
 }

@@ -34,20 +34,20 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "purge", method = RequestMethod.GET)
-    public ResponseEntity addBatch() {
+    @RequestMapping(value = "purge", method = RequestMethod.DELETE)
+    public ResponseEntity purge() {
         stakeholdersRecommenderService.purge();
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST)
-    public ResponseEntity<Person> recommend_reject(@RequestBody RejectSchema request) {
-        stakeholdersRecommenderService.recommend_reject(request);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity recommend_reject(@RequestParam("rejected") String rejected,@RequestParam("user") String user,@RequestParam("requirement") String requirement) {
+        stakeholdersRecommenderService.recommend_reject(rejected,user,requirement);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
-    public ResponseEntity recommend(@RequestBody RecommendSchema request) {
+    public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request) {
         List<Responsible> ret=stakeholdersRecommenderService.recommend(request);
         return new ResponseEntity<>(ret,HttpStatus.OK);
     }

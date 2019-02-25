@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
-import upc.stakeholdersrecommender.domain.Schemas.RejectSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
@@ -38,6 +37,7 @@ public class StakeholdersRecommenderService {
         Integer project_replanID=ProjectToPReplanRepository.getOne(p.getId()).getIdReplan();
         Integer requirement_replanID=RequirementToFeatureRepository.getOne(r.getId()).getID_Replan();
         ReleaseReplan release=replanService.createRelease(project_replanID);
+        String user = request.getUser().getUsername();
 
         replanService.addFeaturesToRelease(project_replanID,release.getId(),new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist=new ArrayList<ResourceListReplan>();
@@ -45,52 +45,37 @@ public class StakeholdersRecommenderService {
         replanService.addResourcesToRelease(project_replanID,release.getId(),reslist);
         Plan[] plan=replanService.plan(project_replanID,release.getId());
 
-        Map<Integer,Set<String>> output=new HashMap<Integer,Set<String>>();
-        for (int i=0;i<plan.length && i<10;++i) {
-            Plan auxplan=plan[i];
-            Map<Integer,Set<String>> aux=Parse(auxplan);
-            for (Integer s:aux.keySet()) {
-                if (output.containsKey(s)) {
-                    Set<String> value=output.get(s);
-                    value.addAll(aux.get(s));
-                    output.replace(s,value);
-                }
-                else output.put(s,aux.get(s));
-            }
-        }
-        List<Responsible> returnobject=new ArrayList<Responsible>();
-        for (Integer s:output.keySet()) {
-            String email=PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
-            Set<String> inRetty=Reject(request.getUser().getEmail(),Translate(output.get(s)),email);
-            System.out.println(inRetty);
-            Responsible retty=new Responsible(email,inRetty);
-            returnobject.add(retty);
-        }
+        Map<Integer,Set<String>> output=fusePlans(plan);
+        List<Responsible> returnobject=createOutput(user,output);
         replanService.deleteRelease(project_replanID,release.getId());
         return returnobject;
     }
 
+    public void purge() {
+        ProjectToPReplanRepository.deleteAll();
+        PersonToPReplanRepository.deleteAll();
+        RequirementToFeatureRepository.deleteAll();
+        RejectedPersonRepository.deleteAll();
+    }
 
-    public void recommend_reject(RejectSchema request) {
-        String personRejected=request.getRejected().getEmail();
-        if (RejectedPersonRepository.existsById(request.getUser().getEmail())) {
-            System.out.println("saved");
-            RejectedPerson rejected = RejectedPersonRepository.getOne(request.getUser().getEmail());
-            if (rejected.getDeleted().containsKey(personRejected)) {
-                rejected.getDeleted().get(personRejected).add(request.getRequirement().getId());
+    public void recommend_reject(String rejectedId, String userId, String requirementId) {
+        if (RejectedPersonRepository.existsById(userId)) {
+            RejectedPerson rejected = RejectedPersonRepository.getOne(userId);
+            if (rejected.getDeleted().containsKey(rejectedId)) {
+                rejected.getDeleted().get(rejectedId).add(requirementId);
+            } else {
+                Set<String> aux = new HashSet<String>();
+                aux.add(requirementId);
+                rejected.getDeleted().put(rejectedId, aux);
             }
-            else  {
-                Set<String> aux=new HashSet<String>();
-                aux.add(request.getRequirement().getId());
-                rejected.getDeleted().put(personRejected,aux);
-            }
+            RejectedPersonRepository.save(rejected);
         }
         else {
-            RejectedPerson reject= new RejectedPerson(request.getUser().getEmail());
+            RejectedPerson reject= new RejectedPerson(userId);
             HashMap<String,Set<String>> aux=new HashMap<String,Set<String>>();
             Set<String> auxset=new HashSet<String>();
-            auxset.add(request.getRequirement().getId());
-            aux.put(personRejected,auxset);
+            auxset.add(requirementId);
+            aux.put(rejectedId,auxset);
             reject.setDeleted(aux);
             RejectedPersonRepository.save(reject);
         }
@@ -116,13 +101,38 @@ public class StakeholdersRecommenderService {
         }
     }
 
+    private List<Responsible> createOutput(String user, Map<Integer, Set<String>> output) {
+        List<Responsible> returnobject=new ArrayList<Responsible>();
+        for (Integer s:output.keySet()) {
+            String username=PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
+            Set<String> inRetty=Reject(user,Translate(output.get(s)),username);
+            Responsible retty=new Responsible(username,inRetty);
+            returnobject.add(retty);
+        }
+        return returnobject;
+    }
 
-
+    private Map<Integer, Set<String>> fusePlans(Plan[] plan) {
+        Map<Integer,Set<String>> output=new HashMap<Integer,Set<String>>();
+        for (int i=0;i<plan.length && i<10;i++) {
+            Plan auxplan=plan[i];
+            Map<Integer,Set<String>> aux=Parse(auxplan);
+            for (Integer s:aux.keySet()) {
+                if (output.containsKey(s)) {
+                    Set<String> value=output.get(s);
+                    value.addAll(aux.get(s));
+                    output.replace(s,value);
+                }
+                else output.put(s,aux.get(s));
+            }
+        }
+        return output;
+    }
 
     private void instanciateResources(Person person, Integer id,Integer skill) {
-        if (PersonToPReplanRepository.findById(new PersonId(id,person.getEmail()))==null) {
+        if (PersonToPReplanRepository.findById(new PersonId(id,person.getUsername()))==null) {
             ResourceReplan resourceReplan = replanService.createResource(person, id);
-            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id,person.getEmail()));
+            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id,person.getUsername()));
             personTrad.setIdReplan(resourceReplan.getId());
             personTrad.setProjectIdQuery(id);
             PersonToPReplanRepository.save(personTrad);
@@ -134,6 +144,7 @@ public class StakeholdersRecommenderService {
         }
 
     }
+
     private void instanciateFeatures(Requirement requirement, Integer id, Integer skill) {
         if (!RequirementToFeatureRepository.existsById(requirement.getId())) {
             FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
@@ -178,6 +189,7 @@ public class StakeholdersRecommenderService {
         for (ResourceReplan res:resources) toret.put(res.getId(),res.getFeaturesWorkedOn());
         return toret;
     }
+
     private Set<String>  Reject(String rejector,Set<String> stuff, String person) {
         if (RejectedPersonRepository.existsById(rejector)) {
             RejectedPerson rej = RejectedPersonRepository.getOne(rejector);
@@ -201,14 +213,6 @@ public class StakeholdersRecommenderService {
         RequirementSkillsRepository.deleteByProjectIdQuery(id);
         PersonToPReplanRepository.deleteByProjectIdQuery(id);
         RequirementToFeatureRepository.deleteByProjectIdQuery(id);
-    }
-
-
-    public void purge() {
-        ProjectToPReplanRepository.deleteAll();
-        PersonToPReplanRepository.deleteAll();
-        RequirementToFeatureRepository.deleteAll();
-        RejectedPersonRepository.deleteAll();
     }
 
     private class Pair {

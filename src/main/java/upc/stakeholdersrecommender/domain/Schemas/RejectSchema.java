@@ -7,6 +7,9 @@ import java.io.Serializable;
 
 public class RejectSchema implements Serializable{
 
+    //Deprecated
+    
+    /*
     private Person user;
     private Person rejected;
     private Requirement requirement;
@@ -24,5 +27,5 @@ public class RejectSchema implements Serializable{
     public Requirement getRequirement() { return requirement; }
 
     public void setRequirement(Requirement requirement) { this.requirement = requirement; }
-
+*/
 }
