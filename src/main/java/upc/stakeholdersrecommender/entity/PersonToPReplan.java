@@ -1,9 +1,10 @@
 package upc.stakeholdersrecommender.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "person_to_replan")
@@ -27,8 +28,8 @@ public class PersonToPReplan {
     }
 
     public PersonToPReplan(PersonId id) {
-        this.id=id;
-        idReplan=id.getprojectId();
+        this.id = id;
+        idReplan = id.getprojectId();
     }
 
     public void setId(PersonId id) {

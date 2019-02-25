@@ -1,6 +1,5 @@
 package upc.stakeholdersrecommender.domain;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
@@ -36,7 +35,11 @@ public class Person implements Serializable {
         this.skills = skills;
     }
 
-    public void setEmail(String email) {this.email=email;}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getEmail(){ return email; }
+    public String getEmail() {
+        return email;
+    }
 }

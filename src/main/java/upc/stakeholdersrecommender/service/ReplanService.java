@@ -6,11 +6,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.Project;
 import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Skill;
+import upc.stakeholdersrecommender.domain.replan.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,8 @@ public class ReplanService {
                 replanUrl + "/projects/" + id,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<Project>(){});
+                new ParameterizedTypeReference<Project>() {
+                });
         Project project = response.getBody();
         return project;
     }
@@ -59,7 +60,7 @@ public class ReplanService {
         FeatureReplan featureReplan = new FeatureReplan(requirement);
 
         FeatureReplan createdFeature = restTemplate.postForObject(
-                replanUrl+ "/projects/" + projectId + "/features/create_one",
+                replanUrl + "/projects/" + projectId + "/features/create_one",
                 featureReplan,
                 FeatureReplan.class);
 
@@ -82,7 +83,7 @@ public class ReplanService {
     }
 
     public void addSkillsToPerson(Integer projectReplanId, Integer personId, SkillListReplan skillListReplans) {
-        List<SkillListReplan> skills=new ArrayList<SkillListReplan>();
+        List<SkillListReplan> skills = new ArrayList<SkillListReplan>();
         skills.add(skillListReplans);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
@@ -91,8 +92,8 @@ public class ReplanService {
 
     }
 
-    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId,SkillListReplan skillListReplans) {
-        List<SkillListReplan> skills=new ArrayList<SkillListReplan>();
+    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, SkillListReplan skillListReplans) {
+        List<SkillListReplan> skills = new ArrayList<SkillListReplan>();
         skills.add(skillListReplans);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
@@ -112,16 +113,16 @@ public class ReplanService {
 
     public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, List<ResourceListReplan> resourceReplanList) {
         restTemplate.postForObject(
-                replanUrl  + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/resources",
+                replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/resources",
                 resourceReplanList,
                 Object.class);
     }
 
     public void addFeaturesToRelease(Integer projectReplanId, Integer releaseReplanId, FeatureListReplan featureReplanList) {
-        List<FeatureListReplan> skills=new ArrayList<FeatureListReplan>();
+        List<FeatureListReplan> skills = new ArrayList<FeatureListReplan>();
         skills.add(featureReplanList);
         restTemplate.postForObject(
-                replanUrl  + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/features",
+                replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/features",
                 skills,
                 Object.class);
     }
@@ -129,7 +130,7 @@ public class ReplanService {
     public Plan[] plan(Integer projectReplanId, Integer releaseReplanId) {
         return restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=true",
-                null,Plan[].class);
+                null, Plan[].class);
     }
 
     public void deleteRelease(Integer projectReplanId, Integer releaseReplanId) {

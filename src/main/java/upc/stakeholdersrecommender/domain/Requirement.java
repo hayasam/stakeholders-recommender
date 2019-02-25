@@ -1,8 +1,5 @@
 package upc.stakeholdersrecommender.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
@@ -42,16 +39,28 @@ public class Requirement implements Serializable {
         this.skills = skills;
     }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Integer getCreated_at() { return created_at; }
+    public Integer getCreated_at() {
+        return created_at;
+    }
 
-    public void setCreated_at(Integer created_at) { this.created_at = created_at; }
+    public void setCreated_at(Integer created_at) {
+        this.created_at = created_at;
+    }
 
 }

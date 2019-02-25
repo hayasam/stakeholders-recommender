@@ -7,8 +7,9 @@ import upc.stakeholdersrecommender.entity.RequirementToFeature;
 
 @Repository
 public interface RequirementToFeatureRepository extends JpaRepository<RequirementToFeature, String> {
-    public RequirementToFeature findByIdReplan(Integer IdReplan);
+    RequirementToFeature findByIdReplan(Integer IdReplan);
+
     @Transactional
-    public void deleteByProjectIdQuery(Integer projectId);
+    void deleteByProjectIdQuery(Integer projectId);
 
 }

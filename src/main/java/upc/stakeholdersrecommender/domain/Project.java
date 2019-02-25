@@ -20,14 +20,20 @@ public class Project implements Serializable {
         this.id = id;
     }
 
-    public Integer getCreated_at() { return created_at; }
+    public Integer getCreated_at() {
+        return created_at;
+    }
 
-    public void setCreated_at(Integer created_at) { this.created_at = created_at; }
+    public void setCreated_at(Integer created_at) {
+        this.created_at = created_at;
+    }
+
     public List<Requirement> getSpecifiedRequirements() {
         return specifiedRequirements;
     }
 
     public void setSpecifiedRequirements(List<Requirement> specifiedRequirements) {
-        this.specifiedRequirements = specifiedRequirements; }
+        this.specifiedRequirements = specifiedRequirements;
+    }
 
 }

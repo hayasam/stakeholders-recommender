@@ -1,14 +1,11 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.Requirement;
-
 import java.io.Serializable;
 
-public class RejectSchema implements Serializable{
+public class RejectSchema implements Serializable {
 
     //Deprecated
-    
+
     /*
     private Person user;
     private Person rejected;

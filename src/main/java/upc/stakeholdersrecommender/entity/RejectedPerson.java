@@ -1,12 +1,12 @@
 package upc.stakeholdersrecommender.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.Set;
 
 @Entity
 @Table(name = "rejected")
@@ -17,20 +17,29 @@ public class RejectedPerson {
     private String user;
     private HashMap<String, Set<String>> deleted;
 
-    public RejectedPerson(){
-        user=null;
-        deleted=null;
+    public RejectedPerson() {
+        user = null;
+        deleted = null;
     }
+
     public RejectedPerson(String user) {
-        this.user=user;
+        this.user = user;
     }
 
-    public String getUser() { return user; }
+    public String getUser() {
+        return user;
+    }
 
-    public void setUser(String user) { this.user = user; }
+    public void setUser(String user) {
+        this.user = user;
+    }
 
-    public HashMap<String,Set<String>> getDeleted() { return deleted; }
+    public HashMap<String, Set<String>> getDeleted() {
+        return deleted;
+    }
 
-    public void setDeleted(HashMap<String,Set<String>> deleted) { this.deleted = deleted; }
+    public void setDeleted(HashMap<String, Set<String>> deleted) {
+        this.deleted = deleted;
+    }
 
 }

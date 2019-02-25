@@ -58,13 +58,13 @@ public class ResourceReplan implements Serializable {
     }
 
     public Set<String> getFeaturesWorkedOn() {
-        TreeSet<String> result=new TreeSet<String>();
-        if (calendar!=null)
-        for (DaySlot day: calendar) {
-            if (day.getFeature_id()!=null) {
-                result.add(day.getFeature_id());
+        TreeSet<String> result = new TreeSet<String>();
+        if (calendar != null)
+            for (DaySlot day : calendar) {
+                if (day.getFeature_id() != null) {
+                    result.add(day.getFeature_id());
+                }
             }
-        }
         return result;
     }
- }
+}
