@@ -10,12 +10,15 @@ public class SkillReplan implements Serializable {
 
     private String name;
 
+    private Double weight;
+
     public SkillReplan() {
 
     }
 
     public SkillReplan(Skill s) {
         this.name = s.getName();
+        this.weight=s.getWeight();
     }
 
     public Integer getId() {
@@ -33,4 +36,8 @@ public class SkillReplan implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Double getWeight() { return weight; }
+
+    public void setWeight(Double weight) { this.weight = weight; }
 }

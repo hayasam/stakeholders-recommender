@@ -84,23 +84,23 @@ public class StakeholdersRecommenderService {
 
 
     public void addBatch(BatchSchema request) {
-        List<Pair> pairs = new ArrayList<Pair>();
+        List<SkillListReplan> allSkills=new ArrayList<SkillListReplan>();
+        List<Integer> projectIds=new ArrayList<Integer>();
         for (Project p : request.getProjects()) {
             Integer id = instanciateProject(p);
-            SkillReplan skill = replanService.createSkill(new Skill("Stuff"), Integer.parseInt(p.getId()));
-            RequirementSkills req = new RequirementSkills(skill.getId(), id);
-            RequirementSkillsRepository.save(req);
-            Pair aux = new Pair(id, skill.getId());
-            pairs.add(new Pair(id, skill.getId()));
+            List<SkillListReplan> skills=computeAllSkills(id);
+            allSkills.addAll(skills);
+            projectIds.add(id);
             for (Requirement requirement : p.getSpecifiedRequirements()) {
-                instanciateFeatures(requirement, id, skill.getId());
+                instanciateFeatures(requirement, id,skills);
             }
         }
         //Instanciate people
         for (Person person : request.getPersons()) {
-            for (Pair p : pairs) instanciateResources(person, p.first, p.second);
+            for (Integer id:projectIds) instanciateResources(person, id, allSkills);
         }
     }
+
 
     private List<Responsible> createOutput(String user, Map<Integer, Set<String>> output) {
         List<Responsible> returnobject = new ArrayList<Responsible>();
@@ -129,7 +129,7 @@ public class StakeholdersRecommenderService {
         return output;
     }
 
-    private void instanciateResources(Person person, Integer id, Integer skill) {
+    private void instanciateResources(Person person, Integer id, List<SkillListReplan> skills) {
         if (PersonToPReplanRepository.findById(new PersonId(id, person.getUsername())) == null) {
             ResourceReplan resourceReplan = replanService.createResource(person, id);
             PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, person.getUsername()));
@@ -137,15 +137,16 @@ public class StakeholdersRecommenderService {
             personTrad.setProjectIdQuery(id);
             PersonToPReplanRepository.save(personTrad);
 
-            //List<SkillReplan> skill = computeSkillsPerson(person);
+            //List<SkillListReplan> skills = computeSkillsPerson(person,id);
             // TODO Add skills to person in replan
-            replanService.addSkillsToPerson(id, resourceReplan.getId(), new SkillListReplan(skill));
+            for (SkillListReplan sk:skills) System.out.println(sk.getSkill_id());
+            replanService.addSkillsToPerson(id, resourceReplan.getId(),skills);
         } else {
         }
 
     }
 
-    private void instanciateFeatures(Requirement requirement, Integer id, Integer skill) {
+    private void instanciateFeatures(Requirement requirement, Integer id, List<SkillListReplan> skills) {
         if (RequirementToFeatureRepository.findById(new RequirementId(id,requirement.getId()))==null) {
             FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
             RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id,requirement.getId()));
@@ -153,9 +154,9 @@ public class StakeholdersRecommenderService {
             requirementTrad.setProjectIdQuery(id);
             RequirementToFeatureRepository.save(requirementTrad);
 
-            //  List<SkillReplan> skill = computeSkillsRequirement(requirement);
+            //List<SkillListReplan> skills = computeSkillsRequirement(requirement, id);
             // TODO Add skills to requirements in replan
-            replanService.addSkillsToRequirement(id, featureReplan.getId(), new SkillListReplan(skill));
+            replanService.addSkillsToRequirement(id, featureReplan.getId(), skills);
         }
     }
 
@@ -175,12 +176,20 @@ public class StakeholdersRecommenderService {
         return id;
     }
 
-    private List<SkillReplan> computeSkillsRequirement(Requirement requirement) {
-        return Arrays.asList(new SkillReplan(new Skill("Stuff")));
+    private List<SkillListReplan>  computeSkillsRequirement(Requirement requirement,Integer id) {
+        Skill auxiliar=new Skill("Stuff",1.0);
+        SkillReplan skill=replanService.createSkill(auxiliar,id);
+        List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
+        toret.add(new SkillListReplan(skill));
+        return toret;
     }
 
-    private List<SkillReplan> computeSkillsPerson(Person person) {
-        return Arrays.asList(new SkillReplan(new Skill("Stuff")));
+    private List<SkillListReplan>  computeSkillsPerson(Person person, Integer id) {
+        Skill auxiliar=new Skill("Stuff",1.0);
+        SkillReplan skill=replanService.createSkill(auxiliar,id);
+        List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
+        toret.add(new SkillListReplan(skill));
+        return toret;
     }
 
     private Map<Integer, Set<String>> parse(Plan plan) {
@@ -215,30 +224,13 @@ public class StakeholdersRecommenderService {
         RequirementToFeatureRepository.deleteByProjectIdQuery(id);
     }
 
-    private class Pair {
-        private Integer first;
-        private Integer second;
 
-
-        public Pair(Integer first, Integer second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        public Integer getFirst() {
-            return first;
-        }
-
-        public void setFirst(Integer first) {
-            this.first = first;
-        }
-
-        public Integer getSecond() {
-            return second;
-        }
-
-        public void setSecond(Integer second) {
-            this.second = second;
-        }
+    private List<SkillListReplan> computeAllSkills(Integer id) {
+        Skill auxiliar=new Skill("Stuff",1.0);
+        SkillReplan skill=replanService.createSkill(auxiliar,id);
+        List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
+        toret.add(new SkillListReplan(skill));
+        return toret;
     }
+
 }

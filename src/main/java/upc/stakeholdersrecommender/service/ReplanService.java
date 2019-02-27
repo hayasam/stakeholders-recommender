@@ -82,22 +82,18 @@ public class ReplanService {
         return createdReplan;
     }
 
-    public void addSkillsToPerson(Integer projectReplanId, Integer personId, SkillListReplan skillListReplans) {
-        List<SkillListReplan> skills = new ArrayList<SkillListReplan>();
-        skills.add(skillListReplans);
+    public void addSkillsToPerson(Integer projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
-                skills,
+                skillListReplans,
                 Object.class);
 
     }
 
-    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, SkillListReplan skillListReplans) {
-        List<SkillListReplan> skills = new ArrayList<SkillListReplan>();
-        skills.add(skillListReplans);
+    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
-                skills,
+                skillListReplans,
                 Object.class);
 
     }
