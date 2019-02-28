@@ -88,11 +88,12 @@ public class StakeholdersRecommenderService {
         List<Integer> projectIds=new ArrayList<Integer>();
         for (Project p : request.getProjects()) {
             Integer id = instanciateProject(p);
-            List<SkillListReplan> skills=computeAllSkills(id);
-            allSkills.addAll(skills);
             projectIds.add(id);
             for (Requirement requirement : p.getSpecifiedRequirements()) {
+                List<SkillListReplan> skills=computeSkillsRequirement(requirement,id);
+                allSkills.addAll(skills);
                 instanciateFeatures(requirement, id,skills);
+
             }
         }
         //Instanciate people
@@ -137,13 +138,26 @@ public class StakeholdersRecommenderService {
             personTrad.setProjectIdQuery(id);
             PersonToPReplanRepository.save(personTrad);
 
-            //List<SkillListReplan> skills = computeSkillsPerson(person,id);
             // TODO Add skills to person in replan
-            for (SkillListReplan sk:skills) System.out.println(sk.getSkill_id());
-            replanService.addSkillsToPerson(id, resourceReplan.getId(),skills);
+            List<SkillListReplan> toAssign=randomSkills(skills);
+            replanService.addSkillsToPerson(id, resourceReplan.getId(),toAssign);
         } else {
         }
 
+    }
+
+    private List<SkillListReplan> randomSkills(List<SkillListReplan> skills) {
+        List<SkillListReplan> toret= new ArrayList<SkillListReplan>();
+        for (SkillListReplan skill:skills) {
+            Random rand = new Random();
+            if(rand.nextBoolean()) {
+                SkillListReplan auxil=new SkillListReplan();
+                auxil.setWeight(rand.nextDouble());
+                auxil.setSkill_id(skill.getSkill_id());
+                toret.add(auxil);
+            }
+        }
+        return toret;
     }
 
     private void instanciateFeatures(Requirement requirement, Integer id, List<SkillListReplan> skills) {
@@ -154,7 +168,6 @@ public class StakeholdersRecommenderService {
             requirementTrad.setProjectIdQuery(id);
             RequirementToFeatureRepository.save(requirementTrad);
 
-            //List<SkillListReplan> skills = computeSkillsRequirement(requirement, id);
             // TODO Add skills to requirements in replan
             replanService.addSkillsToRequirement(id, featureReplan.getId(), skills);
         }
