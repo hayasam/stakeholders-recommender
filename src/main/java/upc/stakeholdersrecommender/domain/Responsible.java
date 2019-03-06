@@ -6,24 +6,22 @@ import java.util.Set;
 
 public class Responsible {
 
-    private List<Requirement> requirements = new ArrayList<Requirement>();
+    private Integer requirement;
     private Person person;
 
 
-    public Responsible(String person, Set<String> requirement) {
+    public Responsible(String person, Integer requirement) {
         this.person = new Person();
         this.person.setUsername(person);
-        for (String s : requirement) {
-            this.requirements.add(new Requirement(s));
-        }
+        this.requirement=requirement;
     }
 
-    public List<Requirement> getRequirement() {
-        return requirements;
+    public Integer getRequirement() {
+        return requirement;
     }
 
-    public void setRequirement(List<Requirement> requirements) {
-        this.requirements = requirements;
+    public void setRequirement(Integer requirements) {
+        this.requirement = requirements;
     }
 
     public Person getPerson() {

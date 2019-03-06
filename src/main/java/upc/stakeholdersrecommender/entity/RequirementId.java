@@ -12,12 +12,12 @@ public class RequirementId implements Serializable {
     private Integer projectId;
 
     @Column(name = "requirementId")
-    private String requirementId;
+    private Integer requirementId;
 
     public RequirementId() {
     }
 
-    public RequirementId(Integer projectId, String personId) {
+    public RequirementId(Integer projectId, Integer personId) {
         this.projectId = projectId;
         this.requirementId = personId;
     }
@@ -26,7 +26,7 @@ public class RequirementId implements Serializable {
         return projectId;
     }
 
-    public String getRequirementId() {
+    public Integer getRequirementId() {
         return requirementId;
     }
 

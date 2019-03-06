@@ -10,7 +10,7 @@ public class Project implements Serializable {
 
     private String id;
     private Integer created_at;
-    private List<Requirement> specifiedRequirements;
+    private List<Integer> specifiedRequirements;
 
     public String getId() {
         return id;
@@ -28,11 +28,11 @@ public class Project implements Serializable {
         this.created_at = created_at;
     }
 
-    public List<Requirement> getSpecifiedRequirements() {
+    public List<Integer> getSpecifiedRequirements() {
         return specifiedRequirements;
     }
 
-    public void setSpecifiedRequirements(List<Requirement> specifiedRequirements) {
+    public void setSpecifiedRequirements(List<Integer> specifiedRequirements) {
         this.specifiedRequirements = specifiedRequirements;
     }
 

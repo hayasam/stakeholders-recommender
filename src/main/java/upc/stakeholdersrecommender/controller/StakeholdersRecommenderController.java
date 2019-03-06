@@ -13,6 +13,7 @@ import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
+import java.io.IOException;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -27,7 +28,7 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch) {
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws IOException {
         stakeholdersRecommenderService.addBatch(batch);
         return new ResponseEntity(HttpStatus.CREATED);
     }

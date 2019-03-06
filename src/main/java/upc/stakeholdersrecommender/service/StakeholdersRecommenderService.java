@@ -9,6 +9,7 @@ import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -35,7 +36,7 @@ public class StakeholdersRecommenderService {
         Project p = request.getProject();
         Requirement r = request.getRequirement();
         Integer project_replanID = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan();
-        Integer requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID,r.getId())).getID_Replan();
+        Integer requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID,Integer.parseInt(r.getId()))).getID_Replan();
         ReleaseReplan release = replanService.createRelease(project_replanID);
         Integer releaseId=release.getId();
         String user = request.getUser().getUsername();
@@ -83,13 +84,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public void addBatch(BatchSchema request) {
+    public void addBatch(BatchSchema request) throws IOException {
         List<SkillListReplan> allSkills=new ArrayList<SkillListReplan>();
         List<Integer> projectIds=new ArrayList<Integer>();
         for (Project p : request.getProjects()) {
             Integer id = instanciateProject(p);
             projectIds.add(id);
-            for (Requirement requirement : p.getSpecifiedRequirements()) {
+            for (Integer requirement : p.getSpecifiedRequirements()) {
                 List<SkillListReplan> skills=computeSkillsRequirement(requirement,id);
                 allSkills.addAll(skills);
                 instanciateFeatures(requirement, id,skills);
@@ -108,8 +109,9 @@ public class StakeholdersRecommenderService {
         for (Integer s : output.keySet()) {
             String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
             Set<String> inRetty = reject(user, translate(output.get(s)), username);
-            Responsible retty = new Responsible(username, inRetty);
-            returnobject.add(retty);
+            for (String req: inRetty) {
+                returnobject.add(new Responsible(username,s));
+            }
         }
         return returnobject;
     }
@@ -160,10 +162,10 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private void instanciateFeatures(Requirement requirement, Integer id, List<SkillListReplan> skills) {
-        if (RequirementToFeatureRepository.findById(new RequirementId(id,requirement.getId()))==null) {
+    private void instanciateFeatures(Integer requirement, Integer id, List<SkillListReplan> skills) {
+        if (RequirementToFeatureRepository.findById(new RequirementId(id,requirement))==null) {
             FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
-            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id,requirement.getId()));
+            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id,requirement));
             requirementTrad.setID_Replan(featureReplan.getId());
             requirementTrad.setProjectIdQuery(id);
             RequirementToFeatureRepository.save(requirementTrad);
@@ -189,7 +191,7 @@ public class StakeholdersRecommenderService {
         return id;
     }
 
-    private List<SkillListReplan>  computeSkillsRequirement(Requirement requirement,Integer id) {
+    private List<SkillListReplan>  computeSkillsRequirement(Integer requirement,Integer id) {
         Skill auxiliar=new Skill("Stuff",1.0);
         SkillReplan skill=replanService.createSkill(auxiliar,id);
         List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
@@ -226,7 +228,7 @@ public class StakeholdersRecommenderService {
     private Set<String> translate(Set<String> id_replan) {
         Set<String> aux = new HashSet<String>();
         for (String s : id_replan) {
-            aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID().getRequirementId());
+            aux.add(RequirementToFeatureRepository.findByIdReplan(Integer.parseInt(s)).getID().getRequirementId().toString());
         }
         return aux;
     }

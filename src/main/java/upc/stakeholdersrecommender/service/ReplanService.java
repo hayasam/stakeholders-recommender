@@ -56,7 +56,7 @@ public class ReplanService {
         return createdResource;
     }
 
-    public FeatureReplan createRequirement(Requirement requirement, Integer projectId) {
+    public FeatureReplan createRequirement(Integer requirement, Integer projectId) {
         FeatureReplan featureReplan = new FeatureReplan(requirement);
 
         FeatureReplan createdFeature = restTemplate.postForObject(
