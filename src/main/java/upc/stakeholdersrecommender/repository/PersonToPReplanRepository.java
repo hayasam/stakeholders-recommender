@@ -10,13 +10,13 @@ import java.util.List;
 
 @Repository
 public interface PersonToPReplanRepository extends JpaRepository<PersonToPReplan, String> {
-    List<PersonToPReplan> findByProjectIdQuery(Integer projectId);
+    List<PersonToPReplan> findByProjectIdQuery(String projectId);
 
     PersonToPReplan findById(PersonId id);
 
-    PersonToPReplan findByIdReplan(Integer id);
+    PersonToPReplan findByIdReplan(String id);
 
     @Transactional
-    void deleteByProjectIdQuery(Integer projectId);
+    void deleteByProjectIdQuery(String projectId);
 
 }

@@ -15,9 +15,9 @@ public class PersonToPReplan {
     @EmbeddedId
     private PersonId id;
 
-    private Integer projectIdQuery;
+    private String projectIdQuery;
 
-    private Integer idReplan;
+    private String idReplan;
 
     public PersonToPReplan() {
 
@@ -36,19 +36,19 @@ public class PersonToPReplan {
         this.id = id;
     }
 
-    public Integer getProjectIdQuery() {
+    public String getProjectIdQuery() {
         return projectIdQuery;
     }
 
-    public void setProjectIdQuery(Integer projectId) {
+    public void setProjectIdQuery(String projectId) {
         this.projectIdQuery = projectId;
     }
 
-    public Integer getIdReplan() {
+    public String getIdReplan() {
         return idReplan;
     }
 
-    public void setIdReplan(Integer id_replan) {
+    public void setIdReplan(String id_replan) {
         this.idReplan = id_replan;
     }
 }

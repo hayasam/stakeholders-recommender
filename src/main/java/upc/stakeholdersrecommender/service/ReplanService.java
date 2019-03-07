@@ -45,7 +45,7 @@ public class ReplanService {
         return createdPlan;
     }
 
-    public ResourceReplan createResource(Person p, Integer projectId) {
+    public ResourceReplan createResource(Person p, String projectId) {
         ResourceReplan resourceReplan = new ResourceReplan(p);
 
         ResourceReplan createdResource = restTemplate.postForObject(
@@ -56,7 +56,7 @@ public class ReplanService {
         return createdResource;
     }
 
-    public FeatureReplan createRequirement(Integer requirement, Integer projectId) {
+    public FeatureReplan createRequirement(String requirement, String projectId) {
         FeatureReplan featureReplan = new FeatureReplan(requirement);
 
         FeatureReplan createdFeature = restTemplate.postForObject(
@@ -67,11 +67,11 @@ public class ReplanService {
         return createdFeature;
     }
 
-    public void deleteProject(Integer id) {
+    public void deleteProject(String id) {
         restTemplate.delete(replanUrl + "/projects/" + id);
     }
 
-    public SkillReplan createSkill(Skill s, Integer projectId) {
+    public SkillReplan createSkill(Skill s, String projectId) {
         SkillReplan skillReplan = new SkillReplan(s);
 
         SkillReplan createdReplan = restTemplate.postForObject(
@@ -82,7 +82,7 @@ public class ReplanService {
         return createdReplan;
     }
 
-    public void addSkillsToPerson(Integer projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
+    public void addSkillsToPerson(String projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
                 skillListReplans,
@@ -90,7 +90,7 @@ public class ReplanService {
 
     }
 
-    public void addSkillsToRequirement(Integer projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
+    public void addSkillsToRequirement(String projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
                 skillListReplans,
@@ -98,7 +98,7 @@ public class ReplanService {
 
     }
 
-    public ReleaseReplan createRelease(Integer id) {
+    public ReleaseReplan createRelease(String id) {
         ReleaseReplan releaseReplan = new ReleaseReplan("Release");
         ReleaseReplan createdRelease = restTemplate.postForObject(
                 replanUrl + "/projects/" + id + "/releases",
@@ -107,14 +107,14 @@ public class ReplanService {
         return createdRelease;
     }
 
-    public void addResourcesToRelease(Integer projectReplanId, Integer releaseReplanId, List<ResourceListReplan> resourceReplanList) {
+    public void addResourcesToRelease(String projectReplanId, Integer releaseReplanId, List<ResourceListReplan> resourceReplanList) {
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/resources",
                 resourceReplanList,
                 Object.class);
     }
 
-    public void addFeaturesToRelease(Integer projectReplanId, Integer releaseReplanId, FeatureListReplan featureReplanList) {
+    public void addFeaturesToRelease(String projectReplanId, Integer releaseReplanId, FeatureListReplan featureReplanList) {
         List<FeatureListReplan> skills = new ArrayList<FeatureListReplan>();
         skills.add(featureReplanList);
         restTemplate.postForObject(
@@ -123,13 +123,13 @@ public class ReplanService {
                 Object.class);
     }
 
-    public Plan[] plan(Integer projectReplanId, Integer releaseReplanId) {
+    public Plan[] plan(String projectReplanId, Integer releaseReplanId) {
         return restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId + "/plan?multiple_solutions=true",
                 null, Plan[].class);
     }
 
-    public void deleteRelease(Integer projectReplanId, Integer releaseReplanId) {
+    public void deleteRelease(String projectReplanId, Integer releaseReplanId) {
         restTemplate.delete(replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId);
     }
 

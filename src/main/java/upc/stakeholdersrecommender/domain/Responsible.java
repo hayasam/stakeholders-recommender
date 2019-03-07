@@ -6,29 +6,28 @@ import java.util.Set;
 
 public class Responsible {
 
-    private Integer requirement;
-    private Person person;
+    private String requirement;
+    private String person;
 
 
     public Responsible(String person, Integer requirement) {
-        this.person = new Person();
-        this.person.setUsername(person);
-        this.requirement=requirement;
+        this.person=person;
+        this.requirement=requirement.toString();
     }
 
-    public Integer getRequirement() {
+    public String getRequirement() {
         return requirement;
     }
 
-    public void setRequirement(Integer requirements) {
+    public void setRequirement(String requirements) {
         this.requirement = requirements;
     }
 
-    public Person getPerson() {
+    public String getPerson() {
         return person;
     }
 
-    public void setPerson(Person person) {
+    public void setPerson(String person) {
         this.person = person;
     }
 

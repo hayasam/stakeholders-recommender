@@ -15,9 +15,9 @@ public class RequirementToFeature {
     @EmbeddedId
     private RequirementId id;
 
-    private Integer idReplan;
+    private String idReplan;
 
-    private Integer projectIdQuery;
+    private String projectIdQuery;
 
 
     public RequirementToFeature() {
@@ -32,11 +32,11 @@ public class RequirementToFeature {
         return id;
     }
 
-    public void setID_Replan(Integer idReplan) {
+    public void setID_Replan(String idReplan) {
         this.idReplan = idReplan;
     }
 
-    public Integer getID_Replan() {
+    public String getID_Replan() {
         return idReplan;
     }
 
@@ -52,19 +52,19 @@ public class RequirementToFeature {
         this.id = id;
     }
 
-    public Integer getIdReplan() {
+    public String getIdReplan() {
         return idReplan;
     }
 
-    public void setIdReplan(Integer idReplan) {
+    public void setIdReplan(String idReplan) {
         this.idReplan = idReplan;
     }
 
-    public Integer getProjectIdQuery() {
+    public String getProjectIdQuery() {
         return projectIdQuery;
     }
 
-    public void setProjectIdQuery(Integer projectIdQuery) {
+    public void setProjectIdQuery(String projectIdQuery) {
         this.projectIdQuery = projectIdQuery;
     }
 

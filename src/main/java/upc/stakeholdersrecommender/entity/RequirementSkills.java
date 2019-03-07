@@ -12,30 +12,30 @@ import java.io.Serializable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RequirementSkills implements Serializable {
     @Id
-    private Integer requirementId;
+    private String requirementId;
 
-    private Integer projectIdQuery;
+    private String projectIdQuery;
 
     // TODO set skill representation once it is defined
     //private List<Skill> skills;
 
-    public RequirementSkills(Integer id) {
+    public RequirementSkills(String id) {
         requirementId = id;
     }
 
     public RequirementSkills() {
     }
 
-    public RequirementSkills(Integer requirementId, Integer projectQuery) {
+    public RequirementSkills(String requirementId, String projectQuery) {
         this.requirementId = requirementId;
         this.projectIdQuery = projectQuery;
     }
 
-    public Integer getRequirementId() {
+    public String getRequirementId() {
         return requirementId;
     }
 
-    public void setRequirementId(Integer requirementId) {
+    public void setRequirementId(String requirementId) {
         this.requirementId = requirementId;
     }
 
@@ -43,11 +43,11 @@ public class RequirementSkills implements Serializable {
 
     //public void setSkills(List<Skill> skills) { this.skills = skills; }
 
-    public Integer getProjectIdQuery() {
+    public String getProjectIdQuery() {
         return projectIdQuery;
     }
 
-    public void setProjectIdQuery(Integer projectIdQuery) {
+    public void setProjectIdQuery(String projectIdQuery) {
         this.projectIdQuery = projectIdQuery;
     }
 }

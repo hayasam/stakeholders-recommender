@@ -9,24 +9,24 @@ import java.util.Objects;
 public class RequirementId implements Serializable {
 
     @Column(name = "projectId")
-    private Integer projectId;
+    private String projectId;
 
     @Column(name = "requirementId")
-    private Integer requirementId;
+    private String requirementId;
 
     public RequirementId() {
     }
 
-    public RequirementId(Integer projectId, Integer personId) {
+    public RequirementId(String projectId, String personId) {
         this.projectId = projectId;
         this.requirementId = personId;
     }
 
-    public Integer getprojectId() {
+    public String getprojectId() {
         return projectId;
     }
 
-    public Integer getRequirementId() {
+    public String getRequirementId() {
         return requirementId;
     }
 
