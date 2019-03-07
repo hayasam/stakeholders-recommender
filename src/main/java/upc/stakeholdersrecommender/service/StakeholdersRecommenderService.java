@@ -110,7 +110,7 @@ public class StakeholdersRecommenderService {
             String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
             Set<String> inRetty = reject(user, translate(output.get(s)), username);
             for (String req: inRetty) {
-                returnobject.add(new Responsible(username,s));
+                returnobject.add(new Responsible(username,Integer.parseInt(req)));
             }
         }
         return returnobject;
