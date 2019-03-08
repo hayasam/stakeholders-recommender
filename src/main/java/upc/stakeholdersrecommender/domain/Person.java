@@ -1,5 +1,7 @@
 package upc.stakeholdersrecommender.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -9,6 +11,7 @@ public class Person implements Serializable {
 
     private String email;
 
+    @JsonIgnore
     private List<Skill> skills;
 
     public Person() {
