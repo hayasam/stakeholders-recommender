@@ -22,6 +22,17 @@ public class FeatureReplan implements Serializable {
         this.effort = 10;
         this.priority = 1;
     }
+    public FeatureReplan(Integer requirement) {
+        this.code = requirement.hashCode();
+        this.effort = 10;
+        this.priority = 1;
+    }
+    public FeatureReplan(String requirement) {
+        this.code = requirement.hashCode();
+        this.effort = 10;
+        this.priority = 1;
+    }
+
 
     public Integer getId() {
         return id;

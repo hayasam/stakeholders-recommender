@@ -8,6 +8,6 @@ import upc.stakeholdersrecommender.entity.RequirementSkills;
 @Repository
 public interface RequirementSkillsRepository extends JpaRepository<RequirementSkills, String> {
     @Transactional
-    void deleteByProjectIdQuery(Integer projectId);
+    void deleteByProjectIdQuery(String projectId);
 
 }

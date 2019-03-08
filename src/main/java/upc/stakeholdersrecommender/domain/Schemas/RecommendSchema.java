@@ -8,31 +8,31 @@ import java.io.Serializable;
 
 public class RecommendSchema implements Serializable {
 
-    private Requirement requirement;
-    private Project project;
-    private Person user;
+    private String requirement;
+    private String project;
+    private String user;
 
-    public Requirement getRequirement() {
+    public String getRequirement() {
         return requirement;
     }
 
-    public void setRequirement(Requirement requirement) {
+    public void setRequirement(String requirement) {
         this.requirement = requirement;
     }
 
-    public Project getProject() {
+    public String getProject() {
         return project;
     }
 
-    public void setProject(Project project) {
+    public void setProject(String project) {
         this.project = project;
     }
 
-    public Person getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Person user) {
+    public void setUser(String user) {
         this.user = user;
     }
 }

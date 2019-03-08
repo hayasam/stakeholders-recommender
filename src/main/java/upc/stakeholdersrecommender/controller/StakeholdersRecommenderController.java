@@ -1,6 +1,7 @@
 package upc.stakeholdersrecommender.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
+import java.io.IOException;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -27,24 +29,30 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch) {
+    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.")
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws IOException {
         stakeholdersRecommenderService.addBatch(batch);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "purge", method = RequestMethod.DELETE)
+    @ApiOperation(value = "Removes all data from the service database.")
     public ResponseEntity purge() {
         stakeholdersRecommenderService.purge();
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST)
+    @ApiOperation(value = "Recommendation rejection method: used to state that the user identified by REJECTED must not be assigned to REQUIREMENT. The" +
+            " rejection is performed by USER.")
     public ResponseEntity recommend_reject(@RequestParam("rejected") String rejected, @RequestParam("user") String user, @RequestParam("requirement") String requirement) {
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
+    @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
+            "recommendation and returns a new responsible relation")
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request) {
         List<Responsible> ret = stakeholdersRecommenderService.recommend(request);
         return new ResponseEntity<>(ret, HttpStatus.OK);

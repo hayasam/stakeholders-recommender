@@ -9,7 +9,7 @@ import java.util.Objects;
 public class PersonId implements Serializable {
 
     @Column(name = "projectId")
-    private Integer projectId;
+    private String projectId;
 
     @Column(name = "personId")
     private String personId;
@@ -17,12 +17,12 @@ public class PersonId implements Serializable {
     public PersonId() {
     }
 
-    public PersonId(Integer projectId, String personId) {
+    public PersonId(String projectId, String personId) {
         this.projectId = projectId;
         this.personId = personId;
     }
 
-    public Integer getprojectId() {
+    public String getprojectId() {
         return projectId;
     }
 
