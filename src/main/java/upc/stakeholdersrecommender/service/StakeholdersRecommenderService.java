@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.ExtractTest;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
@@ -248,4 +249,19 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
+    public void extract(ExtractTest request) throws IOException {
+        KeywordExtractor extractor=new KeywordExtractor();
+        List<Map<String,Double>> res= extractor.extractKeywords(request.getCorpus());
+        Integer i=0;
+        for (Map<String,Double> map:res) {
+            System.out.println("------------------------------");
+            System.out.println("Corpus Number "+i);
+            System.out.println("------------------------------");
+            for (String s:map.keySet()) {
+                if (map.get(s)>2)
+                System.out.println(s+"  "+map.get(s));
+            }
+            ++i;
+        }
+    }
 }

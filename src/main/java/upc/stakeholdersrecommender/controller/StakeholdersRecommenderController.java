@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.ExtractTest;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
@@ -49,6 +50,12 @@ public class StakeholdersRecommenderController {
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request) {
         List<Responsible> ret = stakeholdersRecommenderService.recommend(request);
         return new ResponseEntity<>(ret, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "extractor", method = RequestMethod.POST)
+    public ResponseEntity  extract(@RequestBody ExtractTest request) throws IOException {
+        stakeholdersRecommenderService.extract(request);
+        return new ResponseEntity<>( HttpStatus.OK);
     }
 
 }

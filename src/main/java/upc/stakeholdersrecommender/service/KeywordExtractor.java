@@ -1,46 +1,70 @@
 package upc.stakeholdersrecommender.service;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Keywords extractor functionality handler
  */
 class KeywordExtractor {
 
-    public double tf(List<String> doc, String term) {
-            double result = 0;
-            for (String word : doc) {
-                if (term.equalsIgnoreCase(word))
-                    result++;
+    private Map<String,Integer> corpusFrequency=new HashMap<String,Integer>();
+
+
+    public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
+        List<List<String>> docs=new ArrayList<List<String>>();
+        for (String s : corpus) {
+            docs.add(englishAnalyze(s));
+        }
+        return tfIdf(docs);
+    }
+
+    private Map<String,Integer> tf(List<String> doc) {
+        Map<String,Integer> frequency=new HashMap<String,Integer>();
+        for (String s:doc) {
+            if (frequency.containsKey(s)) frequency.put(s, frequency.get(s) + 1);
+            else {
+                frequency.put(s, 1);
+                if (corpusFrequency.containsKey(s)) corpusFrequency.put(s, corpusFrequency.get(s) + 1);
+                else corpusFrequency.put(s,1);
             }
-            return result / doc.size();
+
+        }
+        return frequency;
+    }
+
+
+
+    private double idf(Integer size, Integer frequency) {
+            return Math.log(size/ frequency);
         }
 
 
-        public double idf(List<List<String>> docs, String term) {
-            double n = 0;
-            for (List<String> doc : docs) {
-                for (String word : doc) {
-                    if (term.equalsIgnoreCase(word)) {
-                        n++;
-                        break;
-                    }
+    private List<Map<String,Double>> tfIdf(List<List<String>> docs) {
+            List<Map<String,Double>> tfidfComputed=new ArrayList<Map<String,Double>>();
+            List<Map<String,Integer>> wordBag=new ArrayList<Map<String,Integer>>();
+            for (List<String> doc: docs) {
+                wordBag.add(tf(doc));
+            }
+            Integer i=0;
+            for (List<String> doc: docs) {
+                HashMap<String,Double> aux=new HashMap<String,Double>();
+                for (String s: doc) {
+                    Double idf=idf(docs.size(),corpusFrequency.get(s));
+                    Integer tf=wordBag.get(i).get(s);
+                    Double tfidf=idf*tf;
+                    aux.put(s,tfidf);
                 }
+                tfidfComputed.add(aux);
+                ++i;
             }
-            return Math.log(docs.size() / n);
-        }
-
-
-        public double tfIdf(List<String> doc, List<List<String>> docs, String term) {
-            return tf(doc, term) * idf(docs, term);
+            return tfidfComputed;
 
         }
 
@@ -55,8 +79,15 @@ class KeywordExtractor {
         return result;
     }
 
-    private void englishAnalyze(String text) throws IOException {
-        List<String> result = analyze(text, new EnglishAnalyzer());
+    private List<String> englishAnalyze(String text) throws IOException {
+        Analyzer analyzer = CustomAnalyzer.builder()
+                .withTokenizer("standard")
+                .addTokenFilter("lowercase")
+                .addTokenFilter("stop")
+                .addTokenFilter("porterstem")
+                .addTokenFilter("commongrams")
+                .build();
+        return analyze(text, analyzer);
     }
 
 
