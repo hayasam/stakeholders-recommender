@@ -1,5 +1,7 @@
 package upc.stakeholdersrecommender.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -7,6 +9,7 @@ public class Requirement implements Serializable {
 
     private String id;
 
+    @JsonIgnore
     private List<Skill> skills;
 
     private String name;
