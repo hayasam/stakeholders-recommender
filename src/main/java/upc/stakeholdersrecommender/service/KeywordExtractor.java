@@ -42,7 +42,7 @@ class KeywordExtractor {
 
 
     private double idf(Integer size, Integer frequency) {
-            return Math.log(size/ frequency);
+        return Math.log(size+1/ frequency);
         }
 
 

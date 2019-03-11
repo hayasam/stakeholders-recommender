@@ -258,7 +258,7 @@ public class StakeholdersRecommenderService {
             System.out.println("Corpus Number "+i);
             System.out.println("------------------------------");
             for (String s:map.keySet()) {
-                if (map.get(s)>2)
+                if (map.get(s)>3)
                 System.out.println(s+"  "+map.get(s));
             }
             ++i;
