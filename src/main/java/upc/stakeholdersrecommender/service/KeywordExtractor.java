@@ -84,8 +84,8 @@ class KeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
-                .addTokenFilter("porterstem")
                 .addTokenFilter("commongrams")
+                .addTokenFilter("englishminimalstem")
                 .build();
         return analyze(text, analyzer);
     }

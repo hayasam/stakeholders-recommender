@@ -255,7 +255,7 @@ public class StakeholdersRecommenderService {
         Integer i=0;
         for (Map<String,Double> map:res) {
             System.out.println("------------------------------");
-            System.out.println("Corpus Number "+i);
+            System.out.println("Document Number "+i);
             System.out.println("------------------------------");
             for (String s:map.keySet()) {
                 if (map.get(s)>3)
