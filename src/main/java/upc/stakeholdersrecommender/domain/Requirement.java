@@ -3,6 +3,7 @@ package upc.stakeholdersrecommender.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Requirement implements Serializable {
@@ -10,7 +11,7 @@ public class Requirement implements Serializable {
     private String id;
 
     @JsonIgnore
-    private List<Skill> skills;
+    private List<Skill> skills=new ArrayList<Skill>();
 
     private String name;
 
@@ -66,4 +67,7 @@ public class Requirement implements Serializable {
         this.created_at = created_at;
     }
 
+    public void addSkill(Skill auxiliar) {
+        this.skills.add(auxiliar);
+    }
 }

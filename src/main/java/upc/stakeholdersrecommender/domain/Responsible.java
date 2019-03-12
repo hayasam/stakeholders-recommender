@@ -8,11 +8,13 @@ public class Responsible {
 
     private String requirement;
     private String person;
+        // En un nou return object
+        //availabilityScore
+        //apropiatenessScore
 
-
-    public Responsible(String person, Integer requirement) {
+    public Responsible(String person, String requirement) {
         this.person=person;
-        this.requirement=requirement.toString();
+        this.requirement=requirement;
     }
 
     public String getRequirement() {

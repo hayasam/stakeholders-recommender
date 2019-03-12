@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
-/**
- * Keywords extractor functionality handler
- */
 class KeywordExtractor {
 
     private Map<String,Integer> corpusFrequency=new HashMap<String,Integer>();
@@ -22,7 +19,10 @@ class KeywordExtractor {
         for (String s : corpus) {
             docs.add(englishAnalyze(s));
         }
-        return tfIdf(docs);
+        Integer i=0;
+        List<Map<String,Double>> res= tfIdf(docs);
+        return res;
+
     }
 
     private Map<String,Integer> tf(List<String> doc) {
@@ -40,9 +40,8 @@ class KeywordExtractor {
     }
 
 
-
     private double idf(Integer size, Integer frequency) {
-        return Math.log(size+1/ frequency);
+        return Math.log(size/ frequency);
         }
 
 
@@ -76,6 +75,7 @@ class KeywordExtractor {
         while(tokenStream.incrementToken()) {
             result.add(attr.toString());
         }
+        Integer i=0;
         return result;
     }
 

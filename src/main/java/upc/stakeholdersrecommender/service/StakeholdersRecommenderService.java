@@ -88,15 +88,16 @@ public class StakeholdersRecommenderService {
     public void addBatch(BatchSchema request) throws IOException {
         List<SkillListReplan> allSkills=new ArrayList<SkillListReplan>();
         List<String> projectIds=new ArrayList<String>();
+        Map<String,Requirement> recs=new HashMap<String, Requirement>();
+        for (Requirement r:request.getRequirements()) {
+            recs.put(r.getId(),r);
+        }
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
             projectIds.add(id);
-            for (String requirement : p.getSpecifiedRequirements()) {
-                List<SkillListReplan> skills=computeSkillsRequirement(requirement,id);
-                allSkills.addAll(skills);
-                instanciateFeatures(requirement, id,skills);
-
-            }
+            List<SkillListReplan> skills=computeSkillsRequirement(p.getSpecifiedRequirements(),id,recs);
+            allSkills.addAll(skills);
+            instanciateFeatures(p.getSpecifiedRequirements(), id,skills);
         }
         //Instanciate people
         for (Person person : request.getPersons()) {
@@ -111,7 +112,7 @@ public class StakeholdersRecommenderService {
             String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
             Set<String> inRetty = reject(user, translate(output.get(s)), username);
             for (String req: inRetty) {
-                returnobject.add(new Responsible(username,Integer.parseInt(req)));
+                returnobject.add(new Responsible(username,req));
             }
         }
         return returnobject;
@@ -150,7 +151,7 @@ public class StakeholdersRecommenderService {
     }
 
     private List<SkillListReplan> randomSkills(List<SkillListReplan> skills) {
-        List<SkillListReplan> toret= new ArrayList<SkillListReplan>();
+        /*List<SkillListReplan> toret= new ArrayList<SkillListReplan>();
         for (SkillListReplan skill:skills) {
             Random rand = new Random();
             if(rand.nextBoolean()) {
@@ -160,19 +161,22 @@ public class StakeholdersRecommenderService {
                 toret.add(auxil);
             }
         }
-        return toret;
+        return toret;*/
+        return skills;
     }
 
-    private void instanciateFeatures(String requirement, String id, List<SkillListReplan> skills) {
-        if (RequirementToFeatureRepository.findById(new RequirementId(id,requirement))==null) {
-            FeatureReplan featureReplan = replanService.createRequirement(requirement, id);
-            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id,requirement));
-            requirementTrad.setID_Replan(featureReplan.getId().toString());
-            requirementTrad.setProjectIdQuery(id);
-            RequirementToFeatureRepository.save(requirementTrad);
+    private void instanciateFeatures(List<String> requirement, String id, List<SkillListReplan> skills) {
+        for (String rec : requirement) {
+            if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
+                FeatureReplan featureReplan = replanService.createRequirement(rec, id);
+                RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id, rec));
+                requirementTrad.setID_Replan(featureReplan.getId().toString());
+                requirementTrad.setProjectIdQuery(id);
+                RequirementToFeatureRepository.save(requirementTrad);
 
-            // TODO Add skills to requirements in replan
-            replanService.addSkillsToRequirement(id, featureReplan.getId(), skills);
+                // TODO Add skills to requirements in replan
+                replanService.addSkillsToRequirement(id, featureReplan.getId(), skills);
+            }
         }
     }
 
@@ -192,19 +196,58 @@ public class StakeholdersRecommenderService {
         return id;
     }
 
-    private List<SkillListReplan>  computeSkillsRequirement(String requirement,String id) {
-        Skill auxiliar=new Skill("Stuff",1.0);
-        SkillReplan skill=replanService.createSkill(auxiliar,id);
+    private List<SkillListReplan>  computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
+        KeywordExtractor extractor=new KeywordExtractor();
+        List<String> corpus=new ArrayList<String>();
         List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
-        toret.add(new SkillListReplan(skill));
+        for (String s: requirement) {
+            corpus.add(recs.get(s).getDescription());
+        }
+        List<Map<String,Double>> keywords=extractor.extractKeywords(corpus);
+        Integer i=0;
+        Map<String,Skill> existingSkills=new HashMap<String,Skill>();
+        for (String s: requirement) {
+            for (String key:keywords.get(i).keySet()) {
+                if (keywords.get(i).get(key)>2) {
+                    if (!existingSkills.containsKey(key)) {
+                        Skill auxiliar = new Skill(key, 1.0);
+                        recs.get(s).addSkill(auxiliar);
+                        SkillReplan skill = replanService.createSkill(auxiliar, id);
+                        auxiliar.setIdReplan(skill.getId());
+                        toret.add(new SkillListReplan(skill));
+                        existingSkills.put(key,auxiliar);
+                    }
+                    else {
+                        recs.get(s).addSkill(existingSkills.get(key));
+                    }
+                }
+            }
+            ++i;
+        }
         return toret;
     }
 
-    private List<SkillListReplan>  computeSkillsPerson(String person, String id) {
+    private List<SkillListReplan>  computeSkillsPerson(String person, String id, List<String> oldRecs,Map<String,Requirement> recs) {
         Skill auxiliar=new Skill("Stuff",1.0);
         SkillReplan skill=replanService.createSkill(auxiliar,id);
         List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
-        toret.add(new SkillListReplan(skill));
+        Map<Integer,Integer> appearances=new HashMap<Integer,Integer>();
+        for (String s:oldRecs) {
+            for (Skill sk:recs.get(s).getSkills()) {
+                if (appearances.containsKey(sk.getIdReplan())) {
+                    appearances.put(sk.getIdReplan(),appearances.get(sk.getIdReplan()));
+                }
+                else appearances.put(sk.getIdReplan(),1);
+            }
+        }
+        for (Integer key:appearances.keySet()) {
+            Double ability= appearances.get(key)/5.0;
+            if (ability>1.0) ability=1.0;
+            Skill helper=new Skill("Stuff",1.0);
+        }
+
+
+
         return toret;
     }
 
@@ -258,7 +301,6 @@ public class StakeholdersRecommenderService {
             System.out.println("Document Number "+i);
             System.out.println("------------------------------");
             for (String s:map.keySet()) {
-                if (map.get(s)>3)
                 System.out.println(s+"  "+map.get(s));
             }
             ++i;
