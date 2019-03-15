@@ -73,16 +73,18 @@ public class ReplanService {
 
     public SkillReplan createSkill(Skill s, String projectId) {
         SkillReplan skillReplan = new SkillReplan(s);
-
         SkillReplan createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills",
                 skillReplan,
                 SkillReplan.class);
-
+        System.out.println("Skill Created: "+createdReplan.getId());
         return createdReplan;
     }
 
     public void addSkillsToPerson(String projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
+        List<Integer> st=new ArrayList<>();
+        for (SkillListReplan sk:skillListReplans) st.add(sk.getSkill_id());
+        System.out.println("Skills added to person: "+st);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
                 skillListReplans,
@@ -91,6 +93,9 @@ public class ReplanService {
     }
 
     public void addSkillsToRequirement(String projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
+        List<Integer> st=new ArrayList<>();
+        for (SkillListReplan sk:skillListReplans) st.add(sk.getSkill_id());
+        System.out.println("Skills added to requirement: "+st);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
                 skillListReplans,

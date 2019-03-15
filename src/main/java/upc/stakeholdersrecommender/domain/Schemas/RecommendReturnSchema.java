@@ -8,7 +8,7 @@ public class RecommendReturnSchema implements Serializable {
     private Double availabilityScore;
     private Double apropiatenessScore;
 
-    public RecommendReturnSchema (String requirement,String person,Double availabilityScore,Double apropiatenessScore) {
+    public RecommendReturnSchema (String requirement,String person,Double apropiatenessScore,Double availabilityScore) {
         this.requirement = requirement;
         this.person = person;
         this.availabilityScore = availabilityScore;

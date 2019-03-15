@@ -42,15 +42,19 @@ public class StakeholdersRecommenderService {
 
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
-        for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID))
+        for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
             reslist.add(new ResourceListReplan(pers.getIdReplan()));
+        }
         replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
         Plan[] plan = replanService.plan(project_replanID,releaseId);
         Map<String, Set<String>> output = fusePlans(plan);
         List<Responsible> returnobject = createOutput(user, output);
         replanService.deleteRelease(project_replanID, releaseId);
-        List<RecommendReturnSchema> ret=prepareFinal(returnobject,plan[0].getSolutionQuality().globalQuality,1.0);
-        return ret;
+        if (plan!=null) {
+            List<RecommendReturnSchema> ret = prepareFinal(returnobject, plan[0].getSolutionQuality().globalQuality, 1.0);
+            return ret;
+        }
+        else return null;
     }
 
     private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, Double solutionQuality, double v) {
@@ -111,8 +115,8 @@ public class StakeholdersRecommenderService {
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
             projectIds.add(id);
-            List<SkillListReplan> skills=computeSkillsRequirement(p.getSpecifiedRequirements(),id,recs);
-            instanciateFeatures(p.getSpecifiedRequirements(), id,skills);
+            Map<String,List<SkillListReplan>> allSkills=computeSkillsRequirement(p.getSpecifiedRequirements(),id,recs);
+            instanciateFeatures(p.getSpecifiedRequirements(), id,allSkills);
             for (Person person:request.getPersons()) {
                 List<SkillListReplan> out = computeSkillsPerson(personRecs.get(person.getUsername()), recs);
                 instanciateResources(person, id, out);
@@ -178,7 +182,7 @@ public class StakeholdersRecommenderService {
         return skills;
     }
 
-    private void instanciateFeatures(List<String> requirement, String id, List<SkillListReplan> skills) {
+    private void instanciateFeatures(List<String> requirement, String id, Map<String,List<SkillListReplan>> skills) {
         for (String rec : requirement) {
             if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
                 FeatureReplan featureReplan = replanService.createRequirement(rec, id);
@@ -186,7 +190,7 @@ public class StakeholdersRecommenderService {
                 requirementTrad.setID_Replan(featureReplan.getId().toString());
                 requirementTrad.setProjectIdQuery(id);
                 RequirementToFeatureRepository.save(requirementTrad);
-                replanService.addSkillsToRequirement(id, featureReplan.getId(), skills);
+                replanService.addSkillsToRequirement(id, featureReplan.getId(), skills.get(rec));
             }
         }
     }
@@ -207,10 +211,10 @@ public class StakeholdersRecommenderService {
         return id;
     }
 
-    private List<SkillListReplan>  computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
+    private Map<String,List<SkillListReplan>>  computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
         KeywordExtractor extractor=new KeywordExtractor();
+        Map<String,List<SkillListReplan>> toret=new HashMap<String,List<SkillListReplan>>();
         List<String> corpus=new ArrayList<String>();
-        List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
         for (String s: requirement) {
             corpus.add(recs.get(s).getDescription());
         }
@@ -218,6 +222,7 @@ public class StakeholdersRecommenderService {
         Integer i=0;
         Map<String,Skill> existingSkills=new HashMap<String,Skill>();
         for (String s: requirement) {
+            List<SkillListReplan> recSkills=new ArrayList<SkillListReplan>();
             for (String key:keywords.get(i).keySet()) {
                 if (keywords.get(i).get(key)>2) {
                     if (!existingSkills.containsKey(key)) {
@@ -225,14 +230,17 @@ public class StakeholdersRecommenderService {
                         recs.get(s).addSkill(auxiliar);
                         SkillReplan skill = replanService.createSkill(auxiliar, id);
                         auxiliar.setIdReplan(skill.getId());
-                        toret.add(new SkillListReplan(skill));
                         existingSkills.put(key,auxiliar);
+                        recSkills.add(new SkillListReplan(skill.getId(),1.0));
                     }
                     else {
                         recs.get(s).addSkill(existingSkills.get(key));
+                        recSkills.add(new SkillListReplan(existingSkills.get(key).getIdReplan(),1.0));
                     }
+
                 }
             }
+            toret.put(s,recSkills);
             ++i;
         }
         return toret;
@@ -255,6 +263,7 @@ public class StakeholdersRecommenderService {
                 Double ability = appearances.get(key) / 5.0;
                 if (ability > 1.0) ability = 1.0;
                 SkillListReplan helper = new SkillListReplan(key, ability);
+                System.out.println(key+" "+ability);
                 toret.add(helper);
             }
             return toret;
@@ -265,7 +274,6 @@ public class StakeholdersRecommenderService {
         Map<String, Set<String>> toret = new HashMap<>();
         for (ResourceReplan res : resources) {
             toret.put(res.getId().toString(), res.getFeaturesWorkedOn());
-            System.out.println(res.getId().toString()+" "+res.getFeaturesWorkedOn());
         }
         return toret;
     }
