@@ -18,6 +18,11 @@ public class SkillListReplan implements Serializable {
         this.skill_id=skill.getId();
     }
 
+    public SkillListReplan(Integer skill_id,Double weight) {
+        this.skill_id=skill_id;
+        this.weight=weight;
+    }
+
     public SkillListReplan(Integer skill_id) {
         this.skill_id = skill_id;
     }

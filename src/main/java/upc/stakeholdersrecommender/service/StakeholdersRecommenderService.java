@@ -100,8 +100,20 @@ public class StakeholdersRecommenderService {
             instanciateFeatures(p.getSpecifiedRequirements(), id,skills);
         }
         //Instanciate people
+        Map<String,List<String>> personRecs=new HashMap<String,List<String>>();
+        for (Responsible resp:request.getResponsibles()) {
+            if (personRecs.containsKey(resp.getPerson())) {
+                personRecs.get(resp.getPerson()).add(resp.getRequirement());
+            }
+            else {
+                List<String> aux=new ArrayList<String>();
+                aux.add(resp.getRequirement());
+                personRecs.put(resp.getPerson(),aux);
+            }
+        }
         for (Person person : request.getPersons()) {
-            for (String id:projectIds) instanciateResources(person, id, allSkills);
+            List<SkillListReplan> out=computeSkillsPerson(personRecs.get(person.getUsername()),recs);
+            for (String id:projectIds) instanciateResources(person, id, out);
         }
     }
 
@@ -227,9 +239,7 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private List<SkillListReplan>  computeSkillsPerson(String person, String id, List<String> oldRecs,Map<String,Requirement> recs) {
-        Skill auxiliar=new Skill("Stuff",1.0);
-        SkillReplan skill=replanService.createSkill(auxiliar,id);
+    private List<SkillListReplan>  computeSkillsPerson(List<String> oldRecs,Map<String,Requirement> recs) {
         List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
         Map<Integer,Integer> appearances=new HashMap<Integer,Integer>();
         for (String s:oldRecs) {
@@ -243,11 +253,9 @@ public class StakeholdersRecommenderService {
         for (Integer key:appearances.keySet()) {
             Double ability= appearances.get(key)/5.0;
             if (ability>1.0) ability=1.0;
-            Skill helper=new Skill("Stuff",1.0);
+            SkillListReplan helper=new SkillListReplan(key,ability);
+            toret.add(helper);
         }
-
-
-
         return toret;
     }
 
