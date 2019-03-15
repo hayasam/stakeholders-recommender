@@ -7,9 +7,9 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SolutionQualityReplan implements Serializable {
 
-    private Double priorityQuality;
-    private Double performanceQuality;
-    private Double similarityQuality;
-    private Double globalQuality;
+    public Double priorityQuality;
+    public Double performanceQuality;
+    public Double similarityQuality;
+    public Double globalQuality;
 
 }

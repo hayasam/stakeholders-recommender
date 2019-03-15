@@ -62,6 +62,7 @@ public class ResourceReplan implements Serializable {
         if (calendar != null)
             for (DaySlot day : calendar) {
                 if (day.getFeature_id() != null) {
+                    System.out.println(day.getFeature_id());
                     result.add(day.getFeature_id());
                 }
             }

@@ -10,9 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.stakeholdersrecommender.domain.Responsible;
-import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
-import upc.stakeholdersrecommender.domain.Schemas.ExtractTest;
-import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
+import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
@@ -32,8 +30,8 @@ public class StakeholdersRecommenderController {
     @RequestMapping(value = "batch_process", method = RequestMethod.POST)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.")
     public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws IOException {
-        stakeholdersRecommenderService.addBatch(batch);
-        return new ResponseEntity(HttpStatus.CREATED);
+        Integer res=stakeholdersRecommenderService.addBatch(batch);
+        return new ResponseEntity(new BatchReturnSchema(res),HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "purge", method = RequestMethod.DELETE)
@@ -55,8 +53,8 @@ public class StakeholdersRecommenderController {
     @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
             "recommendation and returns a new responsible relation")
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request) {
-        List<Responsible> ret = stakeholdersRecommenderService.recommend(request);
-        return new ResponseEntity<>(ret, HttpStatus.OK);
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request);
+        return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
