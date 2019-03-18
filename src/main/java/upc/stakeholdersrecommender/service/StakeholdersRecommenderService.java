@@ -212,7 +212,7 @@ public class StakeholdersRecommenderService {
     }
 
     private Map<String,List<SkillListReplan>>  computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
-        KeywordExtractor extractor=new KeywordExtractor();
+        TFIDFKeywordExtractor extractor=new TFIDFKeywordExtractor();
         Map<String,List<SkillListReplan>> toret=new HashMap<String,List<SkillListReplan>>();
         List<String> corpus=new ArrayList<String>();
         for (String s: requirement) {
@@ -313,7 +313,7 @@ public class StakeholdersRecommenderService {
     }
 
     public void extract(ExtractTest request) throws IOException {
-        KeywordExtractor extractor=new KeywordExtractor();
+        TFIDFKeywordExtractor extractor=new TFIDFKeywordExtractor();
         List<Map<String,Double>> res= extractor.extractKeywords(request.getCorpus());
         Integer i=0;
         for (Map<String,Double> map:res) {
@@ -326,4 +326,22 @@ public class StakeholdersRecommenderService {
             ++i;
         }
     }
+
+    /*
+    public void extract2(ExtractTest request) throws IOException {
+        RAKEKeywordExtractor extractor=new RAKEKeywordExtractor();
+        List<Map<String,Double>> res= extractor.extractKeywords(request.getCorpus());
+        Integer i=0;
+        for (Map<String,Double> map:res) {
+            System.out.println("------------------------------");
+            System.out.println("Document Number "+i);
+            System.out.println("------------------------------");
+            for (String s:map.keySet()) {
+                System.out.println(s+"  "+map.get(s));
+            }
+            ++i;
+        }
+    }
+    */
+
 }

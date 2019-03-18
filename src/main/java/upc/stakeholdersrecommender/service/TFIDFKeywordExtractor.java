@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
-class KeywordExtractor {
+class TFIDFKeywordExtractor {
 
     private Map<String,Integer> corpusFrequency=new HashMap<String,Integer>();
 
