@@ -112,13 +112,25 @@ public class StakeholdersRecommenderService {
                 personRecs.put(resp.getPerson(),aux);
             }
         }
+        Map<String,List<String>> recsPerson=new HashMap<String,List<String>>();
+        for (Responsible resp:request.getResponsibles()) {
+            if (recsPerson.containsKey(resp.getRequirement())) {
+                recsPerson.get(resp.getRequirement()).add(resp.getPerson());
+            }
+            else {
+                List<String> aux=new ArrayList<String>();
+                aux.add(resp.getPerson());
+                recsPerson.put(resp.getRequirement(),aux);
+            }
+        }
+
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
             projectIds.add(id);
             Map<String,List<SkillListReplan>> allSkills=computeSkillsRequirement(p.getSpecifiedRequirements(),id,recs);
             instanciateFeatures(p.getSpecifiedRequirements(), id,allSkills);
             for (Person person:request.getPersons()) {
-                List<SkillListReplan> out = computeSkillsPerson(personRecs.get(person.getUsername()), recs);
+                List<SkillListReplan> out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
                 instanciateResources(person, id, out);
             }
         }
@@ -165,21 +177,6 @@ public class StakeholdersRecommenderService {
         } else {
         }
 
-    }
-
-    private List<SkillListReplan> randomSkills(List<SkillListReplan> skills) {
-        /*List<SkillListReplan> toret= new ArrayList<SkillListReplan>();
-        for (SkillListReplan skill:skills) {
-            Random rand = new Random();
-            if(rand.nextBoolean()) {
-                SkillListReplan auxil=new SkillListReplan();
-                auxil.setWeight(rand.nextDouble());
-                auxil.setSkill_id(skill.getSkill_id());
-                toret.add(auxil);
-            }
-        }
-        return toret;*/
-        return skills;
     }
 
     private void instanciateFeatures(List<String> requirement, String id, Map<String,List<SkillListReplan>> skills) {
@@ -246,27 +243,36 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private List<SkillListReplan>  computeSkillsPerson(List<String> oldRecs,Map<String,Requirement> recs) {
+    private List<SkillListReplan>  computeSkillsPerson(List<String> oldRecs, Map<String, Requirement> recs, Map<String, List<String>> recsPerson) {
         List<SkillListReplan> toret=new ArrayList<SkillListReplan>();
-        Map<Integer,Integer> appearances=new HashMap<Integer,Integer>();
+        Map<Integer,Pair<Double>> appearances=new HashMap<Integer,Pair<Double>>();
+        List<Integer> sizes=new ArrayList<Integer>();
             for (String s : oldRecs) {
                 for (Skill sk : recs.get(s).getSkills()) {
                     if (appearances.containsKey(sk.getIdReplan())) {
-                        appearances.put(sk.getIdReplan(), appearances.get(sk.getIdReplan()));
+                        appearances.put(sk.getIdReplan(),new Pair<Double>(appearances.get(sk.getIdReplan()).p1+1.0,appearances.get(sk.getIdReplan()).p2));
                     }
                     else {
-                        appearances.put(sk.getIdReplan(), 1);
+                        appearances.put(sk.getIdReplan(),new Pair<Double>(1.0,(double)recsPerson.get(s).size()));
                     }
                 }
+                sizes.add(recsPerson.get(s).size());
             }
+            Integer i=0;
             for (Integer key : appearances.keySet()) {
-                Double ability = appearances.get(key) / 5.0;
-                if (ability > 1.0) ability = 1.0;
+                Double ability = calculateWeight(appearances.get(key).p2,appearances.get(key).p1);
                 SkillListReplan helper = new SkillListReplan(key, ability);
                 System.out.println(key+" "+ability);
                 toret.add(helper);
+                ++i;
             }
             return toret;
+    }
+
+    private Double calculateWeight(Double requirement, Double appearances) {
+        Double aux= appearances;
+        Double aux2=  requirement;
+        return aux / aux2;
     }
 
     private Map<String, Set<String>> parse(Plan plan) {
@@ -342,6 +348,13 @@ public class StakeholdersRecommenderService {
             ++i;
         }
     }
-    */
+    */class Pair<T> {
+        T p1, p2;
 
+        Pair(T p1, T p2) {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+    }
 }
