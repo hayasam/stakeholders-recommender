@@ -14,7 +14,7 @@ public class Responsible implements Serializable {
         //apropiatenessScore
 
     public Responsible() {
-        
+
     }
 
     public Responsible(String person, String requirement) {
