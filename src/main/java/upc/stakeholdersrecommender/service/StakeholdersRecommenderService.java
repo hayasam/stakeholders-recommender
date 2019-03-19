@@ -67,12 +67,14 @@ public class StakeholdersRecommenderService {
             Double amount=0.0;
             for (ResourceSkill resskill:resSkill) {
                 for (String fet:featureSkills.getSkillIds()) {
+                    System.out.println("Skill Id: "+resskill.getSkill_id()+ " Fet: "+fet);
                     if (resskill.getSkill_id().equals(fet)) {
                         total=total+resskill.getWeight();
                     }
-                    ++amount;
                 }
             }
+            amount=(double) featureSkills.getSkillIds().size();
+            System.out.println("Total :" +total+" Amount : "+amount);
             Double appropiateness=total/amount;
             ret.add(new RecommendReturnSchema(res.getRequirement(),res.getPerson(),appropiateness,v));
         }
