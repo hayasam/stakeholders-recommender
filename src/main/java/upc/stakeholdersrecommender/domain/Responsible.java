@@ -13,6 +13,10 @@ public class Responsible implements Serializable {
         //availabilityScore
         //apropiatenessScore
 
+    public Responsible() {
+        
+    }
+
     public Responsible(String person, String requirement) {
         this.person=person;
         this.requirement=requirement;
