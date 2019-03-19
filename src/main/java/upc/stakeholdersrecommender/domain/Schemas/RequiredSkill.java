@@ -1,6 +1,8 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-public class RequiredSkill {
+import java.io.Serializable;
+
+public class RequiredSkill implements Serializable {
     String id;
     String name;
     String description;

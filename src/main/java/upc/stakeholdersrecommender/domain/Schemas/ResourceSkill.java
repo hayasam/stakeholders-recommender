@@ -1,6 +1,8 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-public class ResourceSkill {
+import java.io.Serializable;
+
+public class ResourceSkill implements Serializable {
 
     String skill_id;
     String resource_id;

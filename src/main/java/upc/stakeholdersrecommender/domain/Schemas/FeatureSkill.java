@@ -1,9 +1,10 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FeatureSkill {
+public class FeatureSkill implements Serializable {
 
     List<RequiredSkill> required_skills;
 
