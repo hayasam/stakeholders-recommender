@@ -40,6 +40,7 @@ public class StakeholdersRecommenderService {
         Integer releaseId=release.getId();
         String user = request.getUser();
 
+        FeatureSkill featureSkills=replanService.getFeatureSkill(project_replanID,requirement_replanID);
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
@@ -51,16 +52,29 @@ public class StakeholdersRecommenderService {
         List<Responsible> returnobject = createOutput(user, output);
         replanService.deleteRelease(project_replanID, releaseId);
         if (plan!=null) {
-            List<RecommendReturnSchema> ret = prepareFinal(returnobject, plan[0].getSolutionQuality().globalQuality, 1.0);
+            List<RecommendReturnSchema> ret = prepareFinal(returnobject,featureSkills,1.0 , project_replanID);
             return ret;
         }
         else return null;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, Double solutionQuality, double v) {
+    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, double v, String project_replanID) {
         List<RecommendReturnSchema> ret=new ArrayList<RecommendReturnSchema>();
         for (Responsible res: returnobject) {
-            ret.add(new RecommendReturnSchema(res.getRequirement(),res.getPerson(),solutionQuality,v));
+            PersonToPReplan traductor=PersonToPReplanRepository.findById(new PersonId(project_replanID,res.getPerson()));
+            List<ResourceSkill> resSkill=replanService.getResourceSkill(project_replanID,traductor.getIdReplan());
+            Double total=0.0;
+            Double amount=0.0;
+            for (ResourceSkill resskill:resSkill) {
+                for (String fet:featureSkills.getSkillIds()) {
+                    if (resskill.getSkill_id().equals(fet)) {
+                        total=total+resskill.getWeight();
+                    }
+                    ++amount;
+                }
+            }
+            Double appropiateness=total/amount;
+            ret.add(new RecommendReturnSchema(res.getRequirement(),res.getPerson(),appropiateness,v));
         }
         return ret;
     }

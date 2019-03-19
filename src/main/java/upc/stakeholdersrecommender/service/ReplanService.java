@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.Project;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Schemas.FeatureSkill;
+import upc.stakeholdersrecommender.domain.Schemas.ResourceSkill;
 import upc.stakeholdersrecommender.domain.Skill;
 import upc.stakeholdersrecommender.domain.replan.*;
 
@@ -138,10 +140,27 @@ public class ReplanService {
         restTemplate.delete(replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId);
     }
 
-    public void modifyResource(Person person, Integer id_replan, Integer id) {
+    public List<ResourceSkill> getResourceSkill(String projectReplanId, String resource_id) {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<List<ResourceSkill>> response = restTemplate.exchange(
+                replanUrl + "/projects/" + projectReplanId + "/resources/" + resource_id+"/skills",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ResourceSkill>>(){});
+        List<ResourceSkill> aux = response.getBody();
+        return aux;
     }
 
-    public void modifyRequirement(Requirement requirement, Integer id_replan, Integer id) {
+    public FeatureSkill getFeatureSkill(String projectReplanId, String feature_id) {
+        RestTemplate restTemplate = new RestTemplate();
+        System.out.println(projectReplanId+" "+feature_id);
+        ResponseEntity<FeatureSkill> response = restTemplate.exchange(
+                replanUrl + "/projects/" + projectReplanId + "/features/" + feature_id,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<FeatureSkill>(){});
+        FeatureSkill aux = response.getBody();
+        return aux;
     }
 
     public void modifyProject(Project p, Integer id_replan) {
