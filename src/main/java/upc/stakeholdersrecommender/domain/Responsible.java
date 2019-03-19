@@ -1,10 +1,11 @@
 package upc.stakeholdersrecommender.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class Responsible {
+public class Responsible implements Serializable {
 
     private String requirement;
     private String person;
