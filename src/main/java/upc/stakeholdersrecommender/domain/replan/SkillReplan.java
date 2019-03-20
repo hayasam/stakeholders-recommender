@@ -21,6 +21,11 @@ public class SkillReplan implements Serializable {
         this.weight=s.getWeight();
     }
 
+    public SkillReplan(Integer id, Double weight) {
+        this.id=id;
+        this.weight=weight;
+    }
+
     public Integer getId() {
         return id;
     }

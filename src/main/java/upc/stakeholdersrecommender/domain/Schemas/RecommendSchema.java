@@ -12,6 +12,8 @@ public class RecommendSchema implements Serializable {
     private String project;
     private String user;
 
+    //Retornar extra appropiateness y availability
+
     public String getRequirement() {
         return requirement;
     }

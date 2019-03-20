@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.Project;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Schemas.FeatureSkill;
+import upc.stakeholdersrecommender.domain.Schemas.ResourceSkill;
 import upc.stakeholdersrecommender.domain.Skill;
 import upc.stakeholdersrecommender.domain.replan.*;
 
@@ -73,16 +75,18 @@ public class ReplanService {
 
     public SkillReplan createSkill(Skill s, String projectId) {
         SkillReplan skillReplan = new SkillReplan(s);
-
         SkillReplan createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills",
                 skillReplan,
                 SkillReplan.class);
-
+        System.out.println("Skill Created: "+createdReplan.getId());
         return createdReplan;
     }
 
     public void addSkillsToPerson(String projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
+        List<Integer> st=new ArrayList<>();
+        for (SkillListReplan sk:skillListReplans) st.add(sk.getSkill_id());
+        System.out.println("Skills added to person: "+st);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
                 skillListReplans,
@@ -91,6 +95,9 @@ public class ReplanService {
     }
 
     public void addSkillsToRequirement(String projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
+        List<Integer> st=new ArrayList<>();
+        for (SkillListReplan sk:skillListReplans) st.add(sk.getSkill_id());
+        System.out.println("Skills added to requirement: "+st);
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
                 skillListReplans,
@@ -133,10 +140,27 @@ public class ReplanService {
         restTemplate.delete(replanUrl + "/projects/" + projectReplanId + "/releases/" + releaseReplanId);
     }
 
-    public void modifyResource(Person person, Integer id_replan, Integer id) {
+    public List<ResourceSkill> getResourceSkill(String projectReplanId, String resource_id) {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<List<ResourceSkill>> response = restTemplate.exchange(
+                replanUrl + "/projects/" + projectReplanId + "/resources/" + resource_id+"/skills",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ResourceSkill>>(){});
+        List<ResourceSkill> aux = response.getBody();
+        return aux;
     }
 
-    public void modifyRequirement(Requirement requirement, Integer id_replan, Integer id) {
+    public FeatureSkill getFeatureSkill(String projectReplanId, String feature_id) {
+        RestTemplate restTemplate = new RestTemplate();
+        System.out.println(projectReplanId+" "+feature_id);
+        ResponseEntity<FeatureSkill> response = restTemplate.exchange(
+                replanUrl + "/projects/" + projectReplanId + "/features/" + feature_id,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<FeatureSkill>(){});
+        FeatureSkill aux = response.getBody();
+        return aux;
     }
 
     public void modifyProject(Project p, Integer id_replan) {

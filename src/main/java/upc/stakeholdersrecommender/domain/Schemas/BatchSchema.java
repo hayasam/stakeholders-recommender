@@ -14,6 +14,7 @@ public class BatchSchema implements Serializable {
     List<Person> persons;
     List<Responsible> responsibles;
     List<Requirement> requirements;
+    // En return items procesats
 
     public List<Project> getProjects() {
         return projects;
