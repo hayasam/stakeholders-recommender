@@ -51,9 +51,10 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST)
     @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a new responsible relation")
-    public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request) {
-        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request);
+            "recommendation and returns a list of the best K recommendations")
+    public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
+                                                       @RequestParam Integer k) {
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 

@@ -10,6 +10,7 @@ import upc.stakeholdersrecommender.repository.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StakeholdersRecommenderService {
@@ -29,7 +30,7 @@ public class StakeholdersRecommenderService {
     @Autowired
     ReplanService replanService;
 
-    public List<RecommendReturnSchema> recommend(RecommendSchema request) {
+    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) {
 
         // Recibo 1 feature, 1 requirement, he de dar lista de gente
         String p = request.getProject();
@@ -53,7 +54,7 @@ public class StakeholdersRecommenderService {
         replanService.deleteRelease(project_replanID, releaseId);
         if (plan!=null) {
             List<RecommendReturnSchema> ret = prepareFinal(returnobject,featureSkills,1.0 , project_replanID);
-            return ret;
+            return ret.stream().limit(k).collect(Collectors.toList());
         }
         else return null;
     }
@@ -146,7 +147,9 @@ public class StakeholdersRecommenderService {
             Map<String,List<SkillListReplan>> allSkills=computeSkillsRequirement(p.getSpecifiedRequirements(),id,recs);
             instanciateFeatures(p.getSpecifiedRequirements(), id,allSkills);
             for (Person person:request.getPersons()) {
-                List<SkillListReplan> out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
+                List<SkillListReplan> out;
+                if (personRecs.get(person.getUsername()) != null) out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
+                else out = new ArrayList<>();
                 instanciateResources(person, id, out);
             }
         }
