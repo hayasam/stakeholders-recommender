@@ -54,7 +54,7 @@ public class StakeholdersRecommenderService {
         replanService.deleteRelease(project_replanID, releaseId);
         if (plan!=null) {
             List<RecommendReturnSchema> ret = prepareFinal(returnobject,featureSkills,1.0 , project_replanID);
-            return ret.stream().limit(k).collect(Collectors.toList());
+            return ret.stream().sorted().limit(k).collect(Collectors.toList());
         }
         else return null;
     }
@@ -228,7 +228,7 @@ public class StakeholdersRecommenderService {
     }
 
     private Map<String,List<SkillListReplan>>  computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
-        TFIDFKeywordExtractor extractor=new TFIDFKeywordExtractor();
+        RAKEKeywordExtractor extractor=new RAKEKeywordExtractor();
         Map<String,List<SkillListReplan>> toret=new HashMap<String,List<SkillListReplan>>();
         List<String> corpus=new ArrayList<String>();
         for (String s: requirement) {
@@ -240,7 +240,7 @@ public class StakeholdersRecommenderService {
         for (String s: requirement) {
             List<SkillListReplan> recSkills=new ArrayList<SkillListReplan>();
             for (String key:keywords.get(i).keySet()) {
-                if (keywords.get(i).get(key)>2) {
+                if (keywords.get(i).get(key)>12) {
                     if (!existingSkills.containsKey(key)) {
                         Skill auxiliar = new Skill(key, 1.0);
                         recs.get(s).addSkill(auxiliar);
@@ -352,7 +352,7 @@ public class StakeholdersRecommenderService {
         }
     }
 
-    /*
+
     public void extract2(ExtractTest request) throws IOException {
         RAKEKeywordExtractor extractor=new RAKEKeywordExtractor();
         List<Map<String,Double>> res= extractor.extractKeywords(request.getCorpus());
@@ -362,12 +362,14 @@ public class StakeholdersRecommenderService {
             System.out.println("Document Number "+i);
             System.out.println("------------------------------");
             for (String s:map.keySet()) {
+                if (map.get(s)>10)
                 System.out.println(s+"  "+map.get(s));
             }
             ++i;
         }
     }
-    */class Pair<T> {
+
+    private class Pair<T> {
         T p1, p2;
 
         Pair(T p1, T p2) {
@@ -376,4 +378,5 @@ public class StakeholdersRecommenderService {
         }
 
     }
+
 }

@@ -63,12 +63,12 @@ public class StakeholdersRecommenderController {
         stakeholdersRecommenderService.extract(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
-    /*
+
     @RequestMapping(value = "extractor2", method = RequestMethod.POST)
     public ResponseEntity  extract2(@RequestBody ExtractTest request) throws IOException {
         stakeholdersRecommenderService.extract2(request);
         return new ResponseEntity<>( HttpStatus.OK);
-    }*/
+    }
 
 
 }
