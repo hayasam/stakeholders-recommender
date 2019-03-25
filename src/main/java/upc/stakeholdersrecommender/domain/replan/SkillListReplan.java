@@ -1,7 +1,5 @@
 package upc.stakeholdersrecommender.domain.replan;
 
-import upc.stakeholdersrecommender.domain.Skill;
-
 import java.io.Serializable;
 
 public class SkillListReplan implements Serializable {
@@ -14,13 +12,13 @@ public class SkillListReplan implements Serializable {
     }
 
     public SkillListReplan(SkillReplan skill) {
-        this.weight=skill.getWeight();
-        this.skill_id=skill.getId();
+        this.weight = skill.getWeight();
+        this.skill_id = skill.getId();
     }
 
-    public SkillListReplan(Integer skill_id,Double weight) {
-        this.skill_id=skill_id;
-        this.weight=weight;
+    public SkillListReplan(Integer skill_id, Double weight) {
+        this.skill_id = skill_id;
+        this.weight = weight;
     }
 
     public SkillListReplan(Integer skill_id) {
@@ -35,7 +33,11 @@ public class SkillListReplan implements Serializable {
         this.skill_id = skill_id;
     }
 
-    public Double getWeight() { return weight; }
+    public Double getWeight() {
+        return weight;
+    }
 
-    public void setWeight(Double weight) { this.weight = weight; }
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
 }

@@ -8,7 +8,7 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
     private Double availabilityScore;
     private Double apropiatenessScore;
 
-    public RecommendReturnSchema (String requirement,String person,Double apropiatenessScore,Double availabilityScore) {
+    public RecommendReturnSchema(String requirement, String person, Double apropiatenessScore, Double availabilityScore) {
         this.requirement = requirement;
         this.person = person;
         this.availabilityScore = availabilityScore;
@@ -51,12 +51,12 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
 
     @Override
     public int compareTo(RecommendReturnSchema a) {
-        if ( this.apropiatenessScore > a.getApropiatenessScore() )
+        if (this.apropiatenessScore > a.getApropiatenessScore())
             return 1;
-        else if ( this.apropiatenessScore < a.getApropiatenessScore() )
+        else if (this.apropiatenessScore < a.getApropiatenessScore())
             return -1;
         else {
-            if ( this.apropiatenessScore > a.getApropiatenessScore() )
+            if (this.apropiatenessScore > a.getApropiatenessScore())
                 return 1;
             else
                 return -1;

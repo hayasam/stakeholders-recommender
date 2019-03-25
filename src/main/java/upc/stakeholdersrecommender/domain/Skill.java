@@ -19,14 +19,14 @@ public class Skill implements Serializable {
     }
 
     public Skill(String name, Double weight) {
-        this.name=name;
-        this.weight=weight;
+        this.name = name;
+        this.weight = weight;
     }
 
-    public Skill(String name, Double weight,Integer idReplan) {
-        this.name=name;
-        this.weight=weight;
-        this.idReplan=idReplan;
+    public Skill(String name, Double weight, Integer idReplan) {
+        this.name = name;
+        this.weight = weight;
+        this.idReplan = idReplan;
     }
 
     public String getName() {
@@ -37,9 +37,13 @@ public class Skill implements Serializable {
         this.name = name;
     }
 
-    public Double getWeight() { return weight; }
+    public Double getWeight() {
+        return weight;
+    }
 
-    public void setWeight(Double weight) { this.weight = weight; }
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
 
     public Integer getIdReplan() {
         return idReplan;

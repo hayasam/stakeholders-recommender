@@ -11,7 +11,7 @@ public class Requirement implements Serializable {
     private String id;
 
     @JsonIgnore
-    private List<Skill> skills=new ArrayList<Skill>();
+    private List<Skill> skills = new ArrayList<Skill>();
 
     private String name;
 

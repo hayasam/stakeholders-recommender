@@ -9,6 +9,7 @@ import upc.stakeholdersrecommender.entity.RequirementToFeature;
 @Repository
 public interface RequirementToFeatureRepository extends JpaRepository<RequirementToFeature, String> {
     RequirementToFeature findById(RequirementId id);
+
     RequirementToFeature findByIdReplan(String IdReplan);
 
     @Transactional

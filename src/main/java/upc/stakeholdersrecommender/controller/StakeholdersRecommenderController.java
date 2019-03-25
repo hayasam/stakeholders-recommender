@@ -10,7 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.stakeholdersrecommender.domain.Responsible;
-import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.domain.Schemas.BatchReturnSchema;
+import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
@@ -22,16 +25,15 @@ import java.util.List;
 @Api(value = "Stakeholders Recommender API", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StakeholdersRecommenderController {
 
+    private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
-
-    private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.")
     public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws IOException {
-        Integer res=stakeholdersRecommenderService.addBatch(batch);
-        return new ResponseEntity(new BatchReturnSchema(res),HttpStatus.CREATED);
+        Integer res = stakeholdersRecommenderService.addBatch(batch);
+        return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "purge", method = RequestMethod.DELETE)
@@ -57,7 +59,7 @@ public class StakeholdersRecommenderController {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
-
+/*
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
     public ResponseEntity  extract(@RequestBody ExtractTest request) throws IOException {
         stakeholdersRecommenderService.extract(request);
@@ -69,6 +71,6 @@ public class StakeholdersRecommenderController {
         stakeholdersRecommenderService.extract2(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
-
+*/
 
 }

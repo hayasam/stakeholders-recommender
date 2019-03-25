@@ -1,9 +1,5 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.Project;
-import upc.stakeholdersrecommender.domain.Requirement;
-
 import java.io.Serializable;
 
 public class RecommendSchema implements Serializable {
@@ -11,9 +7,7 @@ public class RecommendSchema implements Serializable {
     private String requirement;
     private String project;
     private String user;
-
-    //Retornar extra appropiateness y availability
-
+    
     public String getRequirement() {
         return requirement;
     }

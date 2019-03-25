@@ -38,11 +38,11 @@ public class Person implements Serializable {
         this.skills = skills;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

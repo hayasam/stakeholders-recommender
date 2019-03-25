@@ -5,12 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "person_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
-public class PersonToPReplan {
+public class PersonToPReplan implements Serializable {
 
     @EmbeddedId
     private PersonId id;
@@ -23,13 +24,13 @@ public class PersonToPReplan {
 
     }
 
-    public PersonId getId() {
-        return id;
-    }
-
     public PersonToPReplan(PersonId id) {
         this.id = id;
         idReplan = id.getprojectId();
+    }
+
+    public PersonId getId() {
+        return id;
     }
 
     public void setId(PersonId id) {

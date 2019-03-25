@@ -17,8 +17,8 @@ public class FeatureSkill implements Serializable {
     }
 
     public List<String> getSkillIds() {
-        List<String> result=new ArrayList<String>();
-        for (RequiredSkill req:required_skills) {
+        List<String> result = new ArrayList<String>();
+        for (RequiredSkill req : required_skills) {
             result.add(req.id);
         }
         return result;

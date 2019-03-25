@@ -7,8 +7,9 @@ public class BatchReturnSchema implements Serializable {
 
 
     public BatchReturnSchema(Integer res) {
-        this.processed_items=res;
+        this.processed_items = res;
     }
+
     public Integer getProcessed_items() {
         return processed_items;
     }

@@ -5,13 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Set;
 
 @Entity
 @Table(name = "rejected")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RejectedPerson {
+public class RejectedPerson implements Serializable {
 
     @Id
     private String user;

@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "project_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ProjectToPReplan {
+public class ProjectToPReplan implements Serializable {
 
     @Id
     private String id;
@@ -28,12 +29,12 @@ public class ProjectToPReplan {
         return id;
     }
 
-    public void setIdReplan(Integer idReplan) {
-        this.idReplan = idReplan;
-    }
-
     public Integer getIdReplan() {
         return idReplan;
+    }
+
+    public void setIdReplan(Integer idReplan) {
+        this.idReplan = idReplan;
     }
 
     public void setID(String id) {
