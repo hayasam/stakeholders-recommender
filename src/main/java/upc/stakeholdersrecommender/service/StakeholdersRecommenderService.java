@@ -326,6 +326,12 @@ public class StakeholdersRecommenderService {
         RequirementToFeatureRepository.deleteByProjectIdQuery(id);
     }
 
+    public void deleteProject(String id) {
+        deleteRelated(id);
+        replanService.deleteProject(id);
+        ProjectToPReplanRepository.deleteById(id);
+    }
+
     public void extract(ExtractTest request) throws IOException {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());

@@ -59,6 +59,12 @@ public class StakeholdersRecommenderController {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
+    @RequestMapping(value = "deleteProject", method = RequestMethod.DELETE)
+    public ResponseEntity  extract(@RequestParam String id) throws IOException {
+        stakeholdersRecommenderService.deleteProject(id);
+        return new ResponseEntity<>( HttpStatus.OK);
+    }
+
 /*
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
     public ResponseEntity  extract(@RequestBody ExtractTest request) throws IOException {
