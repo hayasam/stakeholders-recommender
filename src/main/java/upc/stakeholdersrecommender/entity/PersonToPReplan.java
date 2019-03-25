@@ -10,7 +10,6 @@ import java.io.Serializable;
 @Entity
 @Table(name = "person_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
 public class PersonToPReplan implements Serializable {
 
     @EmbeddedId

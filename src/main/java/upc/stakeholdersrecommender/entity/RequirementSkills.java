@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.List;
+import java.util.TreeSet;
 
 // Currenty has no use
 @Entity
@@ -18,7 +18,7 @@ public class RequirementSkills implements Serializable {
 
     private String projectIdQuery;
 
-    private List<Integer> skills;
+    private TreeSet<Integer> skills;
 
     public RequirementSkills(String id) {
         requirementId = id;
@@ -40,13 +40,9 @@ public class RequirementSkills implements Serializable {
         this.requirementId = requirementId;
     }
 
-    public List<Integer> getSkills() {
-        return skills;
-    }
+    public TreeSet<Integer> getSkills() {return skills;}
 
-    public void setSkills(List<Integer> skills) {
-        this.skills = skills;
-    }
+    public void setSkills(TreeSet<Integer> skills) {this.skills = skills;}
 
     public String getProjectIdQuery() {
         return projectIdQuery;
