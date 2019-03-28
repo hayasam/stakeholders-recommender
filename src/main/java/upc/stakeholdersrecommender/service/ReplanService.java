@@ -46,8 +46,8 @@ public class ReplanService {
         return createdPlan;
     }
 
-    public ResourceReplan createResource(Person p, String projectId) {
-        ResourceReplan resourceReplan = new ResourceReplan(p);
+    public ResourceReplan createResource(Person p, String projectId, Double availability) {
+        ResourceReplan resourceReplan = new ResourceReplan(p,availability);
 
         ResourceReplan createdResource = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/resources",

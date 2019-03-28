@@ -25,6 +25,11 @@ public class ResourceReplan implements Serializable {
         this.availability = 100.00;
     }
 
+    public ResourceReplan(Person p,Double availability) {
+        this.name = p.getUsername();
+        this.availability = availability;
+    }
+
     public Integer getId() {
         return id;
     }
