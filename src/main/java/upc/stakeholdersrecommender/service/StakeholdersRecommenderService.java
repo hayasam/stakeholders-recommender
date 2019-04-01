@@ -95,7 +95,6 @@ public class StakeholdersRecommenderService {
 
 
     public Integer addBatch(BatchSchema request) throws IOException {
-        List<String> projectIds = new ArrayList<String>();
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
@@ -105,8 +104,9 @@ public class StakeholdersRecommenderService {
 
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
-            projectIds.add(id);
-            Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(p.getSpecifiedRequirements(), id, recs);
+            List<String> requirementNames=new ArrayList<String>();
+            requirementNames.addAll(recs.keySet());
+            Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id);
         }
@@ -186,7 +186,7 @@ public class StakeholdersRecommenderService {
     }
 
     private Map<String, List<SkillListReplan>> computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
-        RAKEKeywordExtractor extractor = new RAKEKeywordExtractor();
+        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
         List<String> corpus = new ArrayList<String>();
         for (String s : requirement) {
@@ -198,7 +198,7 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             List<SkillListReplan> recSkills = new ArrayList<SkillListReplan>();
             for (String key : keywords.get(i).keySet()) {
-                if (keywords.get(i).get(key) > 12) {
+                if (keywords.get(i).get(key) > 3) {
                     if (!existingSkills.containsKey(key)) {
                         Skill auxiliar = new Skill(key, 1.0);
                         recs.get(s).addSkill(auxiliar);
@@ -237,7 +237,6 @@ public class StakeholdersRecommenderService {
         for (Integer key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
             SkillListReplan helper = new SkillListReplan(key, ability);
-            System.out.println(key + " " + ability);
             toret.add(helper);
             ++i;
         }
