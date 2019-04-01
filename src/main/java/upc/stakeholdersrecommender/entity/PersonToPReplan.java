@@ -19,6 +19,8 @@ public class PersonToPReplan implements Serializable {
 
     private String idReplan;
 
+    private Double availability;
+
     public PersonToPReplan() {
 
     }
@@ -34,6 +36,14 @@ public class PersonToPReplan implements Serializable {
 
     public void setId(PersonId id) {
         this.id = id;
+    }
+
+    public Double getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(Double availability) {
+        this.availability = availability;
     }
 
     public String getProjectIdQuery() {

@@ -35,8 +35,6 @@ public class StakeholdersRecommenderService {
     private ReplanService replanService;
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) {
-
-        // Recibo 1 feature, 1 requirement, he de dar lista de gente
         String p = request.getProject();
         String r = request.getRequirement();
         String project_replanID = ProjectToPReplanRepository.getOne(p).getIdReplan().toString();
@@ -57,12 +55,12 @@ public class StakeholdersRecommenderService {
         List<Responsible> returnobject = createOutput(user, output);
         replanService.deleteRelease(project_replanID, releaseId);
         if (plan != null) {
-            List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills, 1.0, project_replanID);
+            List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills,project_replanID);
             return ret.stream().sorted().limit(k).collect(Collectors.toList());
         } else return null;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, double v, String project_replanID) {
+    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, String project_replanID) {
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         for (Responsible res : returnobject) {
             PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
@@ -80,7 +78,8 @@ public class StakeholdersRecommenderService {
             amount = (double) featureSkills.getSkillIds().size();
             System.out.println("Total :" + total + " Amount : " + amount);
             Double appropiateness = total / amount;
-            ret.add(new RecommendReturnSchema(res.getRequirement(), res.getPerson(), appropiateness, v));
+            Double availability=traductor.getAvailability();
+            ret.add(new RecommendReturnSchema(res.getRequirement(), res.getPerson(), appropiateness, availability/100.0));
         }
         return ret;
     }
@@ -135,7 +134,7 @@ public class StakeholdersRecommenderService {
                     out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
                 else out = new ArrayList<>();
                 Double availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
-                instanciateResources(person, id, out,availability );
+                instanciateResources(person, id, out,availability);
             }
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size();
@@ -175,6 +174,7 @@ public class StakeholdersRecommenderService {
             PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, person.getUsername()));
             personTrad.setIdReplan(resourceReplan.getId().toString());
             personTrad.setProjectIdQuery(id);
+            personTrad.setAvailability(availability);
             PersonToPReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, resourceReplan.getId(), skills);
         } else {
@@ -183,16 +183,27 @@ public class StakeholdersRecommenderService {
     }
 
     private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person) {
-        List<String> requirements=personRecs.get(person);
+        List<String> requirements=personRecs.get(person.getUsername());
+        System.out.println(requirements);
         List<String> intersection=new ArrayList<String>(requirements);
         List<String> toRemove = new ArrayList<String>(requirements);
         toRemove.removeAll(recs);
         intersection.removeAll(toRemove);
         Double hours=0.0;
-        for (String s:intersection) hours+=2;
-        Double result=((max(0,(1-(hours/40.0))))*100);
+        for (String s:intersection) {
+            hours+=extractAvailability(s);
+        }
+        Double result=calculateAvailability(hours,40);
         System.out.println(result);
         return result;
+    }
+
+    private Double calculateAvailability(Double hours, int i) {
+        return (max(0,(1-(hours/40.0))))*100;
+    }
+
+    private Double extractAvailability(String s) {
+        return 2.0;
     }
 
     private void instanciateFeatures(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {
