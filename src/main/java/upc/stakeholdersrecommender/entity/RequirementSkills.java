@@ -40,9 +40,13 @@ public class RequirementSkills implements Serializable {
         this.requirementId = requirementId;
     }
 
-    public TreeSet<Integer> getSkills() {return skills;}
+    public TreeSet<Integer> getSkills() {
+        return skills;
+    }
 
-    public void setSkills(TreeSet<Integer> skills) {this.skills = skills;}
+    public void setSkills(TreeSet<Integer> skills) {
+        this.skills = skills;
+    }
 
     public String getProjectIdQuery() {
         return projectIdQuery;

@@ -30,7 +30,7 @@ public class StakeholdersRecommenderController {
     StakeholdersRecommenderService stakeholdersRecommenderService;
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.",notes ="",response=BatchReturnSchema.class)
+    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.", notes = "", response = BatchReturnSchema.class)
     public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws IOException {
         Integer res = stakeholdersRecommenderService.addBatch(batch);
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
@@ -45,25 +45,26 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Recommendation rejection method: used to state that the user identified by REJECTED must not be assigned to REQUIREMENT. The" +
-            " rejection is performed by USER.",notes ="")
+            " rejection is performed by USER.", notes = "")
     public ResponseEntity recommend_reject(@RequestParam("rejected") String rejected, @RequestParam("user") String user, @RequestParam("requirement") String requirement) {
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "recommend", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a list of the best K recommendations",notes ="",response=RecommendReturnSchema[].class)
+            "recommendation and returns a list of the best K recommendations", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
                                                        @RequestParam Integer k) {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
+
     @RequestMapping(value = "deleteProject", method = RequestMethod.DELETE)
-    @ApiOperation(value = "Deletes a project from the database",notes ="")
-    public ResponseEntity  extract(@RequestParam String id) throws IOException {
+    @ApiOperation(value = "Deletes a project from the database", notes = "")
+    public ResponseEntity extract(@RequestParam String id) throws IOException {
         stakeholdersRecommenderService.deleteProject(id);
-        return new ResponseEntity<>( HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 /*

@@ -25,7 +25,7 @@ public class ProjectToPReplan implements Serializable {
         this.id = id;
     }
 
-    public String getid() {
+    public String getId() {
         return id;
     }
 

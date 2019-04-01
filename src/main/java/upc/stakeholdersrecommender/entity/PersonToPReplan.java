@@ -25,6 +25,13 @@ public class PersonToPReplan implements Serializable {
 
     }
 
+    public PersonToPReplan(PersonId id, String projectIdQuer, String idReplan, Double availability) {
+        this.id = id;
+        this.projectIdQuery = projectIdQuer;
+        this.idReplan = idReplan;
+        this.availability = availability;
+    }
+
     public PersonToPReplan(PersonId id) {
         this.id = id;
         idReplan = id.getprojectId();

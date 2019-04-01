@@ -55,40 +55,20 @@ public class StakeholdersRecommenderService {
         List<Responsible> returnobject = createOutput(user, output);
         replanService.deleteRelease(project_replanID, releaseId);
         if (plan != null) {
-            List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills,project_replanID);
+            List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills, project_replanID);
             return ret.stream().sorted().limit(k).collect(Collectors.toList());
         } else return null;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, String project_replanID) {
-        List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
-        for (Responsible res : returnobject) {
-            PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
-            List<ResourceSkill> resSkill = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
-            Double total = 0.0;
-            Double amount = 0.0;
-            for (ResourceSkill resskill : resSkill) {
-                for (String fet : featureSkills.getSkillIds()) {
-                    System.out.println("Skill Id: " + resskill.getSkill_id() + " Fet: " + fet);
-                    if (resskill.getSkill_id().equals(fet)) {
-                        total = total + resskill.getWeight();
-                    }
-                }
-            }
-            amount = (double) featureSkills.getSkillIds().size();
-            System.out.println("Total :" + total + " Amount : " + amount);
-            Double appropiateness = total / amount;
-            Double availability=traductor.getAvailability();
-            ret.add(new RecommendReturnSchema(res.getRequirement(), res.getPerson(), appropiateness, availability/100.0));
-        }
-        return ret;
-    }
-
     public void purge() {
-        ProjectToPReplanRepository.deleteAll();
+        for (ProjectToPReplan pr : ProjectToPReplanRepository.findAll()) {
+            deleteProject(pr.getId());
+        }
         PersonToPReplanRepository.deleteAll();
         RequirementToFeatureRepository.deleteAll();
         RejectedPersonRepository.deleteAll();
+        ProjectToPReplanRepository.deleteAll();
+
     }
 
     public void recommend_reject(String rejectedId, String userId, String requirementId) {
@@ -127,86 +107,55 @@ public class StakeholdersRecommenderService {
             String id = instanciateProject(p);
             projectIds.add(id);
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(p.getSpecifiedRequirements(), id, recs);
-            instanciateFeatures(p.getSpecifiedRequirements(), id, allSkills);
-            for (Person person : request.getPersons()) {
-                List<SkillListReplan> out;
-                if (personRecs.get(person.getUsername()) != null)
-                    out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
-                else out = new ArrayList<>();
-                Double availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
-                instanciateResources(person, id, out,availability);
-            }
+            instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
+            instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size();
     }
 
-    private List<Responsible> createOutput(String user, Map<String, Set<String>> output) {
-        List<Responsible> returnobject = new ArrayList<Responsible>();
-        for (String s : output.keySet()) {
-            String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
-            Set<String> inRetty = reject(user, translate(output.get(s)), username);
-            for (String req : inRetty) {
-                returnobject.add(new Responsible(username, req));
-            }
+    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id) {
+        for (Person person : request.getPersons()) {
+            List<SkillListReplan> out;
+            if (personRecs.get(person.getUsername()) != null)
+                out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
+            else out = new ArrayList<>();
+            Double availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
+            instanciateResource(person, id, out, availability);
         }
-        return returnobject;
     }
 
-    private Map<String, Set<String>> fusePlans(Plan[] plan) {
-        Map<String, Set<String>> output = new HashMap<String, Set<String>>();
-        for (int i = 0; i < plan.length && i < 10; i++) {
-            Plan auxplan = plan[i];
-            Map<String, Set<String>> aux = parse(auxplan);
-            for (String s : aux.keySet()) {
-                if (output.containsKey(s)) {
-                    Set<String> value = output.get(s);
-                    value.addAll(aux.get(s));
-                    output.replace(s, value);
-                } else output.put(s, aux.get(s));
-            }
-        }
-        return output;
-    }
-
-    private void instanciateResources(Person person, String id, List<SkillListReplan> skills, Double availability) {
+    private void instanciateResource(Person person, String id, List<SkillListReplan> skills, Double availability) {
         if (PersonToPReplanRepository.findById(new PersonId(id, person.getUsername())) == null) {
-            ResourceReplan resourceReplan = replanService.createResource(person, id,availability);
-            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, person.getUsername()));
-            personTrad.setIdReplan(resourceReplan.getId().toString());
-            personTrad.setProjectIdQuery(id);
-            personTrad.setAvailability(availability);
+            ResourceReplan resourceReplan = replanService.createResource(person, id, availability);
+            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, person.getUsername()), id, resourceReplan.getId().toString(), availability);
             PersonToPReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, resourceReplan.getId(), skills);
-        } else {
         }
-
     }
 
     private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person) {
-        List<String> requirements=personRecs.get(person.getUsername());
-        System.out.println(requirements);
-        List<String> intersection=new ArrayList<String>(requirements);
+        List<String> requirements = personRecs.get(person.getUsername());
+        List<String> intersection = new ArrayList<String>(requirements);
         List<String> toRemove = new ArrayList<String>(requirements);
         toRemove.removeAll(recs);
         intersection.removeAll(toRemove);
-        Double hours=0.0;
-        for (String s:intersection) {
-            hours+=extractAvailability(s);
+        Double hours = 0.0;
+        for (String s : intersection) {
+            hours += extractAvailability(s);
         }
-        Double result=calculateAvailability(hours,40);
-        System.out.println(result);
+        Double result = calculateAvailability(hours, 40);
         return result;
     }
 
     private Double calculateAvailability(Double hours, int i) {
-        return (max(0,(1-(hours/40.0))))*100;
+        return (max(0, (1 - (hours / 40.0)))) * 100;
     }
 
     private Double extractAvailability(String s) {
         return 2.0;
     }
 
-    private void instanciateFeatures(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {
+    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {
         for (String rec : requirement) {
             if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
                 FeatureReplan featureReplan = replanService.createRequirement(rec, id);
@@ -225,6 +174,7 @@ public class StakeholdersRecommenderService {
             id = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan().toString();
             replanService.deleteProject(id);
             deleteRelated(id);
+            ProjectToPReplanRepository.deleteById(p.getId());
         }
         ProjectReplan projectReplan = replanService.createProject(p);
         id = projectReplan.getId().toString();
@@ -300,6 +250,36 @@ public class StakeholdersRecommenderService {
         return aux / aux2;
     }
 
+
+    private List<Responsible> createOutput(String user, Map<String, Set<String>> output) {
+        List<Responsible> returnobject = new ArrayList<Responsible>();
+        for (String s : output.keySet()) {
+            String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
+            Set<String> inRetty = reject(user, translate(output.get(s)), username);
+            for (String req : inRetty) {
+                returnobject.add(new Responsible(username, req));
+            }
+        }
+        return returnobject;
+    }
+
+    private Map<String, Set<String>> fusePlans(Plan[] plan) {
+        Map<String, Set<String>> output = new HashMap<String, Set<String>>();
+        for (int i = 0; i < plan.length && i < 10; i++) {
+            Plan auxplan = plan[i];
+            Map<String, Set<String>> aux = parse(auxplan);
+            for (String s : aux.keySet()) {
+                if (output.containsKey(s)) {
+                    Set<String> value = output.get(s);
+                    value.addAll(aux.get(s));
+                    output.replace(s, value);
+                } else output.put(s, aux.get(s));
+            }
+        }
+        return output;
+    }
+
+
     private Map<String, Set<String>> parse(Plan plan) {
         List<ResourceReplan> resources = plan.getResources();
         Map<String, Set<String>> toret = new HashMap<>();
@@ -308,6 +288,29 @@ public class StakeholdersRecommenderService {
         }
         return toret;
     }
+
+    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, String project_replanID) {
+        List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
+        for (Responsible res : returnobject) {
+            PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
+            List<ResourceSkill> resSkill = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
+            Double total = 0.0;
+            Double amount = 0.0;
+            for (ResourceSkill resskill : resSkill) {
+                for (String fet : featureSkills.getSkillIds()) {
+                    if (resskill.getSkill_id().equals(fet)) {
+                        total = total + resskill.getWeight();
+                    }
+                }
+            }
+            amount = (double) featureSkills.getSkillIds().size();
+            Double appropiateness = total / amount;
+            Double availability = traductor.getAvailability();
+            ret.add(new RecommendReturnSchema(res.getRequirement(), res.getPerson(), appropiateness, availability / 100.0));
+        }
+        return ret;
+    }
+
 
     private Set<String> reject(String rejector, Set<String> stuff, String person) {
         if (RejectedPersonRepository.existsById(rejector)) {
@@ -336,7 +339,8 @@ public class StakeholdersRecommenderService {
 
     public void deleteProject(String id) {
         deleteRelated(id);
-        replanService.deleteProject(id);
+        String idReplan = ProjectToPReplanRepository.getOne(id).getIdReplan().toString();
+        replanService.deleteProject(idReplan);
         ProjectToPReplanRepository.deleteById(id);
     }
 
@@ -371,6 +375,7 @@ public class StakeholdersRecommenderService {
             ++i;
         }
     }
+
     private Map<String, List<String>> getRecsPerson(BatchSchema request) {
         Map<String, List<String>> recsPerson = new HashMap<String, List<String>>();
         for (Responsible resp : request.getResponsibles()) {
@@ -398,19 +403,6 @@ public class StakeholdersRecommenderService {
         }
         return personRecs;
     }
-
-    /*
-    Availability calculation:
-
-    Al calcular availability, mirem si el projecte té la variable "effort" activada, o si no, en cas que no,
-    mateix effort a tot requisit.
-    ( Arriba effort per crida )
-    ( Conversió de effort a hores interna )
-    ( Una persona te 40 hores )
-    ( Per ara assumeix que arriba effort )
-
-     */
-
 
     private class Pair<T> {
         T p1, p2;
