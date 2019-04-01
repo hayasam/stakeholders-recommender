@@ -153,7 +153,6 @@ public class ReplanService {
 
     public FeatureSkill getFeatureSkill(String projectReplanId, String feature_id) {
         RestTemplate restTemplate = new RestTemplate();
-        System.out.println(projectReplanId + " " + feature_id);
         ResponseEntity<FeatureSkill> response = restTemplate.exchange(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + feature_id,
                 HttpMethod.GET,

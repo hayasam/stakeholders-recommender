@@ -3,6 +3,7 @@ package upc.stakeholdersrecommender.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.service.ApiDescription;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -25,11 +26,14 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfo(
                 "Stakeholder Recommender",
-                "Recommender that, given a list of stakeholders, their work history with requirements, a project, and new requirements, gives the most appropiate set of stakeholders to manage those requirements",
-                "0.1",
+                "Recommender that, given a list of stakeholders, their work history " +
+                        "with requirements, a project, and new requirements, gives the most " +
+                        "appropiate set of stakeholders to manage those requirements",
+                "0.0",
                 null,
                 null,
                 null,
                 null);
     }
+
 }
