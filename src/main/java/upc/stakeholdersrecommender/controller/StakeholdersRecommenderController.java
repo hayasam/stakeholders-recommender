@@ -68,7 +68,7 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
     public ResponseEntity  extract(@RequestBody ExtractTest request) throws Exception {
-        stakeholdersRecommenderService.extract(request);
+        stakeholdersRecommenderService.documentSimilarity(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
 

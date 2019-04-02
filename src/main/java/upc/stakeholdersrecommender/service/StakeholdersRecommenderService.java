@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.domain.keywords.JaccardSimilarity;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.domain.replan.*;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.max;
+import static upc.stakeholdersrecommender.domain.keywords.JaccardSimilarity.jaccardSimilarity;
 
 @Service
 public class StakeholdersRecommenderService {
@@ -33,6 +35,40 @@ public class StakeholdersRecommenderService {
 
     @Autowired
     private ReplanService replanService;
+
+    public void documentSimilarity(ExtractTest request) throws Exception {
+        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
+        List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
+        List<Set<String>> toExamine=ExtractWords(res);
+        for (int i=0;i< request.getCorpus().size();++i) {
+            for (int j=0;j<request.getCorpus().size();++j) {
+                if (i!=j) {
+                    Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
+                    if (jaccard > 0.1) {
+                        System.out.println("------------------------------");
+                        System.out.println("Similarity between " + i + " and " + j + " is " + jaccard);
+                        String keysetA = toExamine.get(i).toString();
+                        String keysetB = toExamine.get(j).toString();
+                        System.out.println("For title : " + request.getCorpus().get(i));
+                        System.out.println("For title : " + request.getCorpus().get(j));
+                        System.out.println("Keywords of : " + keysetA);
+                        System.out.println("Keywords of : " + keysetB);
+                        System.out.println("------------------------------");
+                    }
+                }
+
+            }
+        }
+    }
+
+    private List<Set<String>> ExtractWords(List<Map<String, Double>> res) {
+        List<Set<String>> result= new ArrayList<Set<String>>();
+        for (int i=0;i<res.size();++i) {
+            Set<String> aux= res.get(i).keySet();
+            result.add(aux);
+        }
+        return result;
+    }
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) throws Exception {
         String p = request.getProject();

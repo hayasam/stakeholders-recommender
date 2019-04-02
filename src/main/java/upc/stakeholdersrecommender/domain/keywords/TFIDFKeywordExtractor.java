@@ -17,7 +17,7 @@ import java.util.Map;
 public class TFIDFKeywordExtractor {
 
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
-    Integer cutoffParameter=2;
+    Double cutoffParameter=1.0;
 
 
     public List<Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
@@ -26,7 +26,6 @@ public class TFIDFKeywordExtractor {
             docs.add(englishAnalyze(s));
         }
         List<List<String>> processed=preProcess(docs);
-        Integer i = 0;
         List<Map<String, Double>> res = tfIdf(processed);
         return res;
 
@@ -38,7 +37,7 @@ public class TFIDFKeywordExtractor {
         POSModel POSModel = null;
         List<List<String>> toRet=new ArrayList<>();
         try{
-            File f = new File("/home/antoni/Work/Tuleap/stakeholders-recommender/src/main/java/upc/stakeholdersrecommender/domain/keywords/en-pos-maxent.bin");
+            File f = new File("E:\\Trabajo\\stakeholders-recommender\\src\\main\\java\\upc\\stakeholdersrecommender\\domain\\keywords\\en-pos-maxent.bin");
             modelIn = new FileInputStream(f);
             POSModel = new POSModel(modelIn);
             POSTaggerME tagger = new POSTaggerME(POSModel);
@@ -76,7 +75,7 @@ public class TFIDFKeywordExtractor {
 
 
     private double idf(Integer size, Integer frequency) {
-        return Math.log(size / frequency);
+        return Math.log(size / frequency+1);
     }
 
 
@@ -93,7 +92,7 @@ public class TFIDFKeywordExtractor {
                 Double idf = idf(docs.size(), corpusFrequency.get(s));
                 Integer tf = wordBag.get(i).get(s);
                 Double tfidf = idf * tf;
-                if (tfidf>cutoffParameter) aux.put(s, tfidf);
+                if (tfidf>=cutoffParameter) aux.put(s, tfidf);
             }
             tfidfComputed.add(aux);
             ++i;
