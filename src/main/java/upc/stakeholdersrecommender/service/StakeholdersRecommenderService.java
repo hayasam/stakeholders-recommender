@@ -34,11 +34,15 @@ public class StakeholdersRecommenderService {
     @Autowired
     private ReplanService replanService;
 
-    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) {
+    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) throws Exception {
         String p = request.getProject();
         String r = request.getRequirement();
         String project_replanID = ProjectToPReplanRepository.getOne(p).getIdReplan().toString();
-        String requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)).getID_Replan();
+        String requirement_replanID="";
+        if (RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r))!=null) {
+            requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)).getID_Replan();
+        }
+        else throw new Exception();
         ReleaseReplan release = replanService.createRelease(project_replanID);
         Integer releaseId = release.getId();
         String user = request.getUser();
@@ -94,7 +98,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request) throws IOException {
+    public Integer addBatch(BatchSchema request) throws Exception {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
@@ -185,7 +189,7 @@ public class StakeholdersRecommenderService {
         return id;
     }
 
-    private Map<String, List<SkillListReplan>> computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws IOException {
+    private Map<String, List<SkillListReplan>> computeSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws Exception {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
         List<String> corpus = new ArrayList<String>();
@@ -202,6 +206,7 @@ public class StakeholdersRecommenderService {
                     if (!existingSkills.containsKey(key)) {
                         Skill auxiliar = new Skill(key, 1.0);
                         recs.get(s).addSkill(auxiliar);
+                        System.out.println("Keyword :"+key);
                         SkillReplan skill = replanService.createSkill(auxiliar, id);
                         auxiliar.setIdReplan(skill.getId());
                         existingSkills.put(key, auxiliar);
@@ -343,7 +348,7 @@ public class StakeholdersRecommenderService {
         ProjectToPReplanRepository.deleteById(id);
     }
 
-    public void extract(ExtractTest request) throws IOException {
+    public void extract(ExtractTest request) throws Exception {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
         Integer i = 0;
@@ -352,6 +357,7 @@ public class StakeholdersRecommenderService {
             System.out.println("Document Number " + i);
             System.out.println("------------------------------");
             for (String s : map.keySet()) {
+                if (map.get(s)>2)
                 System.out.println(s + "  " + map.get(s));
             }
             ++i;

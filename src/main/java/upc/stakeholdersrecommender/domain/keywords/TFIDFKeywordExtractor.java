@@ -1,12 +1,14 @@
 package upc.stakeholdersrecommender.domain.keywords;
 
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.tokenize.SimpleTokenizer;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,19 +17,49 @@ import java.util.Map;
 public class TFIDFKeywordExtractor {
 
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
+    Integer cutoffParameter=2;
 
 
-    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws IOException {
+    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
             docs.add(englishAnalyze(s));
         }
+        List<List<String>> processed=preProcess(docs);
         Integer i = 0;
-        List<Map<String, Double>> res = tfIdf(docs);
+        List<Map<String, Double>> res = tfIdf(processed);
         return res;
 
     }
 
+    private List<List<String>> preProcess(List<List<String>> corpus) throws Exception
+    {
+        InputStream modelIn = null;
+        POSModel POSModel = null;
+        List<List<String>> toRet=new ArrayList<>();
+        try{
+            File f = new File("/home/antoni/Work/Tuleap/stakeholders-recommender/src/main/java/upc/stakeholdersrecommender/domain/keywords/en-pos-maxent.bin");
+            modelIn = new FileInputStream(f);
+            POSModel = new POSModel(modelIn);
+            POSTaggerME tagger = new POSTaggerME(POSModel);
+            for (List<String> list:corpus) {
+                String[] toTag=new String[list.size()];
+                toTag=list.toArray(toTag);
+                String[] tagged = tagger.tag(toTag);
+                List<String> result=new ArrayList<String>();
+                for (int i = 0; i < tagged.length; i++) {
+                    if (tagged[i].equalsIgnoreCase("nn") || tagged[i].equalsIgnoreCase("vb")) {
+                        result.add(list.get(i));
+                    }
+                }
+                toRet.add(result);
+            }
+        return toRet;
+        }
+        catch(IOException e){
+            throw new Exception("File fucked up");
+        }
+    }
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<String, Integer>();
         for (String s : doc) {
@@ -61,7 +93,7 @@ public class TFIDFKeywordExtractor {
                 Double idf = idf(docs.size(), corpusFrequency.get(s));
                 Integer tf = wordBag.get(i).get(s);
                 Double tfidf = idf * tf;
-                aux.put(s, tfidf);
+                if (tfidf>cutoffParameter) aux.put(s, tfidf);
             }
             tfidfComputed.add(aux);
             ++i;
@@ -93,5 +125,5 @@ public class TFIDFKeywordExtractor {
         return analyze(text, analyzer);
     }
 
-
+// Llamada al servicio 217.172.12.199:9404
 }
