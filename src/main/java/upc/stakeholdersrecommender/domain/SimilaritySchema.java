@@ -4,22 +4,22 @@ import java.io.Serializable;
 
 public class SimilaritySchema implements Serializable {
 
-    String id;
-    String name;
+    String from;
+    String to;
 
-    public String getId() {
-        return id;
+    public String getFrom() {
+        return from;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
-    public String getName() {
-        return name;
+    public String getTo() {
+        return to;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTo(String to) {
+        this.to = to;
     }
 }

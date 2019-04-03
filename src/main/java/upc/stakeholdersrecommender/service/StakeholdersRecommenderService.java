@@ -35,13 +35,39 @@ public class StakeholdersRecommenderService {
     @Autowired
     private RequirementSkillsRepository RequirementSkillsRepository;
 
-
+    TFIDFKeywordExtractor extr;
     @Autowired
     private ReplanService replanService;
 
-    public void documentSimilarity(ExtractTest request) throws Exception {
+    public void buildModel(ExtractTest request) throws Exception {
+        ////
+        int rowNum=0;
+        extr = new TFIDFKeywordExtractor();
+        Map<String, Map<String, Double>> res = extr.extractKeywords(request.getCorpus());
+      /*  List<Set<String>> toExamine=ExtractWords(res);
+        for (int i=0;i<request.getCorpus().size();++i) {
+            for (int j=i;j<request.getCorpus().size();++j) {
+                if (i!=j) {
+                   // Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
+                    Double cosine = cosine(res,i,j);
+                    if (cosine*100 > 1) {
+                        System.out.println("------------------------------");
+                        System.out.println("Similarity between " + i + " and " + j + " is " + cosine);
+                        String keysetA = toExamine.get(i).toString();
+                        String keysetB = toExamine.get(j).toString();
+                        System.out.println("For title : " + request.getCorpus().get(i));
+                        System.out.println("For title : " + request.getCorpus().get(j));
+                        System.out.println("Keywords of : " + keysetA);
+                        System.out.println("Keywords of : " + keysetB);
+                        System.out.println("------------------------------");
+                    }
+                }
 
-        //
+            }
+        }
+        */
+    }
+    public void extract(CorpusSchema request) throws Exception {
         String[] columns = {"Text1","Text2","Similarity"};
         Workbook workbook = new XSSFWorkbook();
         CreationHelper createHelper = workbook.getCreationHelper();
@@ -58,39 +84,25 @@ public class StakeholdersRecommenderService {
             cell.setCellValue(columns[i]);
             cell.setCellStyle(headerCellStyle);
         }
-
-        //
         int rowNum=0;
-        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
-        List<Set<String>> toExamine=ExtractWords(res);
-        for (int i=0;i<request.getCorpus().size();++i) {
-            for (int j=i;j<request.getCorpus().size();++j) {
-                if (i!=j) {
-                   // Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
-                    Double cosine = cosine(res,i,j);
-                    if (cosine*100 > 1) {
+        for (int i=0;i<request.getThing().size();++i) {
+                    // Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
+                    Double cosine = cosine(extr.getModel(),request.getThing().get(i).getFrom(),request.getThing().get(i).getTo());
                         Row row = sheet.createRow(rowNum++);
                         row.createCell(0)
-                            .setCellValue(request.getCorpus().get(i));
+                                .setCellValue(request.getThing().get(i).getFrom());
 
                         row.createCell(1)
-                                .setCellValue(request.getCorpus().get(j));
+                                .setCellValue(request.getThing().get(i).getTo());
                         row.createCell(2).setCellValue(cosine);
-
+/*
                         System.out.println("------------------------------");
-                        System.out.println("Similarity between " + i + " and " + j + " is " + cosine);
-                        String keysetA = toExamine.get(i).toString();
-                        String keysetB = toExamine.get(j).toString();
-                        System.out.println("For title : " + request.getCorpus().get(i));
-                        System.out.println("For title : " + request.getCorpus().get(j));
-                        System.out.println("Keywords of : " + keysetA);
-                        System.out.println("Keywords of : " + keysetB);
+                        System.out.println("Similarity between " + i +" is " + cosine);
+                        System.out.println("For title : " + request.getThing().get(i).getFrom());
+                        System.out.println("For title : " + request.getThing().get(i).getTo());
                         System.out.println("------------------------------");
-                    }
-                }
+                        */
 
-            }
         }
         // Write the output to a file
         FileOutputStream fileOut = new FileOutputStream("Output.xlsx");
@@ -101,8 +113,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-
-    private List<Set<String>> ExtractWords(List<Map<String, Double>> res) {
+    private List<Set<String>> ExtractWords(Map<String, Map<String, Double>> res) {
         List<Set<String>> result= new ArrayList<Set<String>>();
         for (int i=0;i<res.size();++i) {
             Set<String> aux= res.get(i).keySet();
@@ -273,7 +284,7 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             corpus.add(recs.get(s).getDescription());
         }
-        List<Map<String, Double>> keywords = extractor.extractKeywords(corpus);
+        Map<String, Map<String, Double>> keywords = extractor.extractKeywords(corpus);
         Integer i = 0;
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
         for (String s : requirement) {
@@ -424,10 +435,10 @@ public class StakeholdersRecommenderService {
         replanService.deleteProject(idReplan);
         ProjectToPReplanRepository.deleteById(id);
     }
-
+/*
     public void extract(ExtractTest request) throws Exception {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
+        Map<String, Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
         Integer i = 0;
         for (Map<String, Double> map : res) {
             System.out.println("------------------------------");
@@ -441,6 +452,7 @@ public class StakeholdersRecommenderService {
         }
     }
 
+*/
 
     public void extract2(ExtractTest request) throws IOException {
         RAKEKeywordExtractor extractor = new RAKEKeywordExtractor();

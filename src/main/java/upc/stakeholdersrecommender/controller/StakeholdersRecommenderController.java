@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import upc.stakeholdersrecommender.domain.CorpusSchema;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
@@ -68,9 +69,15 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
     public ResponseEntity  extract(@RequestBody ExtractTest request) throws Exception {
-        stakeholdersRecommenderService.documentSimilarity(request);
+        stakeholdersRecommenderService.buildModel(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
+    @RequestMapping(value = "extract", method = RequestMethod.POST)
+    public ResponseEntity  ext(@RequestBody CorpusSchema request) throws Exception {
+        stakeholdersRecommenderService.extract(request);
+        return new ResponseEntity<>( HttpStatus.OK);
+    }
+
 
     @RequestMapping(value = "extractor2", method = RequestMethod.POST)
     public ResponseEntity  extract2(@RequestBody ExtractTest request) throws IOException {

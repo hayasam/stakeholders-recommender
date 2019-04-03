@@ -20,7 +20,7 @@ public class JaccardSimilarity {
 
         return (double) intersection.size() / min(union.size(),5);    }
 
-    static public double cosine(List<Map<String, Double>> res, Integer a, Integer b) {
+    static public double cosineCool(List<Map<String, Double>> res, Integer a, Integer b) {
         Double cosine=0.0;
         Map<String,Double> wordsA=res.get(a);
         Map<String,Double> wordsB=res.get(b);
@@ -37,6 +37,27 @@ public class JaccardSimilarity {
         cosine=cosine/(normA*normB);
         return cosine;
     }
+
+    static public double cosine(Map<String, Map<String, Double>> res, String a, String b) {
+        Double cosine=0.0;
+        Map<String,Double> wordsA=res.get(a);
+        Map<String,Double> wordsB=res.get(b);
+        System.out.println(wordsA.keySet());
+        System.out.println(wordsB.keySet());
+        Set<String> intersection= new HashSet<String>(wordsA.keySet());
+        intersection.retainAll(wordsB.keySet());
+        for (String s: intersection) {
+            Double forA=wordsA.get(s);
+            Double forB=wordsB.get(s);
+            cosine+=forA*forB;
+        }
+        Double normA=norm(wordsA);
+        Double normB=norm(wordsB);
+
+        cosine=cosine/(normA*normB);
+        return cosine;
+    }
+
 
     private static Double norm(Map<String, Double> wordsB) {
         Double norm=0.0;

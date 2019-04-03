@@ -2,7 +2,6 @@ package upc.stakeholdersrecommender.domain.keywords;
 
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.tokenize.SimpleTokenizer;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
@@ -18,24 +17,58 @@ public class TFIDFKeywordExtractor {
 
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
     Double cutoffParameter=1.0;
+    Map<String, Map<String, Double>> model;
 
+    public Map<String, Integer> getCorpusFrequency() {
+        return corpusFrequency;
+    }
 
-    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
+    public void setCorpusFrequency(Map<String, Integer> corpusFrequency) {
+        this.corpusFrequency = corpusFrequency;
+    }
+
+    public Double getCutoffParameter() {
+        return cutoffParameter;
+    }
+
+    public void setCutoffParameter(Double cutoffParameter) {
+        this.cutoffParameter = cutoffParameter;
+    }
+
+    public Map<String, Map<String, Double>> getModel() {
+        return model;
+    }
+
+    public void setModel(Map<String, Map<String, Double>> model) {
+        this.model = model;
+    }
+
+    public Map<String, Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
             docs.add(englishAnalyze(s));
         }
         List<List<String>> processed=preProcess(docs);
-        List<Map<String, Double>> res = tfIdf(processed);
+        Map<String, Map<String, Double>> res = tfIdf(processed, corpus);
+        model=res;
         return res;
 
     }
 
+    public Map<String,Double> extractKeywordsWithModel(String a) throws Exception {
+        return model.get(a);
+    }
+
+
     private List<List<String>> preProcess(List<List<String>> corpus) throws Exception
     {
+        return corpus;
+        /*
         InputStream modelIn = null;
         POSModel POSModel = null;
         List<List<String>> toRet=new ArrayList<>();
+        */
+        /*
         try{
             File f = new File("E:\\Trabajo\\stakeholders-recommender\\src\\main\\java\\upc\\stakeholdersrecommender\\domain\\keywords\\en-pos-maxent.bin");
             modelIn = new FileInputStream(f);
@@ -58,7 +91,9 @@ public class TFIDFKeywordExtractor {
         catch(IOException e){
             throw new Exception("File fucked up");
         }
+        */
     }
+
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<String, Integer>();
         for (String s : doc) {
@@ -79,8 +114,8 @@ public class TFIDFKeywordExtractor {
     }
 
 
-    private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
-        List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
+    private Map<String,Map<String, Double>> tfIdf(List<List<String>> docs, List<String> corpus) {
+        Map<String,Map<String, Double>> tfidfComputed = new HashMap<String,Map<String, Double>>();
         List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
         for (List<String> doc : docs) {
             wordBag.add(tf(doc));
@@ -94,7 +129,7 @@ public class TFIDFKeywordExtractor {
                 Double tfidf = idf * tf;
                 if (tfidf>=cutoffParameter) aux.put(s, tfidf);
             }
-            tfidfComputed.add(aux);
+            tfidfComputed.put(corpus.get(i),aux);
             ++i;
         }
         return tfidfComputed;
@@ -117,12 +152,11 @@ public class TFIDFKeywordExtractor {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
-                .addTokenFilter("stop")
-                .addTokenFilter("commongrams")
+               // .addTokenFilter("commongrams")
                 .addTokenFilter("englishminimalstem")
+               // .addTokenFilter("stop")
                 .build();
         return analyze(text, analyzer);
     }
 
-// Llamada al servicio 217.172.12.199:9404
 }
