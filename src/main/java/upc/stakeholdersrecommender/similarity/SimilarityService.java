@@ -28,6 +28,25 @@ public class SimilarityService {
     JaccardSimilarity jac=new JaccardSimilarity();
 
     public void sif(CorpusSchema request) throws IOException {
+
+        String[] columns = {"Text1","Text2","Similarity"};
+        Workbook workbook = new XSSFWorkbook();
+        CreationHelper createHelper = workbook.getCreationHelper();
+        Sheet sheet = workbook.createSheet("Results");
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 14);
+        headerFont.setColor(IndexedColors.RED.getIndex());
+        CellStyle headerCellStyle = workbook.createCellStyle();
+        headerCellStyle.setFont(headerFont);
+        Row headerRow = sheet.createRow(0);
+        for(int i = 0; i < columns.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerCellStyle);
+        }
+        int rowNum=0;
+
         List<List<String>> one=new ArrayList<List<String>>();
         List<List<String>>  two=new ArrayList<List<String>>();
         for (int i=0;i<request.getCorpus().size();++i) {
@@ -43,7 +62,21 @@ public class SimilarityService {
             System.out.println("For title : " + one.get(i));
             System.out.println("For title : " + two.get(i));
             System.out.println("------------------------------");
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0)
+                    .setCellValue(request.getThing().get(i).getFrom());
+
+            row.createCell(1)
+                    .setCellValue(request.getThing().get(i).getTo());
+            row.createCell(2).setCellValue(result.get(i));
+
+
         }
+        FileOutputStream fileOut = new FileOutputStream("OutputWithSIF.xlsx");
+        workbook.write(fileOut);
+        fileOut.close();
+        workbook.close();
+
     }
 
     public void buildModel(ExtractTest request) throws Exception {
