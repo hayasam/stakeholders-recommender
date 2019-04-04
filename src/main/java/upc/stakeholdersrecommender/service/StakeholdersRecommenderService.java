@@ -1,7 +1,5 @@
 package upc.stakeholdersrecommender.service;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
@@ -12,14 +10,11 @@ import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.max;
-import static upc.stakeholdersrecommender.domain.keywords.JaccardSimilarity.cosine;
-import static upc.stakeholdersrecommender.domain.keywords.JaccardSimilarity.jaccardSimilarity;
 
 @Service
 public class StakeholdersRecommenderService {
@@ -35,92 +30,9 @@ public class StakeholdersRecommenderService {
     @Autowired
     private RequirementSkillsRepository RequirementSkillsRepository;
 
-    TFIDFKeywordExtractor extr;
     @Autowired
     private ReplanService replanService;
 
-    public void buildModel(ExtractTest request) throws Exception {
-        ////
-        int rowNum=0;
-        extr = new TFIDFKeywordExtractor();
-        Map<String, Map<String, Double>> res = extr.extractKeywords(request.getCorpus());
-      /*  List<Set<String>> toExamine=ExtractWords(res);
-        for (int i=0;i<request.getCorpus().size();++i) {
-            for (int j=i;j<request.getCorpus().size();++j) {
-                if (i!=j) {
-                   // Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
-                    Double cosine = cosine(res,i,j);
-                    if (cosine*100 > 1) {
-                        System.out.println("------------------------------");
-                        System.out.println("Similarity between " + i + " and " + j + " is " + cosine);
-                        String keysetA = toExamine.get(i).toString();
-                        String keysetB = toExamine.get(j).toString();
-                        System.out.println("For title : " + request.getCorpus().get(i));
-                        System.out.println("For title : " + request.getCorpus().get(j));
-                        System.out.println("Keywords of : " + keysetA);
-                        System.out.println("Keywords of : " + keysetB);
-                        System.out.println("------------------------------");
-                    }
-                }
-
-            }
-        }
-        */
-    }
-    public void extract(CorpusSchema request) throws Exception {
-        String[] columns = {"Text1","Text2","Similarity"};
-        Workbook workbook = new XSSFWorkbook();
-        CreationHelper createHelper = workbook.getCreationHelper();
-        Sheet sheet = workbook.createSheet("Results");
-        Font headerFont = workbook.createFont();
-        headerFont.setBold(true);
-        headerFont.setFontHeightInPoints((short) 14);
-        headerFont.setColor(IndexedColors.RED.getIndex());
-        CellStyle headerCellStyle = workbook.createCellStyle();
-        headerCellStyle.setFont(headerFont);
-        Row headerRow = sheet.createRow(0);
-        for(int i = 0; i < columns.length; i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(columns[i]);
-            cell.setCellStyle(headerCellStyle);
-        }
-        int rowNum=0;
-        for (int i=0;i<request.getThing().size();++i) {
-                    // Double jaccard = jaccardSimilarity(toExamine.get(i), toExamine.get(j));
-                    Double cosine = cosine(extr.getModel(),request.getThing().get(i).getFrom(),request.getThing().get(i).getTo());
-                        Row row = sheet.createRow(rowNum++);
-                        row.createCell(0)
-                                .setCellValue(request.getThing().get(i).getFrom());
-
-                        row.createCell(1)
-                                .setCellValue(request.getThing().get(i).getTo());
-                        row.createCell(2).setCellValue(cosine);
-/*
-                        System.out.println("------------------------------");
-                        System.out.println("Similarity between " + i +" is " + cosine);
-                        System.out.println("For title : " + request.getThing().get(i).getFrom());
-                        System.out.println("For title : " + request.getThing().get(i).getTo());
-                        System.out.println("------------------------------");
-                        */
-
-        }
-        // Write the output to a file
-        FileOutputStream fileOut = new FileOutputStream("Output.xlsx");
-        workbook.write(fileOut);
-        fileOut.close();
-        workbook.close();
-
-    }
-
-
-    private List<Set<String>> ExtractWords(Map<String, Map<String, Double>> res) {
-        List<Set<String>> result= new ArrayList<Set<String>>();
-        for (int i=0;i<res.size();++i) {
-            Set<String> aux= res.get(i).keySet();
-            result.add(aux);
-        }
-        return result;
-    }
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) throws Exception {
         String p = request.getProject();

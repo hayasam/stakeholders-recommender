@@ -1,4 +1,4 @@
-package upc.stakeholdersrecommender.domain.keywords;
+package upc.stakeholdersrecommender.similarity;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +10,7 @@ import static java.lang.StrictMath.sqrt;
 
 public class JaccardSimilarity {
 
-    static public double jaccardSimilarity(Set<String> a, Set<String> b) {
+     public double jaccardSimilarity(Set<String> a, Set<String> b) {
 
         Set<String> union = new HashSet<String>(a);
         union.addAll(b);
@@ -20,7 +20,7 @@ public class JaccardSimilarity {
 
         return (double) intersection.size() / min(union.size(),5);    }
 
-    static public double cosineCool(List<Map<String, Double>> res, Integer a, Integer b) {
+     public double cosineCool(List<Map<String, Double>> res, Integer a, Integer b) {
         Double cosine=0.0;
         Map<String,Double> wordsA=res.get(a);
         Map<String,Double> wordsB=res.get(b);
@@ -38,7 +38,7 @@ public class JaccardSimilarity {
         return cosine;
     }
 
-    static public double cosine(Map<String, Map<String, Double>> res, String a, String b) {
+     public double cosine(Map<String, Map<String, Double>> res, String a, String b) {
         Double cosine=0.0;
         Map<String,Double> wordsA=res.get(a);
         Map<String,Double> wordsB=res.get(b);
@@ -59,7 +59,7 @@ public class JaccardSimilarity {
     }
 
 
-    private static Double norm(Map<String, Double> wordsB) {
+    public Double norm(Map<String, Double> wordsB) {
         Double norm=0.0;
         for (String s:wordsB.keySet()) {
             norm+=wordsB.get(s)*wordsB.get(s);

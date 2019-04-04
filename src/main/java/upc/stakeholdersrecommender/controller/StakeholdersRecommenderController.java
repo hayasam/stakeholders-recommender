@@ -14,6 +14,7 @@ import upc.stakeholdersrecommender.domain.CorpusSchema;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
+import upc.stakeholdersrecommender.similarity.SimilarityService;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,6 +28,9 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
+    @Autowired
+    SimilarityService sim;
+
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.", notes = "", response = BatchReturnSchema.class)
@@ -69,12 +73,18 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "extractor", method = RequestMethod.POST)
     public ResponseEntity  extract(@RequestBody ExtractTest request) throws Exception {
-        stakeholdersRecommenderService.buildModel(request);
+        sim.buildModel(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
     @RequestMapping(value = "extract", method = RequestMethod.POST)
     public ResponseEntity  ext(@RequestBody CorpusSchema request) throws Exception {
-        stakeholdersRecommenderService.extract(request);
+        sim.extract(request);
+        return new ResponseEntity<>( HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "sif", method = RequestMethod.POST)
+    public ResponseEntity  sif(@RequestBody CorpusSchema request) throws Exception {
+        sim.sif(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
 
