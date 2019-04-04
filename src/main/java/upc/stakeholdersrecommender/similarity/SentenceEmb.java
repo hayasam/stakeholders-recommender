@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class SentenceEmb {
 
-    private final String vecFile = "glove.6B.300d.txt";
+    private final String vecFile = "glove.6B.50d.txt";
     private final String wordFile = "idf.txt";
     private DataIO dataIO = new DataIO();
 

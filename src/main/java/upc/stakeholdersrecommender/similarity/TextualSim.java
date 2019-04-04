@@ -2,12 +2,13 @@ package upc.stakeholdersrecommender.similarity;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+@Component
 public class TextualSim {
 
     private SentenceEmb sentenceEmb = new SentenceEmb();

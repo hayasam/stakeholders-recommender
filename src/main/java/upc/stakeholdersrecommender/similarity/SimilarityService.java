@@ -6,6 +6,7 @@ import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.CorpusSchema;
@@ -26,6 +27,9 @@ public class SimilarityService {
 
     TFIDFKeywordExtractor extr;
     JaccardSimilarity jac=new JaccardSimilarity();
+
+    @Autowired
+    TextualSim sim;
 
     public void sif(CorpusSchema request) throws IOException {
 
@@ -54,8 +58,7 @@ public class SimilarityService {
             one.add(englishAnalyze(sim.getFrom()));
             two.add(englishAnalyze(sim.getTo()));
         }
-        TextualSim textualSim=new TextualSim();
-        List<Double> result=textualSim.scores(one,two);
+        List<Double> result=sim.scores(one,two);
         for (int i=0;i<result.size();++i) {
             System.out.println("------------------------------");
             System.out.println("Similarity is "+result.get(i));
