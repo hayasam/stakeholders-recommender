@@ -28,9 +28,10 @@ public class SimilarityService {
     TFIDFKeywordExtractor extr;
     JaccardSimilarity jac=new JaccardSimilarity();
 
-    @Autowired
+  /*  @Autowired
     TextualSim sim;
-
+    */
+/*
     public void sif(CorpusSchema request) throws IOException {
 
         String[] columns = {"Text1","Text2","Similarity"};
@@ -81,6 +82,7 @@ public class SimilarityService {
         workbook.close();
 
     }
+    */
 
     public void buildModel(ExtractTest request) throws Exception {
         ////

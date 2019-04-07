@@ -6,6 +6,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import upc.stakeholdersrecommender.similarity.StanfordLemmatizer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class TFIDFKeywordExtractor {
     public Map<String, Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
-            docs.add(englishAnalyze(s));
+            docs.add(englishLematize(s));
         }
         List<List<String>> processed=preProcess(docs);
         Map<String, Map<String, Double>> res = tfIdf(processed, corpus);
@@ -157,6 +158,12 @@ public class TFIDFKeywordExtractor {
                // .addTokenFilter("stop")
                 .build();
         return analyze(text, analyzer);
+    }
+
+    private List<String> englishLematize(String text) throws IOException {
+        StanfordLemmatizer stan= new StanfordLemmatizer();
+        List<String> result=stan.lemmatize(text);
+        return result;
     }
 
 }

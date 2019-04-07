@@ -81,13 +81,13 @@ public class StakeholdersRecommenderController {
         sim.extract(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
-
+/*
     @RequestMapping(value = "sif", method = RequestMethod.POST)
     public ResponseEntity  sif(@RequestBody CorpusSchema request) throws Exception {
         sim.sif(request);
         return new ResponseEntity<>( HttpStatus.OK);
     }
-
+*/
 
     @RequestMapping(value = "extractor2", method = RequestMethod.POST)
     public ResponseEntity  extract2(@RequestBody ExtractTest request) throws IOException {
