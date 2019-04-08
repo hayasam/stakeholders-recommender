@@ -95,5 +95,10 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity<>( HttpStatus.OK);
     }
 
+    @RequestMapping(value = "BERT", method = RequestMethod.POST)
+    public ResponseEntity  sif(@RequestBody CorpusSchema request) throws Exception {
+        sim.BERTExtract(request);
+        return new ResponseEntity<>( HttpStatus.OK);
+    }
 
 }

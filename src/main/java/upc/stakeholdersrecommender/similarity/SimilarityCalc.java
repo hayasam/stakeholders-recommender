@@ -8,7 +8,7 @@ import java.util.Set;
 import static java.lang.Math.min;
 import static java.lang.StrictMath.sqrt;
 
-public class JaccardSimilarity {
+public class SimilarityCalc {
 
      public double jaccardSimilarity(Set<String> a, Set<String> b) {
 

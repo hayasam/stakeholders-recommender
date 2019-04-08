@@ -7,10 +7,18 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.CorpusSchema;
+import upc.stakeholdersrecommender.domain.Schemas.BERTResult;
+import upc.stakeholdersrecommender.domain.Schemas.BERTSchema;
 import upc.stakeholdersrecommender.domain.Schemas.ExtractTest;
+import upc.stakeholdersrecommender.domain.Schemas.ResourceSkill;
 import upc.stakeholdersrecommender.domain.SimilaritySchema;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 
@@ -26,7 +34,7 @@ import java.util.Set;
 public class SimilarityService {
 
     TFIDFKeywordExtractor extr;
-    JaccardSimilarity jac=new JaccardSimilarity();
+    SimilarityCalc jac=new SimilarityCalc();
 
   /*  @Autowired
     TextualSim sim;
@@ -179,16 +187,32 @@ public class SimilarityService {
         return result;
     }
 
-    private List<String> englishAnalyze(String text) throws IOException {
-        Analyzer analyzer = CustomAnalyzer.builder()
-                .withTokenizer("standard")
-                .addTokenFilter("lowercase")
-                // .addTokenFilter("commongrams")
-                .addTokenFilter("englishminimalstem")
-                // .addTokenFilter("stop")
-                .build();
-        return analyze(text, analyzer);
+    public void BERTExtract(CorpusSchema request) throws Exception {
+
+        for (int i=0;i<request.getThing().size();++i) {
+            SimilaritySchema sim=request.getThing().get(i);
+            BERTSchema bert=new BERTSchema();
+            bert.setId(100);
+            List toPut=new ArrayList<String>();
+            toPut.add(sim.getFrom());
+            toPut.add(sim.getTo());
+            bert.setTexts(toPut);
+            bert.setIs_tokenized(false);
+            BERTResult res=BERTPost(bert);
+            System.out.println(res.getResults());
+
+        }
+
     }
+
+    public BERTResult BERTPost(BERTSchema bert) {
+        RestTemplate restTemplate = new RestTemplate();
+        BERTResult response=restTemplate.postForObject(
+                "http://127.0.0.1:8125/encode",
+                    bert, BERTResult.class);
+        return response;
+    }
+
 
 
 }
