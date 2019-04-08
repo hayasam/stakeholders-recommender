@@ -17,7 +17,7 @@ import java.util.Map;
 public class TFIDFKeywordExtractor {
 
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
-    Double cutoffParameter=1.0;
+    Double cutoffParameter=-1.0;
     Map<String, Map<String, Double>> model;
 
     public Map<String, Integer> getCorpusFrequency() {
@@ -153,17 +153,49 @@ public class TFIDFKeywordExtractor {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
-               // .addTokenFilter("commongrams")
+                .addTokenFilter("commongrams")
                 .addTokenFilter("englishminimalstem")
-               // .addTokenFilter("stop")
+                .addTokenFilter("stop")
                 .build();
         return analyze(text, analyzer);
     }
 
-    private List<String> englishLematize(String text) throws IOException {
+    private List<String> englishLematize(String text) throws IOException,Exception {
         StanfordLemmatizer stan= new StanfordLemmatizer();
         List<String> result=stan.lemmatize(text);
         return result;
     }
 
+    public List<Map<String, Double>> extractKeywordsList(List<String> corpus) throws Exception {
+        List<List<String>> docs = new ArrayList<List<String>>();
+        for (String s : corpus) {
+            docs.add(englishAnalyze(s));
+        }
+        List<List<String>> processed=preProcess(docs);
+        List<Map<String, Double>> res = tfIdfList(processed, corpus);
+        return res;
+
+    }
+
+    private List<Map<String, Double>> tfIdfList(List<List<String>> docs, List<String> corpus) {
+        List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
+        List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
+        for (List<String> doc : docs) {
+            wordBag.add(tf(doc));
+        }
+        Integer i = 0;
+        for (List<String> doc : docs) {
+            HashMap<String, Double> aux = new HashMap<String, Double>();
+            for (String s : doc) {
+                Double idf = idf(docs.size(), corpusFrequency.get(s));
+                Integer tf = wordBag.get(i).get(s);
+                Double tfidf = idf * tf;
+                if (tfidf>=cutoffParameter) aux.put(s, tfidf);
+            }
+            tfidfComputed.add(aux);
+            ++i;
+        }
+        return tfidfComputed;
+
+    }
 }

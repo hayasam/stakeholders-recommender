@@ -196,8 +196,9 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             corpus.add(recs.get(s).getDescription());
         }
-        Map<String, Map<String, Double>> keywords = extractor.extractKeywords(corpus);
+        List<Map<String, Double>> keywords = extractor.extractKeywordsList(corpus);
         Integer i = 0;
+        System.out.println(keywords.size());
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
         for (String s : requirement) {
             List<SkillListReplan> recSkills = new ArrayList<SkillListReplan>();
