@@ -11,12 +11,11 @@ public class CorpusSchema implements Serializable {
         return corpus;
     }
 
-    public List<SimilaritySchema> getThing() {
-        return corpus;
-    }
-
-
     public void setCorpus(List<SimilaritySchema> thing) {
         this.corpus = thing;
+    }
+
+    public List<SimilaritySchema> getThing() {
+        return corpus;
     }
 }

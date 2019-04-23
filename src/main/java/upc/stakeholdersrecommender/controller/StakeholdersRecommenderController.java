@@ -5,14 +5,15 @@ import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.CorpusSchema;
 import upc.stakeholdersrecommender.domain.Responsible;
-import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.domain.Schemas.BatchReturnSchema;
+import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
@@ -66,7 +67,6 @@ public class StakeholdersRecommenderController {
         stakeholdersRecommenderService.deleteProject(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 
 
 }

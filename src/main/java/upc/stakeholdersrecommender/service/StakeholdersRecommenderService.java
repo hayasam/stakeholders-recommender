@@ -38,11 +38,10 @@ public class StakeholdersRecommenderService {
         String p = request.getProject();
         String r = request.getRequirement();
         String project_replanID = ProjectToPReplanRepository.getOne(p).getIdReplan().toString();
-        String requirement_replanID="";
-        if (RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r))!=null) {
+        String requirement_replanID = "";
+        if (RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)) != null) {
             requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)).getID_Replan();
-        }
-        else throw new Exception();
+        } else throw new Exception();
         ReleaseReplan release = replanService.createRelease(project_replanID);
         Integer releaseId = release.getId();
         String user = request.getUser();
@@ -108,7 +107,7 @@ public class StakeholdersRecommenderService {
 
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
-            List<String> requirementNames=new ArrayList<String>();
+            List<String> requirementNames = new ArrayList<String>();
             requirementNames.addAll(recs.keySet());
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
@@ -203,19 +202,18 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             List<SkillListReplan> recSkills = new ArrayList<SkillListReplan>();
             for (String key : keywords.get(i).keySet()) {
-                    if (!existingSkills.containsKey(key)) {
-                        Skill auxiliar = new Skill(key, 1.0);
-                        recs.get(s).addSkill(auxiliar);
-                        System.out.println("Keyword :"+key);
-                        SkillReplan skill = replanService.createSkill(auxiliar, id);
-                        auxiliar.setIdReplan(skill.getId());
-                        existingSkills.put(key, auxiliar);
-                        recSkills.add(new SkillListReplan(skill.getId(), 1.0));
-                    } else {
-                        recs.get(s).addSkill(existingSkills.get(key));
-                        recSkills.add(new SkillListReplan(existingSkills.get(key).getIdReplan(), 1.0));
-                    }
-
+                if (!existingSkills.containsKey(key)) {
+                    Skill auxiliar = new Skill(key, 1.0);
+                    recs.get(s).addSkill(auxiliar);
+                    System.out.println("Keyword :" + key);
+                    SkillReplan skill = replanService.createSkill(auxiliar, id);
+                    auxiliar.setIdReplan(skill.getId());
+                    existingSkills.put(key, auxiliar);
+                    recSkills.add(new SkillListReplan(skill.getId(), 1.0));
+                } else {
+                    recs.get(s).addSkill(existingSkills.get(key));
+                    recSkills.add(new SkillListReplan(existingSkills.get(key).getIdReplan(), 1.0));
+                }
             }
             toret.put(s, recSkills);
             ++i;
