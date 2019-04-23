@@ -1,12 +1,9 @@
 package upc.stakeholdersrecommender.domain.keywords;
 
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSTaggerME;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import upc.stakeholdersrecommender.similarity.StanfordLemmatizer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,7 +14,7 @@ import java.util.Map;
 public class TFIDFKeywordExtractor {
 
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
-    Double cutoffParameter=-1.0;
+    Double cutoffParameter=2.0;
     Map<String, Map<String, Double>> model;
 
     public Map<String, Integer> getCorpusFrequency() {
@@ -44,56 +41,18 @@ public class TFIDFKeywordExtractor {
         this.model = model;
     }
 
+    /*
     public Map<String, Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
-            docs.add(englishLematize(s));
+            docs.add(englishAnalyze(s));
         }
-        List<List<String>> processed=preProcess(docs);
-        Map<String, Map<String, Double>> res = tfIdf(processed, corpus);
+        Map<String, Map<String, Double>> res = tfIdf(docs, corpus);
         model=res;
         return res;
 
     }
-
-    public Map<String,Double> extractKeywordsWithModel(String a) throws Exception {
-        return model.get(a);
-    }
-
-
-    private List<List<String>> preProcess(List<List<String>> corpus) throws Exception
-    {
-        return corpus;
-        /*
-        InputStream modelIn = null;
-        POSModel POSModel = null;
-        List<List<String>> toRet=new ArrayList<>();
-        */
-        /*
-        try{
-            File f = new File("E:\\Trabajo\\stakeholders-recommender\\src\\main\\java\\upc\\stakeholdersrecommender\\domain\\keywords\\en-pos-maxent.bin");
-            modelIn = new FileInputStream(f);
-            POSModel = new POSModel(modelIn);
-            POSTaggerME tagger = new POSTaggerME(POSModel);
-            for (List<String> list:corpus) {
-                String[] toTag=new String[list.size()];
-                toTag=list.toArray(toTag);
-                String[] tagged = tagger.tag(toTag);
-                List<String> result=new ArrayList<String>();
-                for (int i = 0; i < tagged.length; i++) {
-                    if (tagged[i].equalsIgnoreCase("nn") || tagged[i].equalsIgnoreCase("vb")) {
-                        result.add(list.get(i));
-                    }
-                }
-                toRet.add(result);
-            }
-        return toRet;
-        }
-        catch(IOException e){
-            throw new Exception("File fucked up");
-        }
-        */
-    }
+*/
 
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<String, Integer>();
@@ -114,7 +73,7 @@ public class TFIDFKeywordExtractor {
         return Math.log(size / frequency+1);
     }
 
-
+/*
     private Map<String,Map<String, Double>> tfIdf(List<List<String>> docs, List<String> corpus) {
         Map<String,Map<String, Double>> tfidfComputed = new HashMap<String,Map<String, Double>>();
         List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
@@ -136,7 +95,7 @@ public class TFIDFKeywordExtractor {
         return tfidfComputed;
 
     }
-
+*/
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<String>();
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
@@ -154,30 +113,29 @@ public class TFIDFKeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("commongrams")
-                .addTokenFilter("englishminimalstem")
+                .addTokenFilter("porterstem")
                 .addTokenFilter("stop")
                 .build();
         return analyze(text, analyzer);
     }
-
+/*
     private List<String> englishLematize(String text) throws IOException,Exception {
         StanfordLemmatizer stan= new StanfordLemmatizer();
         List<String> result=stan.lemmatize(text);
         return result;
     }
-
-    public List<Map<String, Double>> extractKeywordsList(List<String> corpus) throws Exception {
+*/
+    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
             docs.add(englishAnalyze(s));
         }
-        List<List<String>> processed=preProcess(docs);
-        List<Map<String, Double>> res = tfIdfList(processed, corpus);
+        List<Map<String, Double>> res = tfIdf(docs, corpus);
         return res;
 
     }
 
-    private List<Map<String, Double>> tfIdfList(List<List<String>> docs, List<String> corpus) {
+    private List<Map<String, Double>> tfIdf(List<List<String>> docs, List<String> corpus) {
         List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
         List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
         for (List<String> doc : docs) {

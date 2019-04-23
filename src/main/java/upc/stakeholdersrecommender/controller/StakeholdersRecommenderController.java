@@ -14,7 +14,6 @@ import upc.stakeholdersrecommender.domain.CorpusSchema;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
-import upc.stakeholdersrecommender.similarity.SimilarityService;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,8 +27,6 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
-    @Autowired
-    SimilarityService sim;
 
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,34 +68,5 @@ public class StakeholdersRecommenderController {
     }
 
 
-    @RequestMapping(value = "extractor", method = RequestMethod.POST)
-    public ResponseEntity  extract(@RequestBody ExtractTest request) throws Exception {
-        sim.buildModel(request);
-        return new ResponseEntity<>( HttpStatus.OK);
-    }
-    @RequestMapping(value = "extract", method = RequestMethod.POST)
-    public ResponseEntity  ext(@RequestBody CorpusSchema request) throws Exception {
-        sim.extract(request);
-        return new ResponseEntity<>( HttpStatus.OK);
-    }
-/*
-    @RequestMapping(value = "sif", method = RequestMethod.POST)
-    public ResponseEntity  sif(@RequestBody CorpusSchema request) throws Exception {
-        sim.sif(request);
-        return new ResponseEntity<>( HttpStatus.OK);
-    }
-*/
-
-    @RequestMapping(value = "extractor2", method = RequestMethod.POST)
-    public ResponseEntity  extract2(@RequestBody ExtractTest request) throws IOException {
-        stakeholdersRecommenderService.extract2(request);
-        return new ResponseEntity<>( HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "BERT", method = RequestMethod.POST)
-    public ResponseEntity  sif(@RequestBody CorpusSchema request) throws Exception {
-        sim.BERTExtract(request);
-        return new ResponseEntity<>( HttpStatus.OK);
-    }
 
 }

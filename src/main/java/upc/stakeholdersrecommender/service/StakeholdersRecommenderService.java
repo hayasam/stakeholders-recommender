@@ -196,14 +196,13 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             corpus.add(recs.get(s).getDescription());
         }
-        List<Map<String, Double>> keywords = extractor.extractKeywordsList(corpus);
+        List<Map<String, Double>> keywords = extractor.extractKeywords(corpus);
         Integer i = 0;
         System.out.println(keywords.size());
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
         for (String s : requirement) {
             List<SkillListReplan> recSkills = new ArrayList<SkillListReplan>();
             for (String key : keywords.get(i).keySet()) {
-                if (keywords.get(i).get(key) > 3) {
                     if (!existingSkills.containsKey(key)) {
                         Skill auxiliar = new Skill(key, 1.0);
                         recs.get(s).addSkill(auxiliar);
@@ -217,7 +216,6 @@ public class StakeholdersRecommenderService {
                         recSkills.add(new SkillListReplan(existingSkills.get(key).getIdReplan(), 1.0));
                     }
 
-                }
             }
             toret.put(s, recSkills);
             ++i;
