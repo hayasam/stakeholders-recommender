@@ -32,8 +32,8 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch) throws Exception {
-        Integer res = stakeholdersRecommenderService.addBatch(batch);
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch,@RequestParam Boolean withAvailability) throws Exception {
+        Integer res = stakeholdersRecommenderService.addBatch(batch,withAvailability);
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
@@ -56,8 +56,8 @@ public class StakeholdersRecommenderController {
     @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
             "recommendation and returns a list of the best K recommendations", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
-                                                       @RequestParam Integer k) throws Exception {
-        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k);
+                                                       @RequestParam Integer k,@RequestParam Boolean projectSpecific) throws Exception {
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k,projectSpecific);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 

@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "project_to_replan")
@@ -16,6 +18,8 @@ public class ProjectToPReplan implements Serializable {
     private String id;
 
     private Integer idReplan;
+
+    private List<String> participants;
 
     public ProjectToPReplan() {
 
@@ -41,5 +45,9 @@ public class ProjectToPReplan implements Serializable {
         this.id = id;
     }
 
+    public void setId(String id) { this.id = id; }
 
+    public List<String> getParticipants() { return participants; }
+
+    public void setParticipants(List<String> participants) { this.participants = participants; }
 }

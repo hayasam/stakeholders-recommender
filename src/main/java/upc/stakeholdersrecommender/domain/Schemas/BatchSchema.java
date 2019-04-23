@@ -1,9 +1,6 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.Project;
-import upc.stakeholdersrecommender.domain.Requirement;
-import upc.stakeholdersrecommender.domain.Responsible;
+import upc.stakeholdersrecommender.domain.*;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,7 +11,7 @@ public class BatchSchema implements Serializable {
     List<Person> persons;
     List<Responsible> responsibles;
     List<Requirement> requirements;
-    // En return items procesats
+    List<Participant> participants;
 
     public List<Project> getProjects() {
         return projects;
@@ -47,4 +44,8 @@ public class BatchSchema implements Serializable {
     public void setRequirements(List<Requirement> requirements) {
         this.requirements = requirements;
     }
+
+    public List<Participant> getParticipants() { return participants; }
+
+    public void setParticipants(List<Participant> participants) { this.participants = participants; }
 }
