@@ -33,7 +33,7 @@ public class StakeholdersRecommenderService {
     private ReplanService replanService;
 
 
-    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k) throws Exception {
+    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific) throws Exception {
         String p = request.getProject();
         String r = request.getRequirement();
         String project_replanID = ProjectToPReplanRepository.getOne(p).getIdReplan().toString();
@@ -48,8 +48,18 @@ public class StakeholdersRecommenderService {
         FeatureSkill featureSkills = replanService.getFeatureSkill(project_replanID, requirement_replanID);
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
-        for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
-            reslist.add(new ResourceListReplan(pers.getIdReplan()));
+        if (!projectSpecific) {
+            for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
+                reslist.add(new ResourceListReplan(pers.getIdReplan()));
+            }
+        }
+        else {
+           ProjectToPReplan proj= ProjectToPReplanRepository.getOne(p);
+           List<String> part=proj.getParticipants();
+           for (String person:part) {
+               PersonToPReplan pers=PersonToPReplanRepository.findById(new PersonId(project_replanID,person));
+               reslist.add(new ResourceListReplan(pers.getIdReplan()));
+           }
         }
         replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
         Plan[] plan = replanService.plan(project_replanID, releaseId);
@@ -96,31 +106,39 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability) throws Exception {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
         }
+        for (Participant par : request.getParticipants()) {
+
+        }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<String>> recsPerson = getRecsPerson(request);
-
+        Map<String, List<String>> participants = getParticipants(request);
         for (Project p : request.getProjects()) {
-            String id = instanciateProject(p);
-            List<String> requirementNames = new ArrayList<String>(recs.keySet());
+            String id = instanciateProject(p,participants);
+            List<String> requirementNames = new ArrayList<String>();
+            requirementNames.addAll(recs.keySet());
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
-            instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id);
+            instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
         }
-        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size();
+        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
     }
 
-    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id) {
+    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id, Boolean withAvailability) {
         for (Person person : request.getPersons()) {
             List<SkillListReplan> out;
             if (personRecs.get(person.getUsername()) != null)
                 out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
             else out = new ArrayList<>();
-            Double availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
+            Double availability=0.0;
+            if (withAvailability) {
+                availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
+            }
+            else availability=1.0;
             instanciateResource(person, id, out, availability);
         }
     }
@@ -169,7 +187,7 @@ public class StakeholdersRecommenderService {
         }
     }
 
-    private String instanciateProject(Project p) {
+    private String instanciateProject(Project p, Map<String, List<String>> participants) {
         String id = null;
         if (ProjectToPReplanRepository.existsById(p.getId())) {
             id = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan().toString();
@@ -181,6 +199,7 @@ public class StakeholdersRecommenderService {
         id = projectReplan.getId().toString();
         ProjectToPReplan projectTrad = new ProjectToPReplan(p.getId());
         projectTrad.setIdReplan(projectReplan.getId());
+        projectTrad.setParticipants(participants.get(p.getId()));
         ProjectToPReplanRepository.save(projectTrad);
 
         return id;
@@ -401,6 +420,20 @@ public class StakeholdersRecommenderService {
             }
         }
         return personRecs;
+    }
+
+    private Map<String, List<String>> getParticipants(BatchSchema request) {
+        Map<String, List<String>> participants = new HashMap<String, List<String>>();
+        for (Participant par : request.getParticipants()) {
+            if (participants.containsKey(par.getProject())) {
+                participants.get(par.getProject()).add(par.getPerson());
+            } else {
+                List<String> aux = new ArrayList<String>();
+                aux.add(par.getPerson());
+                participants.put(par.getProject(), aux);
+            }
+        }
+        return participants;
     }
 
     private class Pair<T> {
