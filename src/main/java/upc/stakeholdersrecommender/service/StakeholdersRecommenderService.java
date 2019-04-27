@@ -29,7 +29,6 @@ public class StakeholdersRecommenderService {
     private RejectedPersonRepository RejectedPersonRepository;
     @Autowired
     private RequirementSkillsRepository RequirementSkillsRepository;
-
     @Autowired
     private ReplanService replanService;
 
@@ -107,8 +106,7 @@ public class StakeholdersRecommenderService {
 
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p);
-            List<String> requirementNames = new ArrayList<String>();
-            requirementNames.addAll(recs.keySet());
+            List<String> requirementNames = new ArrayList<String>(recs.keySet());
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id);
@@ -196,7 +194,7 @@ public class StakeholdersRecommenderService {
             corpus.add(recs.get(s).getDescription());
         }
         List<Map<String, Double>> keywords = extractor.extractKeywords(corpus);
-        Integer i = 0;
+        int i = 0;
         System.out.println(keywords.size());
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
         for (String s : requirement) {
@@ -224,7 +222,6 @@ public class StakeholdersRecommenderService {
     private List<SkillListReplan> computeSkillsPerson(List<String> oldRecs, Map<String, Requirement> recs, Map<String, List<String>> recsPerson) {
         List<SkillListReplan> toret = new ArrayList<SkillListReplan>();
         Map<Integer, Pair<Double>> appearances = new HashMap<Integer, Pair<Double>>();
-        List<Integer> sizes = new ArrayList<Integer>();
         for (String s : oldRecs) {
             for (Skill sk : recs.get(s).getSkills()) {
                 if (appearances.containsKey(sk.getIdReplan())) {
@@ -233,9 +230,8 @@ public class StakeholdersRecommenderService {
                     appearances.put(sk.getIdReplan(), new Pair<Double>(1.0, (double) recsPerson.get(s).size()));
                 }
             }
-            sizes.add(recsPerson.get(s).size());
         }
-        Integer i = 0;
+        int i = 0;
         for (Integer key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
             SkillListReplan helper = new SkillListReplan(key, ability);

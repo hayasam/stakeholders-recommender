@@ -14,10 +14,24 @@ import upc.stakeholdersrecommender.domain.Schemas.BatchReturnSchema;
 import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
+import upc.stakeholdersrecommender.service.BugzillaService;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
 import java.util.List;
+/*
+Parsejar informacio de "participant", que indica a quin projecte participa cada stakeholder ( Guardar mapa ).
+Afegir a recommend una manera de discriminar tal que utilitza "participant" o no (Parametre, si ok, a release).
+
+Participant = Map<ProjectID, List<Stakeholders>>
+Si "part", a release nomes entran els stakeholders de get(projectId)
+Si no, tots
+
+Añadir parametro en recommend para usar availability, o no.
+
+Sacar información del endpoint de vogella (mail)
+ */
+
 
 @SuppressWarnings("ALL")
 @RestController
@@ -28,6 +42,8 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
+    @Autowired
+    BugzillaService bugzillaService;
 
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,6 +82,17 @@ public class StakeholdersRecommenderController {
     public ResponseEntity extract(@RequestParam String id) throws IOException {
         stakeholdersRecommenderService.deleteProject(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "extractHistoric", method = RequestMethod.GET)
+    @ApiOperation(value = "Extract all historic information of the bugzilla API", notes = "")
+    public ResponseEntity extractBugzilla() throws IOException {
+        bugzillaService.extractInfo();
+        BatchSchema batch=new BatchSchema();
+        batch.setPersons(bugzillaService.getPersons());
+        batch.setResponsibles(bugzillaService.getResponsibles());
+        batch.setRequirements(bugzillaService.getRequirements());
+        return new ResponseEntity<BatchSchema>(batch,HttpStatus.OK);
     }
 
 
