@@ -2,7 +2,6 @@ package upc.stakeholdersrecommender.domain.Schemas;
 
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.bugzilla.BugzillaBug;
-import upc.stakeholdersrecommender.domain.bugzilla.BugzillaIdentifier;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -57,7 +57,7 @@ public class BugzillaService {
     public void extractResponsibles() {
         List<Responsible> resp = new ArrayList<Responsible>();
         for (Person person : persons) {
-            BugzillaBugsSchema bugs = calltoServiceBugs("?assigned_to=" + person.getUsername());
+            BugzillaBugsSchema bugs = calltoServiceBugs("?assigned_to=" + person.getUsername()+"&include_fields=id");
             resp.addAll(bugs.getResponsibles(person.getUsername()));
         }
         responsibles = resp;
