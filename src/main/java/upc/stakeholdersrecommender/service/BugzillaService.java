@@ -45,7 +45,7 @@ public class BugzillaService {
 
 
     public void extractPersons() {
-        BugzillaBugsSchema bugs = calltoServiceBugs("?creation_time=2014-01-1");
+        BugzillaBugsSchema bugs = calltoServiceBugs("?creation_time=2014-01-1&include_fields=assigned_to,creator,cc");
         Set<String> stakeholders = bugs.getStakeholders();
         List<Person> pers = new ArrayList<Person>();
         for (String s : stakeholders) {

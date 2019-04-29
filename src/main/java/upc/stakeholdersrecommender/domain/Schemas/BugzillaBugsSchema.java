@@ -18,13 +18,16 @@ public class BugzillaBugsSchema implements Serializable {
         Set<String> name = new HashSet<String>();
         Set<String> id = new HashSet<String>();
         for (BugzillaBug bug : bugs) {
-            name.add(bug.getAssigned_to_detail().getName());
-            id.add(bug.getAssigned_to_detail().getId());
-            name.add(bug.getCreator_detail().getName());
-            id.add(bug.getCreator_detail().getId());
-            for (BugzillaIdentifier identifier : bug.getCc_detail()) {
-                id.add(identifier.getId());
-                name.add(identifier.getId());
+            if (bug.getAssigned_to()!=null) {
+                name.add(bug.getAssigned_to());
+            }
+            if (bug.getCreator()!=null) {
+                name.add(bug.getCreator());
+            }
+            if (bug.getCc()!=null) {
+                for (String identifier : bug.getCc()) {
+                    name.add(identifier);
+                }
             }
         }
         return name;
