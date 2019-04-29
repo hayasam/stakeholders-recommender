@@ -7,7 +7,8 @@ public class Participant implements Serializable {
     private String project;
     private String person;
 
-    public Participant() { }
+    public Participant() {
+    }
 
     public Participant(String person, String project) {
         this.person = person;

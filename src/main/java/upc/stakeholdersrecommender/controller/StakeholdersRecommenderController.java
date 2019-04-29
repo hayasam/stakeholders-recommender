@@ -47,9 +47,11 @@ public class StakeholdersRecommenderController {
 
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch,@RequestParam Boolean withAvailability) throws Exception {
-        Integer res = stakeholdersRecommenderService.addBatch(batch,withAvailability);
+    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation." +
+            " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
+            " or not.", notes = "", response = BatchReturnSchema.class)
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @RequestParam Boolean withAvailability) throws Exception {
+        Integer res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
@@ -68,12 +70,14 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a list of the best K recommendations", notes = "", response = RecommendReturnSchema[].class)
+            "recommendation and returns a list of the best K recommendations." +
+            "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders, or only those" +
+            " specified in \"participants\"", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
-                                                       @RequestParam Integer k,@RequestParam Boolean projectSpecific) throws Exception {
-        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k,projectSpecific);
+                                                       @RequestParam Integer k, @RequestParam Boolean projectSpecific) throws Exception {
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific);
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 
@@ -84,15 +88,15 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "extractHistoric", method = RequestMethod.GET)
+    @RequestMapping(value = "extractHistoric", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Extract all historic information of the bugzilla API", notes = "")
     public ResponseEntity extractBugzilla() throws IOException {
         bugzillaService.extractInfo();
-        BatchSchema batch=new BatchSchema();
+        BatchSchema batch = new BatchSchema();
         batch.setPersons(bugzillaService.getPersons());
         batch.setResponsibles(bugzillaService.getResponsibles());
         batch.setRequirements(bugzillaService.getRequirements());
-        return new ResponseEntity<BatchSchema>(batch,HttpStatus.OK);
+        return new ResponseEntity(batch, HttpStatus.OK);
     }
 
 

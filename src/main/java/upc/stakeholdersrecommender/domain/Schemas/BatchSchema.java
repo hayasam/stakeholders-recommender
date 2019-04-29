@@ -45,7 +45,11 @@ public class BatchSchema implements Serializable {
         this.requirements = requirements;
     }
 
-    public List<Participant> getParticipants() { return participants; }
+    public List<Participant> getParticipants() {
+        return participants;
+    }
 
-    public void setParticipants(List<Participant> participants) { this.participants = participants; }
+    public void setParticipants(List<Participant> participants) {
+        this.participants = participants;
+    }
 }

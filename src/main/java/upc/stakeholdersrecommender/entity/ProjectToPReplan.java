@@ -2,12 +2,12 @@ package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Table(name = "project_to_replan")
@@ -19,6 +19,7 @@ public class ProjectToPReplan implements Serializable {
 
     private Integer idReplan;
 
+    @ElementCollection
     private List<String> participants;
 
     public ProjectToPReplan() {
@@ -33,6 +34,10 @@ public class ProjectToPReplan implements Serializable {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public Integer getIdReplan() {
         return idReplan;
     }
@@ -45,9 +50,11 @@ public class ProjectToPReplan implements Serializable {
         this.id = id;
     }
 
-    public void setId(String id) { this.id = id; }
+    public List<String> getParticipants() {
+        return participants;
+    }
 
-    public List<String> getParticipants() { return participants; }
-
-    public void setParticipants(List<String> participants) { this.participants = participants; }
+    public void setParticipants(List<String> participants) {
+        this.participants = participants;
+    }
 }

@@ -1,4 +1,6 @@
-package upc.stakeholdersrecommender.domain;
+package upc.stakeholdersrecommender.domain.Schemas;
+
+import upc.stakeholdersrecommender.domain.SimilaritySchema;
 
 import java.io.Serializable;
 import java.util.List;

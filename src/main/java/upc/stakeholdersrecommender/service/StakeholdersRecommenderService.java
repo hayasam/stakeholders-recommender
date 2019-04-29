@@ -52,14 +52,13 @@ public class StakeholdersRecommenderService {
             for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
             }
-        }
-        else {
-           ProjectToPReplan proj= ProjectToPReplanRepository.getOne(p);
-           List<String> part=proj.getParticipants();
-           for (String person:part) {
-               PersonToPReplan pers=PersonToPReplanRepository.findById(new PersonId(project_replanID,person));
-               reslist.add(new ResourceListReplan(pers.getIdReplan()));
-           }
+        } else {
+            ProjectToPReplan proj = ProjectToPReplanRepository.getOne(p);
+            List<String> part = proj.getParticipants();
+            for (String person : part) {
+                PersonToPReplan pers = PersonToPReplanRepository.findById(new PersonId(project_replanID, person));
+                reslist.add(new ResourceListReplan(pers.getIdReplan()));
+            }
         }
         replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
         Plan[] plan = replanService.plan(project_replanID, releaseId);
@@ -111,14 +110,11 @@ public class StakeholdersRecommenderService {
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
         }
-        for (Participant par : request.getParticipants()) {
-
-        }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<String>> recsPerson = getRecsPerson(request);
         Map<String, List<String>> participants = getParticipants(request);
         for (Project p : request.getProjects()) {
-            String id = instanciateProject(p,participants);
+            String id = instanciateProject(p, participants);
             List<String> requirementNames = new ArrayList<String>();
             requirementNames.addAll(recs.keySet());
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
@@ -134,11 +130,10 @@ public class StakeholdersRecommenderService {
             if (personRecs.get(person.getUsername()) != null)
                 out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
             else out = new ArrayList<>();
-            Double availability=0.0;
+            Double availability = 0.0;
             if (withAvailability) {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
-            }
-            else availability=1.0;
+            } else availability = 1.0;
             instanciateResource(person, id, out, availability);
         }
     }
@@ -424,13 +419,15 @@ public class StakeholdersRecommenderService {
 
     private Map<String, List<String>> getParticipants(BatchSchema request) {
         Map<String, List<String>> participants = new HashMap<String, List<String>>();
-        for (Participant par : request.getParticipants()) {
-            if (participants.containsKey(par.getProject())) {
-                participants.get(par.getProject()).add(par.getPerson());
-            } else {
-                List<String> aux = new ArrayList<String>();
-                aux.add(par.getPerson());
-                participants.put(par.getProject(), aux);
+        if (request.getParticipants() != null) {
+            for (Participant par : request.getParticipants()) {
+                if (participants.containsKey(par.getProject())) {
+                    participants.get(par.getProject()).add(par.getPerson());
+                } else {
+                    List<String> aux = new ArrayList<String>();
+                    aux.add(par.getPerson());
+                    participants.put(par.getProject(), aux);
+                }
             }
         }
         return participants;

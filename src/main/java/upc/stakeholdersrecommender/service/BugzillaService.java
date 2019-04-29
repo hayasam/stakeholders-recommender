@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.Project;
 import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.BugzillaBugsSchema;
@@ -45,42 +44,39 @@ public class BugzillaService {
     }
 
 
-
     public void extractPersons() {
-    BugzillaBugsSchema bugs = calltoService("?creation_time=2014-01-1");
-    Set<String> stakeholders=bugs.getStakeholders();
-    List<Person> pers=new ArrayList<Person>();
-    for (String s:stakeholders) {
-        pers.add(new Person(s));
-    }
-    persons=pers;
+        BugzillaBugsSchema bugs = calltoServiceBugs("?creation_time=2014-01-1");
+        Set<String> stakeholders = bugs.getStakeholders();
+        List<Person> pers = new ArrayList<Person>();
+        for (String s : stakeholders) {
+            pers.add(new Person(s));
+        }
+        persons = pers;
     }
 
     public void extractResponsibles() {
-        List<Responsible> resp= new ArrayList<Responsible>();
-        for (Person person:persons) {
-            BugzillaBugsSchema bugs = calltoService("?assigned_to="+person.getUsername());
+        List<Responsible> resp = new ArrayList<Responsible>();
+        for (Person person : persons) {
+            BugzillaBugsSchema bugs = calltoServiceBugs("?assigned_to=" + person.getUsername());
             resp.addAll(bugs.getResponsibles(person.getUsername()));
         }
-        responsibles=resp;
+        responsibles = resp;
     }
 
     public void extractRequirements() {
-        List<Requirement> req= new ArrayList<Requirement>();
-        Set<String>reqId=new HashSet<String>();
-        for (Responsible resp: responsibles) {
+        List<Requirement> req = new ArrayList<Requirement>();
+        Set<String> reqId = new HashSet<String>();
+        for (Responsible resp : responsibles) {
             reqId.add(resp.getRequirement());
         }
-        for (String s: reqId) {
-            BugzillaBugsSchema bug = calltoService("?id="+s);
-            for (BugzillaBug bgzbug: bug.getBugs()) {
-                Requirement requirement = new Requirement();
-                requirement.setId(s);
-                requirement.setDescription(bgzbug.getSummary());
-                req.add(requirement);
-            }
+        for (String s : reqId) {
+            BugzillaBug bug = calltoService("/"+s);
+            Requirement requirement = new Requirement();
+            requirement.setId(s);
+            requirement.setDescription(bug.getSummary());
+            req.add(requirement);
         }
-        requirements=req;
+        requirements = req;
     }
 
     public List<Responsible> getResponsibles() {
@@ -108,14 +104,25 @@ public class BugzillaService {
     }
 
 
-    private BugzillaBugsSchema calltoService(String param) {
-        String callUrl=bugzillaUrl+"/rest/bug"+param;
+    private BugzillaBugsSchema calltoServiceBugs(String param) {
+        String callUrl = bugzillaUrl + "/rest/bug" + param;
         System.out.println(callUrl);
         ResponseEntity<BugzillaBugsSchema> response = restTemplate.exchange(
                 callUrl,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<BugzillaBugsSchema>() {
+                });
+        return response.getBody();
+    }
+    private BugzillaBug calltoService(String param) {
+        String callUrl = bugzillaUrl + "/rest/bug" + param;
+        System.out.println(callUrl);
+        ResponseEntity<BugzillaBug> response = restTemplate.exchange(
+                callUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<BugzillaBug>() {
                 });
         return response.getBody();
     }
