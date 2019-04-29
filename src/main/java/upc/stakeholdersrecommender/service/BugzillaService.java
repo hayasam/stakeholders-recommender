@@ -56,7 +56,10 @@ public class BugzillaService {
 
     public void extractResponsibles() {
         List<Responsible> resp = new ArrayList<Responsible>();
+        int i =0;
         for (Person person : persons) {
+            System.out.println(persons.size()-i+" are left");
+            ++i;
             BugzillaBugsSchema bugs = calltoServiceBugs("?assigned_to=" + person.getUsername()+"&include_fields=id");
             resp.addAll(bugs.getResponsibles(person.getUsername()));
         }
@@ -66,10 +69,13 @@ public class BugzillaService {
     public void extractRequirements() {
         List<Requirement> req = new ArrayList<Requirement>();
         Set<String> reqId = new HashSet<String>();
+        int i =0;
         for (Responsible resp : responsibles) {
             reqId.add(resp.getRequirement());
         }
         for (String s : reqId) {
+            System.out.println(reqId.size()-i+" are left");
+            ++i;
             BugzillaBug bug = calltoService("/"+s);
             Requirement requirement = new Requirement();
             requirement.setId(s);
