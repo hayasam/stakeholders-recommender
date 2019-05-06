@@ -98,6 +98,13 @@ public class StakeholdersRecommenderController {
         batch.setRequirements(bugzillaService.getRequirements());
         return new ResponseEntity(batch, HttpStatus.OK);
     }
+/*
+    @RequestMapping(value = "testTime", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Extract all historic information of the bugzilla API", notes = "")
+    public ResponseEntity extractTime() throws IOException {
+        bugzillaService.testTime();
+        return new ResponseEntity(HttpStatus.OK);
+    }
 
-
+ */
 }

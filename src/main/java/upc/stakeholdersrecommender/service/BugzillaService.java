@@ -1,6 +1,7 @@
 package upc.stakeholdersrecommender.service;
 
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -13,10 +14,9 @@ import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.BugzillaBugsSchema;
 import upc.stakeholdersrecommender.domain.bugzilla.BugzillaBug;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class BugzillaService {
@@ -29,6 +29,8 @@ public class BugzillaService {
     private List<Requirement> requirements;
     private List<Person> persons;
 
+    private Map<String,List<BugzillaBug>> bugs=new HashMap<String,List<BugzillaBug>>();
+
     public String getBugzillaUrl() {
         return bugzillaUrl;
     }
@@ -38,15 +40,58 @@ public class BugzillaService {
     }
 
     public void extractInfo() {
+        setBugs();
         extractPersons();
         extractResponsibles();
-        extractRequirements();
     }
+
+    private void setBugs() {
+        Integer offset=0;
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&creation_time=1990-01-01&limit=10000&offset="+offset);
+        List<Requirement> reqs= new ArrayList<Requirement>();
+        while (response.getBugs()!=null) {
+            for (BugzillaBug bu:response.getBugs()) {
+                List<BugzillaBug> list= new ArrayList<BugzillaBug>();
+                if (bugs.containsKey(bu.getAssigned_to())) {
+                    List<BugzillaBug> aux=bugs.get(bu.getAssigned_to());
+                    aux.add(bu);
+                    bugs.put(bu.getAssigned_to(),aux);
+                }
+                else {
+                    list.add(bu);
+                    bugs.put(bu.getAssigned_to(),list);
+                }
+                Requirement requirement = new Requirement();
+                requirement.setId(bu.getId());
+                requirement.setDescription(bu.getSummary());
+                reqs.add(requirement);
+            }
+            offset=offset+10000;
+            response=calltoServiceBugs("?include_fields=id,assigned_to,summary&creation_time=1990-01-01&limit=10000&offset="+offset);
+        }
+        requirements=reqs;
+
+    }
+    /*
+
+    public void testTime() {
+        DateFormat helper= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        for (int i=0;i<20;++i) {
+            Date dat=new Date(System.currentTimeMillis() -(3600 * 1000)*i);
+            Long timeto=System.currentTimeMillis();
+            BugzillaBugsSchema bugs = calltoServiceBugs("?creation_time="+dateFormat.format(dat)+"&include_fields=assigned_to,id,summary,status");
+            Long finished=System.currentTimeMillis();
+            Long executionTime=finished-timeto;
+            System.out.println(executionTime);
+        }
+    }
+    */
 
 
     public void extractPersons() {
-        BugzillaBugsSchema bugs = calltoServiceBugs("?creation_time=2014-01-1&include_fields=assigned_to,creator,cc");
-        Set<String> stakeholders = bugs.getStakeholders();
+        Set<String> stakeholders= new HashSet<String>();
+        stakeholders.addAll(bugs.keySet());
         List<Person> pers = new ArrayList<Person>();
         for (String s : stakeholders) {
             pers.add(new Person(s));
@@ -58,14 +103,16 @@ public class BugzillaService {
         List<Responsible> resp = new ArrayList<Responsible>();
         int i =0;
         for (Person person : persons) {
-            System.out.println(persons.size()-i+" are left");
-            ++i;
-            BugzillaBugsSchema bugs = calltoServiceBugs("?assigned_to=" + person.getUsername()+"&include_fields=id");
-            resp.addAll(bugs.getResponsibles(person.getUsername()));
+            for (BugzillaBug b: bugs.get(person.getUsername())) {
+                Responsible re= new Responsible();
+                re.setPerson(person.getUsername());
+                re.setRequirement(b.getId());
+                resp.add(re);
+            }
         }
         responsibles = resp;
     }
-
+/*
     public void extractRequirements() {
         List<Requirement> req = new ArrayList<Requirement>();
         Set<String> reqId = new HashSet<String>();
@@ -74,9 +121,7 @@ public class BugzillaService {
             reqId.add(resp.getRequirement());
         }
         for (String s : reqId) {
-            System.out.println(reqId.size()-i+" are left");
-            ++i;
-            BugzillaBug bug = calltoService("/"+s);
+            List<BugzillaBug> bug = bugs.getBugs();
             Requirement requirement = new Requirement();
             requirement.setId(s);
             requirement.setDescription(bug.getSummary());
@@ -84,7 +129,7 @@ public class BugzillaService {
         }
         requirements = req;
     }
-
+*/
     public List<Responsible> getResponsibles() {
         return responsibles;
     }

@@ -6,9 +6,8 @@ import java.util.List;
 public class BugzillaBug implements Serializable {
 
     String assigned_to;
-    String creator;
-    List<String> cc;
     String id;
+    String status;
     String summary;
 
     public String getAssigned_to() {
@@ -17,22 +16,6 @@ public class BugzillaBug implements Serializable {
 
     public void setAssigned_to(String assigned_to) {
         this.assigned_to = assigned_to;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public List<String> getCc() {
-        return cc;
-    }
-
-    public void setCc(List<String> cc) {
-        this.cc = cc;
     }
 
     public String getId() {
@@ -49,5 +32,13 @@ public class BugzillaBug implements Serializable {
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

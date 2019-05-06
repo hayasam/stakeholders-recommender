@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class BugzillaBugsSchema implements Serializable {
 
-    List<BugzillaBug> bugs;
+    List<BugzillaBug> bugs= new ArrayList<BugzillaBug>();
 
     public Set<String> getStakeholders() {
         Set<String> name = new HashSet<String>();
@@ -20,14 +20,6 @@ public class BugzillaBugsSchema implements Serializable {
             if (bug.getAssigned_to()!=null) {
                 name.add(bug.getAssigned_to());
             }
-            if (bug.getCreator()!=null) {
-                name.add(bug.getCreator());
-            }
-            if (bug.getCc()!=null) {
-                for (String identifier : bug.getCc()) {
-                    name.add(identifier);
-                }
-            }
         }
         return name;
     }
@@ -35,10 +27,12 @@ public class BugzillaBugsSchema implements Serializable {
     public List<Responsible> getResponsibles(String user) {
         List<Responsible> resp = new ArrayList<Responsible>();
         for (BugzillaBug bug : bugs) {
-            Responsible re = new Responsible();
-            re.setPerson(user);
-            re.setRequirement(bug.getId());
-            resp.add(new Responsible());
+            if (bug.getAssigned_to().equals(user)) {
+                Responsible re = new Responsible();
+                re.setPerson(user);
+                re.setRequirement(bug.getId());
+                resp.add(new Responsible());
+            }
         }
         return resp;
     }
@@ -49,6 +43,12 @@ public class BugzillaBugsSchema implements Serializable {
 
     public void setBugs(List<BugzillaBug> bugs) {
         this.bugs = bugs;
+    }
+
+    public void addBugs(BugzillaBugsSchema toFuse) {
+        if (toFuse.bugs!=null) {
+            this.bugs.addAll(toFuse.bugs);
+        }
     }
 
 }

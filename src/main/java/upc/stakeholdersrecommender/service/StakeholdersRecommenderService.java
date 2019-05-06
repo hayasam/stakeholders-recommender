@@ -207,7 +207,7 @@ public class StakeholdersRecommenderService {
         for (String s : requirement) {
             corpus.add(recs.get(s).getDescription());
         }
-        List<Map<String, Double>> keywords = extractor.extractKeywords(corpus);
+        List<Map<String, Double>> keywords = extractor.computeTFIDF(corpus);
         int i = 0;
         System.out.println(keywords.size());
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
@@ -266,7 +266,9 @@ public class StakeholdersRecommenderService {
         List<Responsible> returnobject = new ArrayList<Responsible>();
         for (String s : output.keySet()) {
             String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
-            Set<String> inRetty = reject(user, translate(output.get(s)), username);
+            Set<String> idReplan=output.get(s);
+            Set<String> idRecommender=translate(idReplan);
+            Set<String> inRetty = reject(user, idRecommender, username);
             for (String req : inRetty) {
                 returnobject.add(new Responsible(username, req));
             }
@@ -278,7 +280,7 @@ public class StakeholdersRecommenderService {
         Map<String, Set<String>> output = new HashMap<String, Set<String>>();
         for (int i = 0; i < plan.length && i < 10; i++) {
             Plan auxplan = plan[i];
-            Map<String, Set<String>> aux = parse(auxplan);
+            Map<String, Set<String>> aux = parsePlan(auxplan);
             for (String s : aux.keySet()) {
                 if (output.containsKey(s)) {
                     Set<String> value = output.get(s);
@@ -291,7 +293,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private Map<String, Set<String>> parse(Plan plan) {
+    private Map<String, Set<String>> parsePlan(Plan plan) {
         List<ResourceReplan> resources = plan.getResources();
         Map<String, Set<String>> toret = new HashMap<>();
         for (ResourceReplan res : resources) {
@@ -300,21 +302,20 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkills, String project_replanID) {
+    private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkill, String project_replanID) {
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         for (Responsible res : returnobject) {
             PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
             List<ResourceSkill> resSkill = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
             Double total = 0.0;
-            Double amount = 0.0;
             for (ResourceSkill resskill : resSkill) {
-                for (String fet : featureSkills.getSkillIds()) {
-                    if (resskill.getSkill_id().equals(fet)) {
+                for (String done : featureSkill.getSkillIds()) {
+                    if (resskill.getSkill_id().equals(done)) {
                         total = total + resskill.getWeight();
                     }
                 }
             }
-            amount = (double) featureSkills.getSkillIds().size();
+            Double amount = (double) featureSkill.getSkillIds().size();
             Double appropiateness = total / amount;
             Double availability = traductor.getAvailability();
             ret.add(new RecommendReturnSchema(res.getRequirement(), res.getPerson(), appropiateness, availability / 100.0));
@@ -354,10 +355,10 @@ public class StakeholdersRecommenderService {
         replanService.deleteProject(idReplan);
         ProjectToPReplanRepository.deleteById(id);
     }
-/*
+
     public void extract(ExtractTest request) throws Exception {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        Map<String, Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
+        List<Map<String, Double>> res = extractor.computeTFIDF(request.getCorpus());
         Integer i = 0;
         for (Map<String, Double> map : res) {
             System.out.println("------------------------------");
@@ -371,8 +372,8 @@ public class StakeholdersRecommenderService {
         }
     }
 
-*/
 
+/*
     public void extract2(ExtractTest request) throws IOException {
         RAKEKeywordExtractor extractor = new RAKEKeywordExtractor();
         List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());
@@ -388,7 +389,7 @@ public class StakeholdersRecommenderService {
             ++i;
         }
     }
-
+*/
     private Map<String, List<String>> getRecsPerson(BatchSchema request) {
         Map<String, List<String>> recsPerson = new HashMap<String, List<String>>();
         for (Responsible resp : request.getResponsibles()) {

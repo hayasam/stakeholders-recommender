@@ -4,13 +4,13 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import upc.stakeholdersrecommender.domain.Schemas.CorpusSchema;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.lang.StrictMath.sqrt;
 
 public class TFIDFKeywordExtractor {
 
@@ -127,7 +127,7 @@ public class TFIDFKeywordExtractor {
             return result;
         }
     */
-    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
+    public List<Map<String, Double>> computeTFIDF(List<String> corpus) throws Exception {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
             docs.add(englishAnalyze(s));
@@ -157,5 +157,69 @@ public class TFIDFKeywordExtractor {
         }
         return tfidfComputed;
 
+    }
+
+    public double cosineSimilarity(Map<String,Double> wordsA,Map<String,Double> wordsB) {
+        Double cosine=0.0;
+        Set<String> intersection= new HashSet<String>(wordsA.keySet());
+        intersection.retainAll(wordsB.keySet());
+        for (String s: intersection) {
+            Double forA=wordsA.get(s);
+            Double forB=wordsB.get(s);
+            cosine+=forA*forB;
+        }
+        Double normA=norm(wordsA);
+        Double normB=norm(wordsB);
+
+        cosine=cosine/(normA*normB);
+        return cosine;
+    }
+
+    public void extr(CorpusSchema request) throws Exception {
+        Map<String,Map<String,Integer>> keywordGraph= new HashMap<String,Map<String,Integer>>();
+        List<Map<String, Double>> res = computeTFIDF(request.getCorpus());
+        Map<String,Integer> amount=new HashMap<String,Integer>();
+        for (Map<String,Double> words:res) {
+            for (String word: words.keySet()) {
+                Map<String,Integer> keyword=new HashMap<String,Integer>();
+                if (keywordGraph.containsKey(word)) {
+                    keyword=keywordGraph.get(word);
+                    amount.put(word,amount.get(word)+keyword.keySet().size());
+                }
+                else  {
+                    keyword=new HashMap<String,Integer>();
+                    amount.put(word,keyword.keySet().size());
+
+                }
+                for (String adjacentTo: words.keySet()) {
+                    if (keyword.containsKey(adjacentTo)) {
+                        keyword.put(adjacentTo,keyword.get(adjacentTo)+1);
+                    }
+                    else {
+                        keyword.put(adjacentTo,1);
+                    }
+                }
+                keywordGraph.put(word,keyword);
+            }
+        }
+        Map<String,Map<String,Double>> keywordValue= new HashMap<String,Map<String,Double>>();
+//
+        for (String s:keywordGraph.keySet()) {
+            Map<String,Double> aux= new HashMap<String,Double>();
+            Map<String,Integer> line=keywordGraph.get(s);
+            for (String key:line.keySet()) {
+                aux.put(s,line.get(key).doubleValue()/amount.get(s).doubleValue());
+            }
+        }
+
+    }
+
+    private Double norm(Map<String, Double> wordsB) {
+        Double norm=0.0;
+        for (String s:wordsB.keySet()) {
+            norm+=wordsB.get(s)*wordsB.get(s);
+        }
+        Double result=sqrt(norm);
+        return result;
     }
 }

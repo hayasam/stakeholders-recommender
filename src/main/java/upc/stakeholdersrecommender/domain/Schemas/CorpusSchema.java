@@ -7,17 +7,17 @@ import java.util.List;
 
 public class CorpusSchema implements Serializable {
 
-    List<SimilaritySchema> corpus;
+    List<String> corpus;
 
-    public List<SimilaritySchema> getCorpus() {
+    public List<String> getCorpus() {
         return corpus;
     }
 
-    public void setCorpus(List<SimilaritySchema> thing) {
+    public void setCorpus(List<String> thing) {
         this.corpus = thing;
     }
 
-    public List<SimilaritySchema> getThing() {
+    public List<String> getThing() {
         return corpus;
     }
 }
