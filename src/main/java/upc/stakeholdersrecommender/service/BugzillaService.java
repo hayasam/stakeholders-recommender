@@ -49,7 +49,7 @@ public class BugzillaService {
         Integer offset=0;
         BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&creation_time=1990-01-01&limit=10000&offset="+offset);
         List<Requirement> reqs= new ArrayList<Requirement>();
-        while (response.getBugs()!=null) {
+        while (response.getBugs()!=null && response.getBugs().size()>0) {
             for (BugzillaBug bu:response.getBugs()) {
                 List<BugzillaBug> list= new ArrayList<BugzillaBug>();
                 if (bugs.containsKey(bu.getAssigned_to())) {
