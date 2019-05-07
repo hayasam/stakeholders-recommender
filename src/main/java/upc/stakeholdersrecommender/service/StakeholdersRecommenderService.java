@@ -31,6 +31,8 @@ public class StakeholdersRecommenderService {
     private RequirementSkillsRepository RequirementSkillsRepository;
     @Autowired
     private ReplanService replanService;
+    @Autowired
+    private EffortRepository EffortRepository;
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific) throws Exception {
@@ -51,6 +53,7 @@ public class StakeholdersRecommenderService {
         if (!projectSpecific) {
             for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
+                // Add special availability calc
             }
         } else {
             ProjectToPReplan proj = ProjectToPReplanRepository.getOne(p);
@@ -132,7 +135,7 @@ public class StakeholdersRecommenderService {
             else out = new ArrayList<>();
             Double availability = 0.0;
             if (withAvailability) {
-                availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person);
+                availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
             } else availability = 1.0;
             instanciateResource(person, id, out, availability);
         }
@@ -147,7 +150,7 @@ public class StakeholdersRecommenderService {
         }
     }
 
-    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person) {
+    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<String>(requirements);
         List<String> toRemove = new ArrayList<String>(requirements);
@@ -155,7 +158,7 @@ public class StakeholdersRecommenderService {
         intersection.removeAll(toRemove);
         Double hours = 0.0;
         for (String s : intersection) {
-            hours += extractAvailability(s);
+            hours += extractAvailability(requirementMap.get(s).getEffort(),project);
         }
         Double result = calculateAvailability(hours, 40);
         return result;
@@ -165,8 +168,9 @@ public class StakeholdersRecommenderService {
         return (max(0, (1 - (hours / 40.0)))) * 100;
     }
 
-    private Double extractAvailability(String s) {
-        return 2.0;
+    private Integer extractAvailability(Integer s,String project) {
+        Effort eff=EffortRepository.getOne(project);
+        return eff.getEffort()[s];
     }
 
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {

@@ -10,6 +10,8 @@ public class Requirement implements Serializable {
 
     private String id;
 
+    private Integer effort;
+
     @JsonIgnore
     private List<Skill> skills = new ArrayList<Skill>();
 
@@ -69,5 +71,13 @@ public class Requirement implements Serializable {
 
     public void addSkill(Skill auxiliar) {
         this.skills.add(auxiliar);
+    }
+
+    public Integer getEffort() {
+        return effort;
+    }
+
+    public void setEffort(Integer effort) {
+        this.effort = effort;
     }
 }
