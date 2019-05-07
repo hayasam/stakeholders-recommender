@@ -99,6 +99,7 @@ public class TFIDFKeywordExtractor {
     */
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<String>();
+        text=clean_text(text,1);
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
         tokenStream.reset();
@@ -175,6 +176,8 @@ public class TFIDFKeywordExtractor {
         return cosine;
     }
 
+    /*
+
     public void extr(CorpusSchema request) throws Exception {
         Map<String,Map<String,Integer>> keywordGraph= new HashMap<String,Map<String,Integer>>();
         List<Map<String, Double>> res = computeTFIDF(request.getCorpus());
@@ -214,6 +217,8 @@ public class TFIDFKeywordExtractor {
 
     }
 
+     */
+
     private Double norm(Map<String, Double> wordsB) {
         Double norm=0.0;
         for (String s:wordsB.keySet()) {
@@ -221,5 +226,94 @@ public class TFIDFKeywordExtractor {
         }
         Double result=sqrt(norm);
         return result;
+    }
+
+    private String clean_text(String text, int clean) {
+        text = text.replaceAll("_", "");
+        if (clean == 0) return text;
+        else if (clean == 1) {
+
+            String[] aux = text.split(" ");
+            text = "";
+            for (String word: aux) {
+                if (word.equals(word.toUpperCase())) word = word.toLowerCase();
+                text = text.concat(" " + word);
+            }
+
+            //text = text.replace("n't", "");
+
+            text = text.replace("..", ".");
+            text = text.replace(":", " ");
+            text = text.replace("\"", "");
+            text = text.replace("\\r", ".");
+            text = text.replace("..", ".");
+            text = text.replace("\\n", ".");
+            text = text.replace("..", ".");
+            text = text.replace("!", ".");
+            text = text.replace("..", ".");
+            text = text.replace("?", ".");
+            text = text.replace("..", ".");
+            text = text.replace("=", " ");
+            text = text.replace(">", " ");
+            text = text.replace("<", " ");
+            text = text.replace("%", " ");
+            text = text.replace("#", " ");
+            text = text.replace(",", " ");
+            text = text.replace("(", " ");
+            text = text.replace(")", " ");
+            text = text.replace("{", " ");
+            text = text.replace("}", " ");
+            text = text.replace("-", " ");
+
+            String result = "";
+            String[] r = text.split("(?=\\p{Upper})");
+            for (String word: r) result = result.concat(" " + word);
+
+
+            return result;
+        }
+        else {
+            text = text.replaceAll("(\\{code.*?\\{code)","");
+
+            String[] aux = text.split(" ");
+            text = "";
+            for (String word: aux) {
+                if (word.equals(word.toUpperCase())) word = word.toLowerCase();
+                text = text.concat(" " + word);
+            }
+
+            text = text.replace("..", ".");
+            text = text.replace("\"", "");
+            text = text.replace(":", " ");
+            text = text.replace("\\r", ".");
+            text = text.replace("..", ".");
+            text = text.replace("\\n", ".");
+            text = text.replace("..", ".");
+            text = text.replace("!", ".");
+            text = text.replace("..", ".");
+            text = text.replace("?", ".");
+            text = text.replace("..", ".");
+            text = text.replace("=", " ");
+            text = text.replace("%", " ");
+            text = text.replace("#", " ");
+            text = text.replace(",", " ");
+            text = text.replace("(", " ");
+            text = text.replace(")", " ");
+            text = text.replace("{", " ");
+            text = text.replace("}", " ");
+            text = text.replace("-", " ");
+            text = text.replace(">", " ");
+            text = text.replace("<", " ");
+
+            String result = "";
+            String[] r = text.split("(?=\\p{Upper})");
+            for (String word: r) result = result.concat(" " + word);
+
+            text = "";
+            for (String word: result.split(" ")) {
+                if (word.length() < 20) text = text.concat(" " + word);
+            }
+            return result;
+        }
     }
 }

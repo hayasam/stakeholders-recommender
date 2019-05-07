@@ -20,16 +20,7 @@ import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 import java.io.IOException;
 import java.util.List;
 /*
-Parsejar informacio de "participant", que indica a quin projecte participa cada stakeholder ( Guardar mapa ).
-Afegir a recommend una manera de discriminar tal que utilitza "participant" o no (Parametre, si ok, a release).
-
-Participant = Map<ProjectID, List<Stakeholders>>
-Si "part", a release nomes entran els stakeholders de get(projectId)
-Si no, tots
-
-Añadir parametro en recommend para usar availability, o no.
-
-Sacar información del endpoint de vogella (mail)
+Llega horas por
  */
 
 

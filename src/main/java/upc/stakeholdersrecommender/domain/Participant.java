@@ -6,6 +6,7 @@ public class Participant implements Serializable {
 
     private String project;
     private String person;
+    private Integer availability;
 
     public Participant() {
     }
@@ -29,5 +30,13 @@ public class Participant implements Serializable {
 
     public void setPerson(String person) {
         this.person = person;
+    }
+
+    public Integer getAvailability() {
+        return availability;
+    }
+
+    public void setAvaiability(Integer availability) {
+        this.availability = availability;
     }
 }

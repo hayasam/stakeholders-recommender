@@ -123,8 +123,18 @@ public class StakeholdersRecommenderService {
             Map<String, List<SkillListReplan>> allSkills = computeSkillsRequirement(requirementNames, id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
+            setHours(request.getParticipants());
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
+    }
+
+    private void setHours(List<Participant> participants) {
+        for (Participant part: participants) {
+            PersonId pers= new PersonId(part.getProject(),part.getPerson());
+            PersonToPReplan resource=PersonToPReplanRepository.findById(pers);
+            resource.setHours(part.getAvailability());
+            PersonToPReplanRepository.save(resource);
+        }
     }
 
     private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id, Boolean withAvailability) {

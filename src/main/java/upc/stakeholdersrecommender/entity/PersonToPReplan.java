@@ -21,6 +21,8 @@ public class PersonToPReplan implements Serializable {
 
     private Double availability;
 
+    private Integer hours;
+
     public PersonToPReplan() {
 
     }
@@ -67,5 +69,13 @@ public class PersonToPReplan implements Serializable {
 
     public void setIdReplan(String id_replan) {
         this.idReplan = id_replan;
+    }
+
+    public Integer getHours() {
+        return hours;
+    }
+
+    public void setHours(Integer hours) {
+        this.hours = hours;
     }
 }
