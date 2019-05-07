@@ -11,13 +11,21 @@ import java.io.Serializable;
 public class Effort implements Serializable {
     @Id
     String id;
-    private Integer[] effort=new Integer[5];
+    private Double[] effort=new Double[5];
 
-    public Integer[] getEffort() {
+    public Double[] getEffort() {
         return effort;
     }
 
-    public void setEffort(Integer[] effort) {
+    public void setEffort(Double[] effort) {
         this.effort = effort;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

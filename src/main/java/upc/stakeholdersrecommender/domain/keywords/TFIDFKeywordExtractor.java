@@ -42,19 +42,6 @@ public class TFIDFKeywordExtractor {
         this.model = model;
     }
 
-    /*
-    public Map<String, Map<String, Double>> extractKeywords(List<String> corpus) throws Exception {
-        List<List<String>> docs = new ArrayList<List<String>>();
-        for (String s : corpus) {
-            docs.add(englishAnalyze(s));
-        }
-        Map<String, Map<String, Double>> res = tfIdf(docs, corpus);
-        model=res;
-        return res;
-
-    }
-*/
-
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<String, Integer>();
         for (String s : doc) {
@@ -74,29 +61,7 @@ public class TFIDFKeywordExtractor {
         return Math.log(size / frequency + 1);
     }
 
-    /*
-        private Map<String,Map<String, Double>> tfIdf(List<List<String>> docs, List<String> corpus) {
-            Map<String,Map<String, Double>> tfidfComputed = new HashMap<String,Map<String, Double>>();
-            List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
-            for (List<String> doc : docs) {
-                wordBag.add(tf(doc));
-            }
-            Integer i = 0;
-            for (List<String> doc : docs) {
-                HashMap<String, Double> aux = new HashMap<String, Double>();
-                for (String s : doc) {
-                    Double idf = idf(docs.size(), corpusFrequency.get(s));
-                    Integer tf = wordBag.get(i).get(s);
-                    Double tfidf = idf * tf;
-                    if (tfidf>=cutoffParameter) aux.put(s, tfidf);
-                }
-                tfidfComputed.put(corpus.get(i),aux);
-                ++i;
-            }
-            return tfidfComputed;
 
-        }
-    */
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<String>();
         text=clean_text(text,1);

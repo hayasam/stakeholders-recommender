@@ -170,15 +170,15 @@ public class StakeholdersRecommenderService {
         for (String s : intersection) {
             hours += extractAvailability(requirementMap.get(s).getEffort(),project);
         }
-        Double result = calculateAvailability(hours, 40);
+        Double result = calculateAvailability(hours, PersonToPReplanRepository.findById(new PersonId(project,person.getUsername())).getHours());
         return result;
     }
 
-    private Double calculateAvailability(Double hours, int i) {
-        return (max(0, (1 - (hours / 40.0)))) * 100;
+    private Double calculateAvailability(Double hours, Integer i) {
+        return (max(0, (1 - (hours / i.doubleValue())))) * 100;
     }
 
-    private Integer extractAvailability(Integer s,String project) {
+    private Double extractAvailability(Integer s,String project) {
         Effort eff=EffortRepository.getOne(project);
         return eff.getEffort()[s];
     }
