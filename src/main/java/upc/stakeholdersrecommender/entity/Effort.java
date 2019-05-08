@@ -1,16 +1,15 @@
 package upc.stakeholdersrecommender.entity;
 
-import org.springframework.data.annotation.Id;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "person_to_replan")
+@Table(name = "effort_project")
 public class Effort implements Serializable {
     @Id
-    String id;
+    private String id;
+
+    @OrderColumn
     private Double[] effort=new Double[5];
 
     public Double[] getEffort() {

@@ -16,7 +16,6 @@ public interface PersonToPReplanRepository extends JpaRepository<PersonToPReplan
 
     PersonToPReplan findByIdReplan(String id);
 
-    PersonToPReplan findByIdPersonId(String id);
 
 
     @Transactional

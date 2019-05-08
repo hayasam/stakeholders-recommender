@@ -47,7 +47,7 @@ public class BugzillaService {
 
     private void setBugs() {
         Integer offset=0;
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=CLOSED&creation_time=1990-01-01&limit=10000&offset="+offset);
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&creation_time=2017-01-01&limit=10000&offset="+offset);
         List<Requirement> reqs= new ArrayList<Requirement>();
         while (response.getBugs()!=null && response.getBugs().size()>0) {
             for (BugzillaBug bu:response.getBugs()) {
@@ -67,7 +67,7 @@ public class BugzillaService {
                 reqs.add(requirement);
             }
             offset=offset+10000;
-            response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=CLOSED&creation_time=1990-01-01&limit=10000&offset="+offset);
+            response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&creation_time=2017-01-01&limit=10000&offset="+offset);
         }
         requirements=reqs;
 

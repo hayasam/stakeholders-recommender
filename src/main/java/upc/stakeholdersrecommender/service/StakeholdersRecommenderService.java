@@ -10,7 +10,9 @@ import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,8 +54,11 @@ public class StakeholdersRecommenderService {
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         if (!projectSpecific) {
             for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
+
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
-                // Add special availability calc
+                // Add special availability calc, if free hours exist, 1
+                // Availability is set at resource creation, I have to assign one of the duplicate stakeholders,
+                // but set availability to 1, then unset
             }
         } else {
             ProjectToPReplan proj = ProjectToPReplanRepository.getOne(p);
@@ -371,6 +376,8 @@ public class StakeholdersRecommenderService {
     }
 
     public void extract(ExtractTest request) throws Exception {
+       // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
+       // System.setOut(out);
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         List<Map<String, Double>> res = extractor.computeTFIDF(request.getCorpus());
         Integer i = 0;
