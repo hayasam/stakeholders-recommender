@@ -19,7 +19,7 @@ public class FeatureReplan implements Serializable {
 
     public FeatureReplan(Requirement requirement) {
         this.code = requirement.getId().hashCode();
-        this.effort = 10;
+        this.effort = requirement.getEffort();
         this.priority = 1;
     }
 
