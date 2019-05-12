@@ -14,6 +14,7 @@ import upc.stakeholdersrecommender.domain.Skill;
 import upc.stakeholdersrecommender.domain.replan.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -111,7 +112,7 @@ public class ReplanService {
         return createdReplan;
     }
 
-    public SkillReplan[] createSkills(List<Skill> skills, String projectId) {
+    public SkillReplan[] createSkills(Collection<Skill> skills, String projectId) {
         List<SkillReplan> skillsReplan=new ArrayList<SkillReplan>();
         for (Skill skill:skills) {
             skillsReplan.add(new SkillReplan(skill));
