@@ -57,6 +57,21 @@ public class ReplanService {
         return createdResource;
     }
 
+    public ResourceReplan[] createResources(List<Person> p, String projectId) {
+        List<ResourceReplan> resourceReplan = new ArrayList<ResourceReplan>();
+        for (Person person:p) {
+            ResourceReplan res=new ResourceReplan(person);
+            resourceReplan.add(res);
+        }
+
+        ResourceReplan[] createdResource = restTemplate.postForObject(
+                replanUrl + "/projects/" + projectId + "/resources/create_n",
+                resourceReplan,
+                ResourceReplan[].class);
+
+        return createdResource;
+    }
+
     public FeatureReplan createRequirement(String requirement, String projectId) {
         FeatureReplan featureReplan = new FeatureReplan(requirement);
 
@@ -64,6 +79,20 @@ public class ReplanService {
                 replanUrl + "/projects/" + projectId + "/features/create_one",
                 featureReplan,
                 FeatureReplan.class);
+
+        return createdFeature;
+    }
+
+    public FeatureReplan[] createRequirements(List<String> requirement, String projectId) {
+        List<FeatureReplan> featureList= new ArrayList<FeatureReplan>();
+        for (String s:requirement) {
+            featureList.add(new FeatureReplan(s));
+        }
+
+        FeatureReplan[] createdFeature = restTemplate.postForObject(
+                replanUrl + "/projects/" + projectId + "/features/create_n",
+                featureList,
+                FeatureReplan[].class);
 
         return createdFeature;
     }
@@ -79,6 +108,18 @@ public class ReplanService {
                 skillReplan,
                 SkillReplan.class);
         System.out.println("Skill Created: " + createdReplan.getId());
+        return createdReplan;
+    }
+
+    public SkillReplan[] createSkills(List<Skill> skills, String projectId) {
+        List<SkillReplan> skillsReplan=new ArrayList<SkillReplan>();
+        for (Skill skill:skills) {
+            skillsReplan.add(new SkillReplan(skill));
+        }
+        SkillReplan[] createdReplan = restTemplate.postForObject(
+                replanUrl + "/projects/" + projectId + "/skills/create_n",
+                skillsReplan,
+                SkillReplan[].class);
         return createdReplan;
     }
 

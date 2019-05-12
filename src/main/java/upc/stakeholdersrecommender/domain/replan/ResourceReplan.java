@@ -22,7 +22,7 @@ public class ResourceReplan implements Serializable {
 
     public ResourceReplan(Person p) {
         this.name = p.getUsername();
-        this.availability = 100.00;
+        this.availability = p.getAvailability();
     }
 
     public ResourceReplan(Person p, Double availability) {
