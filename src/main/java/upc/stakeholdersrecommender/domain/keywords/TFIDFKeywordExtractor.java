@@ -91,7 +91,7 @@ public class TFIDFKeywordExtractor {
             return result;
         }
     */
-    public List<Map<String, Double>> computeTFIDF(List<String> corpus) throws Exception {
+    public List<Map<String, Double>> computeTFIDF(List<String> corpus) throws IOException {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (String s : corpus) {
             docs.add(englishAnalyze(s));

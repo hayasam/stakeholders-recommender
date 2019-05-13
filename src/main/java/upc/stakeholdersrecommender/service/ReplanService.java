@@ -90,7 +90,7 @@ public class ReplanService {
         res.setFeatureReplan(requirements);
         FeatureReplan[] createdFeature = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/features/create_n",
-                res,
+                requirements,
                 FeatureReplan[].class);
 
         return createdFeature;
@@ -106,7 +106,6 @@ public class ReplanService {
                 replanUrl + "/projects/" + projectId + "/skills",
                 skillReplan,
                 SkillReplan.class);
-        System.out.println("Skill Created: " + createdReplan.getId());
         return createdReplan;
     }
 
@@ -119,7 +118,7 @@ public class ReplanService {
         res.setSkillReplan(skillsReplan);
         SkillReplan[] createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills/create_n",
-                res,
+                skillsReplan,
                 SkillReplan[].class);
         return createdReplan;
     }

@@ -44,7 +44,16 @@ public class StakeholdersRecommenderController {
             " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
             " or not.", notes = "", response = BatchReturnSchema.class)
     public ResponseEntity addBatch(@RequestBody BatchSchema batch, @RequestParam Boolean withAvailability) throws Exception {
-        Integer res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
+        int res=0;
+        try {
+            res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
+        }
+        catch(IOException e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch(Exception e){
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
@@ -100,14 +109,14 @@ public class StakeholdersRecommenderController {
     }
 
     // Añadir funciones para calcular effort historico y poner effort directamente
-    @RequestMapping(value = "setEffort", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
     public ResponseEntity setEffort(@RequestBody SetEffortSchema eff, @RequestParam String project) throws IOException {
         effortCalc.setEffort(eff,project);
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "computeEffort", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "computeEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given", notes = "")
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
         effortCalc.effortCalc(eff,project);

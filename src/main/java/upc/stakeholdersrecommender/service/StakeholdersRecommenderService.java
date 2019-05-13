@@ -4,15 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
-import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -123,9 +120,7 @@ public class StakeholdersRecommenderService {
         Map<String, List<String>> participants = getParticipants(request);
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p, participants);
-            List<String> requirementNames = new ArrayList<String>();
-            requirementNames.addAll(recs.keySet());
-            Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(requirementNames, id, recs);
+            Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
             setHours(request.getParticipants());
@@ -142,20 +137,20 @@ public class StakeholdersRecommenderService {
         }
     }
 
-    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id, Boolean withAvailability) {
+    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id, Boolean withAvailability) throws Exception {
         List<Person> personList=new ArrayList<Person>();
         Map<String,Person> personIdentifier=new HashMap<String,Person>();
         for (Person person : request.getPersons()) {
-            List<SkillListReplan> out;
+            List<SkillListReplan> skills;
             if (personRecs.get(person.getUsername()) != null)
-                out = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
-            else out = new ArrayList<>();
-            Double availability = 0.0;
+                skills = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
+            else skills = new ArrayList<>();
+            Double availability;
             if (withAvailability) {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
             } else availability = 1.0;
             person.setAvailability(availability);
-            person.setSkills(out);
+            person.setSkills(skills);
             personList.add(person);
             personIdentifier.put(person.getUsername(),person);
         }
@@ -170,7 +165,7 @@ public class StakeholdersRecommenderService {
         }
 
     }
-
+/*
     private void instanciateResource(Person person, String id, List<SkillListReplan> skills, Double availability) {
         if (PersonToPReplanRepository.findById(new PersonId(id, person.getUsername())) == null) {
             ResourceReplan resourceReplan = replanService.createResource(person, id, availability);
@@ -179,8 +174,8 @@ public class StakeholdersRecommenderService {
             replanService.addSkillsToPerson(id, resourceReplan.getId(), skills);
         }
     }
-
-    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) {
+*/
+    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) throws Exception {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<String>(requirements);
         List<String> toRemove = new ArrayList<String>(requirements);
@@ -198,8 +193,11 @@ public class StakeholdersRecommenderService {
         return (max(0, (1 - (hours / i.doubleValue())))) * 100;
     }
 
-    private Double extractAvailability(Integer s,String project) {
-        Effort eff=EffortRepository.getOne(project);
+    private Double extractAvailability(Integer s,String project) throws Exception {
+        if (!EffortRepository.existsById(project)) {
+            throw new Exception();
+        }
+        Effort eff = EffortRepository.getOne(project);
         return eff.getEffort()[s];
     }
 /*
@@ -224,6 +222,7 @@ public class StakeholdersRecommenderService {
         for (String rec : requirement) {
             if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
                 FeatureReplan fet=new FeatureReplan(recs.get(requirement));
+                codeToReq.put(code,recs.get(rec));
                 fet.setCode(code);
                 code++;
                 featureList.add(fet);
@@ -260,7 +259,7 @@ public class StakeholdersRecommenderService {
 
         return id;
     }
-
+/*
     private Map<String, List<SkillListReplan>> computeSkillsRequirements(List<String> requirement, String id, Map<String, Requirement> recs) throws Exception {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
@@ -292,20 +291,19 @@ public class StakeholdersRecommenderService {
         }
         return toret;
     }
-
-    private Map<String, List<SkillListReplan>> computeAllSkillsRequirement(List<String> requirement, String id, Map<String, Requirement> recs) throws Exception {
+*/
+    private Map<String, List<SkillListReplan>> computeAllSkillsRequirement(String id, Map<String, Requirement> recs) throws IOException {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
         List<String> corpus = new ArrayList<String>();
-        for (String s : requirement) {
-            corpus.add(recs.get(s).getDescription());
+        for (Requirement r : recs.values()) {
+            corpus.add(r.getDescription());
         }
         List<Map<String, Double>> keywords = extractor.computeTFIDF(corpus);
         int i = 0;
         Map<String, List<String>> skillsForRequirement= new HashMap<String,List<String>>();
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
-        for (String s : requirement) {
-
+        for (String s : recs.keySet()) {
             List<String> recSkills = new ArrayList<String>();
             for (String key : keywords.get(i).keySet()) {
                 if (!existingSkills.containsKey(key)) {
@@ -351,12 +349,10 @@ public class StakeholdersRecommenderService {
                 }
             }
         }
-        int i = 0;
         for (Integer key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
             SkillListReplan helper = new SkillListReplan(key, ability);
             toret.add(helper);
-            ++i;
         }
         return toret;
     }

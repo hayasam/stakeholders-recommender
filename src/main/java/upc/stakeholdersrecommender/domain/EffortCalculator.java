@@ -16,9 +16,8 @@ public class EffortCalculator {
     EffortRepository effortRepository;
 
     public void effortCalc(EffortCalculatorSchema eff, String id) {
-        Effort aux=effortRepository.getOne(id);
-        if (aux!=null) {
-            effortRepository.delete(aux);
+        if (effortRepository.existsById(id)) {
+            effortRepository.deleteById(id);
         }
         Integer total;
         Double[] effort=new Double[5];
@@ -44,9 +43,8 @@ public class EffortCalculator {
     }
 
     public void setEffort(SetEffortSchema set,String id) {
-        Effort aux=effortRepository.getOne(id);
-        if (aux!=null) {
-            effortRepository.delete(aux);
+        if (effortRepository.existsById(id)) {
+            effortRepository.deleteById(id);
         }
         Double[] effort= new Double[5];
         effort[0]=set.getOne().doubleValue();
