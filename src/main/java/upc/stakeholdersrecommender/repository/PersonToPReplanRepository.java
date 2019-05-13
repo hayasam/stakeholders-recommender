@@ -21,4 +21,5 @@ public interface PersonToPReplanRepository extends JpaRepository<PersonToPReplan
     @Transactional
     void deleteByProjectIdQuery(String projectId);
 
+    List<PersonToPReplan> findByName(String name);
 }

@@ -23,6 +23,8 @@ public class PersonToPReplan implements Serializable {
 
     private Integer hours;
 
+    private String name;
+
     public PersonToPReplan() {
 
     }
@@ -32,11 +34,14 @@ public class PersonToPReplan implements Serializable {
         this.projectIdQuery = projectIdQuer;
         this.idReplan = idReplan;
         this.availability = availability;
+        this.name=id.getPersonId();
     }
 
     public PersonToPReplan(PersonId id) {
         this.id = id;
-        idReplan = id.getprojectId();
+        this.idReplan = id.getprojectId();
+        this.name=id.getPersonId();
+
     }
 
     public PersonId getId() {
@@ -77,5 +82,13 @@ public class PersonToPReplan implements Serializable {
 
     public void setHours(Integer hours) {
         this.hours = hours;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -51,9 +51,6 @@ public class StakeholdersRecommenderController {
         catch(IOException e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch(Exception e){
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 

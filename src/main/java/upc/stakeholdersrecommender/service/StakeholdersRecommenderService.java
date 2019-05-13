@@ -51,12 +51,9 @@ public class StakeholdersRecommenderService {
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         if (!projectSpecific) {
             for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
-
-                reslist.add(new ResourceListReplan(pers.getIdReplan()));
-                // Add special availability calc, if free hours exist, 1
-                // Availability is set at resource creation, I have to assign one of the duplicate stakeholders,
-                // but set availability to 1, then unset
+                if (hasTime(pers)) reslist.add(new ResourceListReplan(pers.getIdReplan()));
             }
+            //Set availability to 1 to all people in reslist!!!
         } else {
             ProjectToPReplan proj = ProjectToPReplanRepository.getOne(p);
             List<String> part = proj.getParticipants();
@@ -74,6 +71,18 @@ public class StakeholdersRecommenderService {
             List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills, project_replanID);
             return ret.stream().sorted().limit(k).collect(Collectors.toList());
         } else return null;
+    }
+
+    private boolean hasTime(PersonToPReplan pers) {
+        Boolean res=false;
+        List<PersonToPReplan> work=PersonToPReplanRepository.findByName(pers.getId().getPersonId());
+        for (PersonToPReplan per:work) {
+            if (per.getAvailability()>0){
+                res=true;
+                break;
+            }
+        }
+        return res;
     }
 
     public void purge() {
@@ -408,12 +417,12 @@ public class StakeholdersRecommenderService {
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         for (Responsible res : returnobject) {
             PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
-            List<ResourceSkill> resSkill = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
+            List<ResourceSkill> resSkills = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
             Double total = 0.0;
-            for (ResourceSkill resskill : resSkill) {
+            for (ResourceSkill resSkill : resSkills) {
                 for (String done : featureSkill.getSkillIds()) {
-                    if (resskill.getSkill_id().equals(done)) {
-                        total = total + resskill.getWeight();
+                    if (resSkill.getSkill_id().equals(done)) {
+                        total = total + resSkill.getWeight();
                     }
                 }
             }
@@ -469,7 +478,6 @@ public class StakeholdersRecommenderService {
             System.out.println("Document Number " + i);
             System.out.println("------------------------------");
             for (String s : map.keySet()) {
-                if (map.get(s)>2)
                 System.out.println(s + "  " + map.get(s));
             }
             ++i;
