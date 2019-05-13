@@ -64,7 +64,8 @@ public class ReplanService {
             ResourceReplan res=new ResourceReplan(person);
             resourceReplan.add(res);
         }
-
+        ArrayResourceListReplan res=new ArrayResourceListReplan();
+        res.setResourceReplan(resourceReplan);
         ResourceReplan[] createdResource = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/resources/create_n",
                 resourceReplan,
@@ -84,15 +85,12 @@ public class ReplanService {
         return createdFeature;
     }
 
-    public FeatureReplan[] createRequirements(List<String> requirement, String projectId) {
-        List<FeatureReplan> featureList= new ArrayList<FeatureReplan>();
-        for (String s:requirement) {
-            featureList.add(new FeatureReplan(s));
-        }
-
+    public FeatureReplan[] createRequirements(List<FeatureReplan> requirements, String projectId) {
+        ArrayFeatureListReplan res=new ArrayFeatureListReplan();
+        res.setFeatureReplan(requirements);
         FeatureReplan[] createdFeature = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/features/create_n",
-                featureList,
+                res,
                 FeatureReplan[].class);
 
         return createdFeature;
@@ -117,9 +115,11 @@ public class ReplanService {
         for (Skill skill:skills) {
             skillsReplan.add(new SkillReplan(skill));
         }
+        ArraySkillListReplan res=new ArraySkillListReplan();
+        res.setSkillReplan(skillsReplan);
         SkillReplan[] createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills/create_n",
-                skillsReplan,
+                res,
                 SkillReplan[].class);
         return createdReplan;
     }

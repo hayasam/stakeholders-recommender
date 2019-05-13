@@ -126,7 +126,7 @@ public class StakeholdersRecommenderService {
             List<String> requirementNames = new ArrayList<String>();
             requirementNames.addAll(recs.keySet());
             Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(requirementNames, id, recs);
-            instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills);
+            instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
             setHours(request.getParticipants());
         }
@@ -202,8 +202,8 @@ public class StakeholdersRecommenderService {
         Effort eff=EffortRepository.getOne(project);
         return eff.getEffort()[s];
     }
-
-    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {
+/*
+    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills, Map<String, Requirement> recs) {
         for (String rec : requirement) {
             if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
                 FeatureReplan featureReplan = replanService.createRequirement(rec, id);
@@ -215,18 +215,31 @@ public class StakeholdersRecommenderService {
             }
         }
     }
+*/
 
-
-    private void instanciateFeatureBatchTrue(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills) {
+    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills, Map<String, Requirement> recs) {
+        Map<Integer,Requirement> codeToReq=new HashMap<Integer,Requirement>();
+        List<FeatureReplan> featureList=new ArrayList<FeatureReplan>();
+        int code=0;
         for (String rec : requirement) {
             if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
-                FeatureReplan featureReplan = replanService.createRequirement(rec, id);
-                RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id, rec));
-                requirementTrad.setID_Replan(featureReplan.getId().toString());
-                requirementTrad.setProjectIdQuery(id);
-                RequirementToFeatureRepository.save(requirementTrad);
-                replanService.addSkillsToRequirement(id, featureReplan.getId(), skills.get(rec));
+                FeatureReplan fet=new FeatureReplan(recs.get(requirement));
+                fet.setCode(code);
+                code++;
+                featureList.add(fet);
             }
+        }
+        FeatureReplan[] fetsReplan=replanService.createRequirements(featureList,id);
+        for (FeatureReplan f:fetsReplan) {
+
+            Requirement req=codeToReq.get(f.getCode());
+            String rec=req.getName();
+            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id, rec));
+            requirementTrad.setID_Replan(f.getId().toString());
+            requirementTrad.setProjectIdQuery(id);
+            RequirementToFeatureRepository.save(requirementTrad);
+            replanService.addSkillsToRequirement(id, f.getId(), skills.get(rec));
+
         }
     }
 
