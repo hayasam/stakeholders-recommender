@@ -59,13 +59,12 @@ public class ReplanService {
     }
 
     public ResourceReplan[] createResources(List<Person> p, String projectId) {
-        List<ResourceReplan> resourceReplan = new ArrayList<ResourceReplan>();
+        List<ResourceNameReplan> resourceReplan = new ArrayList<ResourceNameReplan>();
         for (Person person:p) {
-            ResourceReplan res=new ResourceReplan(person);
+            ResourceNameReplan res=new ResourceNameReplan();
+            res.setName(person.getUsername());
             resourceReplan.add(res);
         }
-        ArrayResourceListReplan res=new ArrayResourceListReplan();
-        res.setResourceReplan(resourceReplan);
         ResourceReplan[] createdResource = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/resources/create_n",
                 resourceReplan,
@@ -110,9 +109,11 @@ public class ReplanService {
     }
 
     public SkillReplan[] createSkills(Collection<Skill> skills, String projectId) {
-        List<SkillReplan> skillsReplan=new ArrayList<SkillReplan>();
+        List<SkillNameReplan> skillsReplan=new ArrayList<SkillNameReplan>();
         for (Skill skill:skills) {
-            skillsReplan.add(new SkillReplan(skill));
+            SkillNameReplan sk=new SkillNameReplan();
+            sk.setName(skill.getName());
+            skillsReplan.add(sk);
         }
         SkillReplan[] createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills/create_n",

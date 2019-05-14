@@ -36,7 +36,7 @@ public class Participant implements Serializable {
         return availability;
     }
 
-    public void setAvaiability(Integer availability) {
+    public void setAvailability(Integer availability) {
         this.availability = availability;
     }
 }

@@ -7,7 +7,7 @@ import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
-import upc.stakeholdersrecommender.entity.Project;
+import upc.stakeholdersrecommender.entity.ProjectSR;
 import upc.stakeholdersrecommender.repository.*;
 import upc.stakeholdersrecommender.repository.RequirementReplanRepository;
 
@@ -49,6 +49,7 @@ public class StakeholdersRecommenderService {
         String user = request.getUser();
 
         FeatureSkill featureSkills = replanService.getFeatureSkill(project_replanID, requirement_replanID);
+        System.out.println(requirement_replanID);
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         if (!projectSpecific) {
@@ -57,14 +58,16 @@ public class StakeholdersRecommenderService {
             }
             //Set availability to 1 to all people in reslist!!!
         } else {
-            Project proj = ProjectRepository.getOne(p);
+            ProjectSR proj = ProjectRepository.getOne(p);
             List<String> part = proj.getParticipants();
             for (String person : part) {
                 PersonReplan pers = PersonReplanRepository.findById(new PersonReplanId(project_replanID, person));
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
+                System.out.println(pers.getIdReplan());
             }
         }
         replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
+        System.out.println(releaseId+" "+project_replanID);
         Plan[] plan = replanService.plan(project_replanID, releaseId);
         Map<String, Set<String>> output = fusePlans(plan);
         List<Responsible> returnobject = createOutput(user, output);
@@ -88,7 +91,7 @@ public class StakeholdersRecommenderService {
     }
 
     public void purge() {
-        for (Project pr : ProjectRepository.findAll()) {
+        for (ProjectSR pr : ProjectRepository.findAll()) {
             deleteProject(pr.getId());
         }
         PersonReplanRepository.deleteAll();
@@ -125,15 +128,17 @@ public class StakeholdersRecommenderService {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
+            System.out.println(r.getId());
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<String>> recsPerson = getRecsPerson(request);
         Map<String, List<String>> participants = getParticipants(request);
-        for (upc.stakeholdersrecommender.domain.Project p : request.getProjects()) {
+        for (Project p : request.getProjects()) {
             String id = instanciateProject(p, participants);
             Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
+            System.out.println(request.getParticipants().size());
             setHours(request.getParticipants());
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
@@ -141,26 +146,31 @@ public class StakeholdersRecommenderService {
 
     private void setHours(List<Participant> participants) {
         for (Participant part: participants) {
-            PersonReplanId pers= new PersonReplanId(part.getProject(),part.getPerson());
+            String id_replan=ProjectRepository.getOne(part.getProject()).getIdReplan().toString();
+            PersonReplanId pers= new PersonReplanId(id_replan,part.getPerson());
             PersonReplan resource= PersonReplanRepository.findById(pers);
+            System.out.println(part.getProject()+" "+part.getPerson()+" "+part.getAvailability());
             resource.setHours(part.getAvailability());
             PersonReplanRepository.save(resource);
         }
     }
 
-    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, upc.stakeholdersrecommender.domain.Project p, String id, Boolean withAvailability) throws Exception {
+    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson,Project p, String id, Boolean withAvailability) throws Exception {
         List<Person> personList=new ArrayList<Person>();
         Map<String,Person> personIdentifier=new HashMap<String,Person>();
         for (Person person : request.getPersons()) {
             List<SkillListReplan> skills;
-            if (personRecs.get(person.getUsername()) != null)
+            if (personRecs.get(person.getUsername()) != null) {
+                System.out.println("I entered");
                 skills = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
+            }
             else skills = new ArrayList<>();
             Double availability;
             if (withAvailability) {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
             } else availability = 1.0;
             person.setAvailability(availability);
+            System.out.println(skills.size());
             person.setSkills(skills);
             personList.add(person);
             personIdentifier.put(person.getUsername(),person);
@@ -168,7 +178,9 @@ public class StakeholdersRecommenderService {
         ResourceReplan[] resources=replanService.createResources(personList,id);
 
         for (ResourceReplan res:resources){
+            System.out.println(res.getName());
             Person pers=personIdentifier.get(res.getName());
+            System.out.println(p.getId()+" "+res.getName());
             PersonReplan personTrad = new PersonReplan(new PersonReplanId(id, res.getName()), id, res.getId().toString(), pers.getAvailability());
             PersonReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, res.getId(), pers.getSkills());
@@ -231,8 +243,10 @@ public class StakeholdersRecommenderService {
         List<FeatureReplan> featureList=new ArrayList<FeatureReplan>();
         int code=0;
         for (String rec : requirement) {
+            System.out.println(rec);
             if (RequirementReplanRepository.findById(new RequirementReplanId(id, rec)) == null) {
-                FeatureReplan fet=new FeatureReplan(recs.get(requirement));
+                System.out.println(recs.get(rec).getId());
+                FeatureReplan fet=new FeatureReplan(recs.get(rec));
                 codeToReq.put(code,recs.get(rec));
                 fet.setCode(code);
                 code++;
@@ -243,17 +257,19 @@ public class StakeholdersRecommenderService {
         for (FeatureReplan f:fetsReplan) {
 
             Requirement req=codeToReq.get(f.getCode());
-            String rec=req.getName();
-            upc.stakeholdersrecommender.entity.RequirementReplan requirementTrad = new upc.stakeholdersrecommender.entity.RequirementReplan(new RequirementReplanId(id, rec));
+            String rec=req.getId();
+            RequirementReplan requirementTrad = new RequirementReplan(new RequirementReplanId(id, rec));
             requirementTrad.setID_Replan(f.getId().toString());
             requirementTrad.setProjectIdQuery(id);
             RequirementReplanRepository.save(requirementTrad);
+            System.out.println(rec);
+            System.out.println(skills.get(rec));
             replanService.addSkillsToRequirement(id, f.getId(), skills.get(rec));
 
         }
     }
 
-    private String instanciateProject(upc.stakeholdersrecommender.domain.Project p, Map<String, List<String>> participants) {
+    private String instanciateProject(Project p, Map<String, List<String>> participants) {
         String id = null;
         if (ProjectRepository.existsById(p.getId())) {
             id = ProjectRepository.getOne(p.getId()).getIdReplan().toString();
@@ -263,10 +279,10 @@ public class StakeholdersRecommenderService {
         }
         ProjectReplan projectReplan = replanService.createProject(p);
         id = projectReplan.getId().toString();
-        Project projectTrad = new Project(p.getId());
-        projectTrad.setIdReplan(projectReplan.getId());
-        projectTrad.setParticipants(participants.get(p.getId()));
-        ProjectRepository.save(projectTrad);
+        ProjectSR projectSRTrad = new ProjectSR(p.getId());
+        projectSRTrad.setIdReplan(projectReplan.getId());
+        projectSRTrad.setParticipants(participants.get(p.getId()));
+        ProjectRepository.save(projectSRTrad);
 
         return id;
     }
@@ -317,6 +333,7 @@ public class StakeholdersRecommenderService {
         for (String s : recs.keySet()) {
             List<String> recSkills = new ArrayList<String>();
             for (String key : keywords.get(i).keySet()) {
+                System.out.println(key);
                 if (!existingSkills.containsKey(key)) {
                     existingSkills.put(key,new Skill(key,1.0));
                     recSkills.add(key);
@@ -338,6 +355,8 @@ public class StakeholdersRecommenderService {
             for (String skillRequirement:skillsForRequirement.get(req)) {
                 SkillReplan auxiliar2= nameToSkillReplan.get(skillRequirement);
                 SkillListReplan listReplan=new SkillListReplan(auxiliar2);
+                Skill normalSkill=new Skill(auxiliar2.getName(),1.0,auxiliar2.getId());
+                recs.get(req).addSkill(normalSkill);
                 aux.add(listReplan);
             }
             toret.put(req,aux);
@@ -352,6 +371,7 @@ public class StakeholdersRecommenderService {
         List<SkillListReplan> toret = new ArrayList<SkillListReplan>();
         Map<Integer, Pair<Double>> appearances = new HashMap<Integer, Pair<Double>>();
         for (String s : oldRecs) {
+            System.out.println(s);
             for (Skill sk : recs.get(s).getSkills()) {
                 if (appearances.containsKey(sk.getIdReplan())) {
                     appearances.put(sk.getIdReplan(), new Pair<Double>(appearances.get(sk.getIdReplan()).p1 + 1.0, appearances.get(sk.getIdReplan()).p2));

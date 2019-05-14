@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "project_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Project implements Serializable {
+public class ProjectSR implements Serializable {
 
     @Id
     private String id;
@@ -22,11 +22,11 @@ public class Project implements Serializable {
     @ElementCollection
     private List<String> participants;
 
-    public Project() {
+    public ProjectSR() {
 
     }
 
-    public Project(String id) {
+    public ProjectSR(String id) {
         this.id = id;
     }
 
