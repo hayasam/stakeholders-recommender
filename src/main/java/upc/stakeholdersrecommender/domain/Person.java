@@ -11,8 +11,6 @@ public class Person implements Serializable {
 
     private String username;
 
-    private String email;
-
     private Double availability;
 
     @JsonIgnore
@@ -40,14 +38,6 @@ public class Person implements Serializable {
 
     public void setSkills(List<SkillListReplan> skills) {
         this.skills = skills;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Double getAvailability() {

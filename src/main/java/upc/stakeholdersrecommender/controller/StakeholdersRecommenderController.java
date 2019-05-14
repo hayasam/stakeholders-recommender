@@ -95,12 +95,14 @@ public class StakeholdersRecommenderController {
         batch.setPersons(bugzillaService.getPersons());
         batch.setResponsibles(bugzillaService.getResponsibles());
         batch.setRequirements(bugzillaService.getRequirements());
-        List<String> corpus= new ArrayList<String>();
+        batch.setParticipants(bugzillaService.getParticipants());
+        batch.setProjects(bugzillaService.getProject());
+        List<Requirement> corpus= new ArrayList<Requirement>();
         for (Requirement req : batch.getRequirements()) {
-            corpus.add(req.getDescription());
+            corpus.add(req);
         }
         stakeholdersRecommenderService.extract(corpus);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(batch,HttpStatus.OK);
     }
 
     // Añadir funciones para calcular effort historico y poner effort directamente

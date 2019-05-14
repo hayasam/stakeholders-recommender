@@ -11,7 +11,9 @@ import upc.stakeholdersrecommender.entity.ProjectSR;
 import upc.stakeholdersrecommender.repository.*;
 import upc.stakeholdersrecommender.repository.RequirementReplanRepository;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,7 +51,6 @@ public class StakeholdersRecommenderService {
         String user = request.getUser();
 
         FeatureSkill featureSkills = replanService.getFeatureSkill(project_replanID, requirement_replanID);
-        System.out.println(requirement_replanID);
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         if (!projectSpecific) {
@@ -63,11 +64,9 @@ public class StakeholdersRecommenderService {
             for (String person : part) {
                 PersonReplan pers = PersonReplanRepository.findById(new PersonReplanId(project_replanID, person));
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
-                System.out.println(pers.getIdReplan());
             }
         }
         replanService.addResourcesToRelease(project_replanID, releaseId, reslist);
-        System.out.println(releaseId+" "+project_replanID);
         Plan[] plan = replanService.plan(project_replanID, releaseId);
         Map<String, Set<String>> output = fusePlans(plan);
         List<Responsible> returnobject = createOutput(user, output);
@@ -128,7 +127,6 @@ public class StakeholdersRecommenderService {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             recs.put(r.getId(), r);
-            System.out.println(r.getId());
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<String>> recsPerson = getRecsPerson(request);
@@ -138,7 +136,6 @@ public class StakeholdersRecommenderService {
             Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
             instanciateResourceBatch(request, recs, personRecs, recsPerson, p, id, withAvailability);
-            System.out.println(request.getParticipants().size());
             setHours(request.getParticipants());
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
@@ -149,7 +146,6 @@ public class StakeholdersRecommenderService {
             String id_replan=ProjectRepository.getOne(part.getProject()).getIdReplan().toString();
             PersonReplanId pers= new PersonReplanId(id_replan,part.getPerson());
             PersonReplan resource= PersonReplanRepository.findById(pers);
-            System.out.println(part.getProject()+" "+part.getPerson()+" "+part.getAvailability());
             resource.setHours(part.getAvailability());
             PersonReplanRepository.save(resource);
         }
@@ -161,7 +157,6 @@ public class StakeholdersRecommenderService {
         for (Person person : request.getPersons()) {
             List<SkillListReplan> skills;
             if (personRecs.get(person.getUsername()) != null) {
-                System.out.println("I entered");
                 skills = computeSkillsPerson(personRecs.get(person.getUsername()), recs, recsPerson);
             }
             else skills = new ArrayList<>();
@@ -170,7 +165,6 @@ public class StakeholdersRecommenderService {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
             } else availability = 1.0;
             person.setAvailability(availability);
-            System.out.println(skills.size());
             person.setSkills(skills);
             personList.add(person);
             personIdentifier.put(person.getUsername(),person);
@@ -178,9 +172,7 @@ public class StakeholdersRecommenderService {
         ResourceReplan[] resources=replanService.createResources(personList,id);
 
         for (ResourceReplan res:resources){
-            System.out.println(res.getName());
             Person pers=personIdentifier.get(res.getName());
-            System.out.println(p.getId()+" "+res.getName());
             PersonReplan personTrad = new PersonReplan(new PersonReplanId(id, res.getName()), id, res.getId().toString(), pers.getAvailability());
             PersonReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, res.getId(), pers.getSkills());
@@ -243,9 +235,7 @@ public class StakeholdersRecommenderService {
         List<FeatureReplan> featureList=new ArrayList<FeatureReplan>();
         int code=0;
         for (String rec : requirement) {
-            System.out.println(rec);
             if (RequirementReplanRepository.findById(new RequirementReplanId(id, rec)) == null) {
-                System.out.println(recs.get(rec).getId());
                 FeatureReplan fet=new FeatureReplan(recs.get(rec));
                 codeToReq.put(code,recs.get(rec));
                 fet.setCode(code);
@@ -262,8 +252,6 @@ public class StakeholdersRecommenderService {
             requirementTrad.setID_Replan(f.getId().toString());
             requirementTrad.setProjectIdQuery(id);
             RequirementReplanRepository.save(requirementTrad);
-            System.out.println(rec);
-            System.out.println(skills.get(rec));
             replanService.addSkillsToRequirement(id, f.getId(), skills.get(rec));
 
         }
@@ -326,14 +314,13 @@ public class StakeholdersRecommenderService {
         for (Requirement r : recs.values()) {
             corpus.add(r.getDescription());
         }
-        List<Map<String, Double>> keywords = extractor.computeTFIDF(corpus);
+        Map<String,Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
         int i = 0;
         Map<String, List<String>> skillsForRequirement= new HashMap<String,List<String>>();
         Map<String, Skill> existingSkills = new HashMap<String, Skill>();
         for (String s : recs.keySet()) {
             List<String> recSkills = new ArrayList<String>();
-            for (String key : keywords.get(i).keySet()) {
-                System.out.println(key);
+            for (String key : keywords.get(s).keySet()) {
                 if (!existingSkills.containsKey(key)) {
                     existingSkills.put(key,new Skill(key,1.0));
                     recSkills.add(key);
@@ -371,7 +358,6 @@ public class StakeholdersRecommenderService {
         List<SkillListReplan> toret = new ArrayList<SkillListReplan>();
         Map<Integer, Pair<Double>> appearances = new HashMap<Integer, Pair<Double>>();
         for (String s : oldRecs) {
-            System.out.println(s);
             for (Skill sk : recs.get(s).getSkills()) {
                 if (appearances.containsKey(sk.getIdReplan())) {
                     appearances.put(sk.getIdReplan(), new Pair<Double>(appearances.get(sk.getIdReplan()).p1 + 1.0, appearances.get(sk.getIdReplan()).p2));
@@ -489,20 +475,31 @@ public class StakeholdersRecommenderService {
         ProjectRepository.deleteById(id);
     }
 
-    public void extract(List<String> request) throws Exception {
+    public void extract(List<Requirement> request) throws Exception {
        // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
-       // System.setOut(out);
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        List<Map<String, Double>> res = extractor.computeTFIDF(request);
-        Integer i = 0;
-        for (Map<String, Double> map : res) {
-            System.out.println("------------------------------");
-            System.out.println("Document Number " + i);
-            System.out.println("------------------------------");
-            for (String s : map.keySet()) {
-                System.out.println(s + "  " + map.get(s));
+        Map<String,Map<String, Double>> res = extractor.computeTFIDF(request);
+        Map<String,Requirement> traductor=new HashMap<String,Requirement>();
+        for (Requirement r:request) {
+            traductor.put(r.getId(),r);
+        }
+        PrintStream out = new PrintStream(new FileOutputStream("out.txt", true));
+        System.setOut(out);
+        Random r = new Random();
+        int high = 100;
+        int random;
+        for (String requir : res.keySet()) {
+            random = r.nextInt(high);
+            if (random == 50) {
+                System.out.println("");
+                Map<String, Double> map = res.get(requir);
+                System.out.println(traductor.get(requir).getId());
+                System.out.println(traductor.get(requir).getDescription());
+                System.out.println("Keywords :");
+                for (String s : map.keySet()) {
+                    System.out.print(s+" ");
+                }
             }
-            ++i;
         }
     }
 

@@ -59,6 +59,7 @@ public class ReplanService {
     }
 
     public ResourceReplan[] createResources(List<Person> p, String projectId) {
+        while (p.remove(null));
         List<ResourceNameReplan> resourceReplan = new ArrayList<ResourceNameReplan>();
         for (Person person:p) {
             ResourceNameReplan res=new ResourceNameReplan();
@@ -85,6 +86,7 @@ public class ReplanService {
     }
 
     public FeatureReplan[] createRequirements(List<FeatureReplan> requirements, String projectId) {
+        while (requirements.remove(null));
         ArrayFeatureListReplan res=new ArrayFeatureListReplan();
         res.setFeatureReplan(requirements);
         FeatureReplan[] createdFeature = restTemplate.postForObject(
@@ -109,6 +111,7 @@ public class ReplanService {
     }
 
     public SkillReplan[] createSkills(Collection<Skill> skills, String projectId) {
+        while (skills.remove(null));
         List<SkillNameReplan> skillsReplan=new ArrayList<SkillNameReplan>();
         for (Skill skill:skills) {
             SkillNameReplan sk=new SkillNameReplan();
@@ -123,9 +126,7 @@ public class ReplanService {
     }
 
     public void addSkillsToPerson(String projectReplanId, Integer personId, List<SkillListReplan> skillListReplans) {
-        List<Integer> st = new ArrayList<>();
-        for (SkillListReplan sk : skillListReplans) st.add(sk.getSkill_id());
-        System.out.println("Skills added to person: " + st);
+        while (skillListReplans.remove(null));
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/resources/" + personId + "/skills",
                 skillListReplans,
@@ -134,9 +135,7 @@ public class ReplanService {
     }
 
     public void addSkillsToRequirement(String projectReplanId, Integer reqId, List<SkillListReplan> skillListReplans) {
-        List<Integer> st = new ArrayList<>();
-        for (SkillListReplan sk : skillListReplans) st.add(sk.getSkill_id());
-        System.out.println("Skills added to requirement: " + st);
+        while (skillListReplans.remove(null));
         restTemplate.postForObject(
                 replanUrl + "/projects/" + projectReplanId + "/features/" + reqId + "/skills",
                 skillListReplans,
