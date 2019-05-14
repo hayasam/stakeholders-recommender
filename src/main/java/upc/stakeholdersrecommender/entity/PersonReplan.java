@@ -10,10 +10,10 @@ import java.io.Serializable;
 @Entity
 @Table(name = "person_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class PersonToPReplan implements Serializable {
+public class PersonReplan implements Serializable {
 
     @EmbeddedId
-    private PersonId id;
+    private PersonReplanId id;
 
     private String projectIdQuery;
 
@@ -25,11 +25,11 @@ public class PersonToPReplan implements Serializable {
 
     private String name;
 
-    public PersonToPReplan() {
+    public PersonReplan() {
 
     }
 
-    public PersonToPReplan(PersonId id, String projectIdQuer, String idReplan, Double availability) {
+    public PersonReplan(PersonReplanId id, String projectIdQuer, String idReplan, Double availability) {
         this.id = id;
         this.projectIdQuery = projectIdQuer;
         this.idReplan = idReplan;
@@ -37,18 +37,18 @@ public class PersonToPReplan implements Serializable {
         this.name=id.getPersonId();
     }
 
-    public PersonToPReplan(PersonId id) {
+    public PersonReplan(PersonReplanId id) {
         this.id = id;
         this.idReplan = id.getprojectId();
         this.name=id.getPersonId();
 
     }
 
-    public PersonId getId() {
+    public PersonReplanId getId() {
         return id;
     }
 
-    public void setId(PersonId id) {
+    public void setId(PersonReplanId id) {
         this.id = id;
     }
 

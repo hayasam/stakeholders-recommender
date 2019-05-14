@@ -7,7 +7,9 @@ import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
+import upc.stakeholdersrecommender.entity.Project;
 import upc.stakeholdersrecommender.repository.*;
+import upc.stakeholdersrecommender.repository.RequirementReplanRepository;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,11 +21,11 @@ import static java.lang.Double.max;
 public class StakeholdersRecommenderService {
 
     @Autowired
-    private PersonToPReplanRepository PersonToPReplanRepository;
+    private PersonReplanRepository PersonReplanRepository;
     @Autowired
-    private ProjectToPReplanRepository ProjectToPReplanRepository;
+    private ProjectRepository ProjectRepository;
     @Autowired
-    private RequirementToFeatureRepository RequirementToFeatureRepository;
+    private RequirementReplanRepository RequirementReplanRepository;
     @Autowired
     private RejectedPersonRepository RejectedPersonRepository;
     @Autowired
@@ -37,10 +39,10 @@ public class StakeholdersRecommenderService {
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific) throws Exception {
         String p = request.getProject();
         String r = request.getRequirement();
-        String project_replanID = ProjectToPReplanRepository.getOne(p).getIdReplan().toString();
+        String project_replanID = ProjectRepository.getOne(p).getIdReplan().toString();
         String requirement_replanID = "";
-        if (RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)) != null) {
-            requirement_replanID = RequirementToFeatureRepository.findById(new RequirementId(project_replanID, r)).getID_Replan();
+        if (RequirementReplanRepository.findById(new RequirementReplanId(project_replanID, r)) != null) {
+            requirement_replanID = RequirementReplanRepository.findById(new RequirementReplanId(project_replanID, r)).getID_Replan();
         } else throw new Exception();
         ReleaseReplan release = replanService.createRelease(project_replanID);
         Integer releaseId = release.getId();
@@ -50,15 +52,15 @@ public class StakeholdersRecommenderService {
         replanService.addFeaturesToRelease(project_replanID, release.getId(), new FeatureListReplan(requirement_replanID));
         List<ResourceListReplan> reslist = new ArrayList<ResourceListReplan>();
         if (!projectSpecific) {
-            for (PersonToPReplan pers : PersonToPReplanRepository.findByProjectIdQuery(project_replanID)) {
+            for (PersonReplan pers : PersonReplanRepository.findByProjectIdQuery(project_replanID)) {
                 if (hasTime(pers)) reslist.add(new ResourceListReplan(pers.getIdReplan()));
             }
             //Set availability to 1 to all people in reslist!!!
         } else {
-            ProjectToPReplan proj = ProjectToPReplanRepository.getOne(p);
+            Project proj = ProjectRepository.getOne(p);
             List<String> part = proj.getParticipants();
             for (String person : part) {
-                PersonToPReplan pers = PersonToPReplanRepository.findById(new PersonId(project_replanID, person));
+                PersonReplan pers = PersonReplanRepository.findById(new PersonReplanId(project_replanID, person));
                 reslist.add(new ResourceListReplan(pers.getIdReplan()));
             }
         }
@@ -73,10 +75,10 @@ public class StakeholdersRecommenderService {
         } else return null;
     }
 
-    private boolean hasTime(PersonToPReplan pers) {
+    private boolean hasTime(PersonReplan pers) {
         Boolean res=false;
-        List<PersonToPReplan> work=PersonToPReplanRepository.findByName(pers.getId().getPersonId());
-        for (PersonToPReplan per:work) {
+        List<PersonReplan> work= PersonReplanRepository.findByName(pers.getId().getPersonId());
+        for (PersonReplan per:work) {
             if (per.getAvailability()>0){
                 res=true;
                 break;
@@ -86,13 +88,13 @@ public class StakeholdersRecommenderService {
     }
 
     public void purge() {
-        for (ProjectToPReplan pr : ProjectToPReplanRepository.findAll()) {
+        for (Project pr : ProjectRepository.findAll()) {
             deleteProject(pr.getId());
         }
-        PersonToPReplanRepository.deleteAll();
-        RequirementToFeatureRepository.deleteAll();
+        PersonReplanRepository.deleteAll();
+        RequirementReplanRepository.deleteAll();
         RejectedPersonRepository.deleteAll();
-        ProjectToPReplanRepository.deleteAll();
+        ProjectRepository.deleteAll();
 
     }
 
@@ -127,7 +129,7 @@ public class StakeholdersRecommenderService {
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<String>> recsPerson = getRecsPerson(request);
         Map<String, List<String>> participants = getParticipants(request);
-        for (Project p : request.getProjects()) {
+        for (upc.stakeholdersrecommender.domain.Project p : request.getProjects()) {
             String id = instanciateProject(p, participants);
             Map<String, List<SkillListReplan>> allSkills = computeAllSkillsRequirement(id, recs);
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
@@ -139,14 +141,14 @@ public class StakeholdersRecommenderService {
 
     private void setHours(List<Participant> participants) {
         for (Participant part: participants) {
-            PersonId pers= new PersonId(part.getProject(),part.getPerson());
-            PersonToPReplan resource=PersonToPReplanRepository.findById(pers);
+            PersonReplanId pers= new PersonReplanId(part.getProject(),part.getPerson());
+            PersonReplan resource= PersonReplanRepository.findById(pers);
             resource.setHours(part.getAvailability());
-            PersonToPReplanRepository.save(resource);
+            PersonReplanRepository.save(resource);
         }
     }
 
-    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, Project p, String id, Boolean withAvailability) throws Exception {
+    private void instanciateResourceBatch(BatchSchema request, Map<String, Requirement> recs, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson, upc.stakeholdersrecommender.domain.Project p, String id, Boolean withAvailability) throws Exception {
         List<Person> personList=new ArrayList<Person>();
         Map<String,Person> personIdentifier=new HashMap<String,Person>();
         for (Person person : request.getPersons()) {
@@ -167,8 +169,8 @@ public class StakeholdersRecommenderService {
 
         for (ResourceReplan res:resources){
             Person pers=personIdentifier.get(res.getName());
-            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, res.getName()), id, res.getId().toString(), pers.getAvailability());
-            PersonToPReplanRepository.save(personTrad);
+            PersonReplan personTrad = new PersonReplan(new PersonReplanId(id, res.getName()), id, res.getId().toString(), pers.getAvailability());
+            PersonReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, res.getId(), pers.getSkills());
 
         }
@@ -176,10 +178,10 @@ public class StakeholdersRecommenderService {
     }
 /*
     private void instanciateResource(Person person, String id, List<SkillListReplan> skills, Double availability) {
-        if (PersonToPReplanRepository.findById(new PersonId(id, person.getUsername())) == null) {
+        if (PersonReplanRepository.findById(new PersonReplanId(id, person.getUsername())) == null) {
             ResourceReplan resourceReplan = replanService.createResource(person, id, availability);
-            PersonToPReplan personTrad = new PersonToPReplan(new PersonId(id, person.getUsername()), id, resourceReplan.getId().toString(), availability);
-            PersonToPReplanRepository.save(personTrad);
+            PersonReplan personTrad = new PersonReplan(new PersonReplanId(id, person.getUsername()), id, resourceReplan.getId().toString(), availability);
+            PersonReplanRepository.save(personTrad);
             replanService.addSkillsToPerson(id, resourceReplan.getId(), skills);
         }
     }
@@ -194,7 +196,7 @@ public class StakeholdersRecommenderService {
         for (String s : intersection) {
             hours += extractAvailability(requirementMap.get(s).getEffort(),project);
         }
-        Double result = calculateAvailability(hours, PersonToPReplanRepository.findById(new PersonId(project,person.getUsername())).getHours());
+        Double result = calculateAvailability(hours, PersonReplanRepository.findById(new PersonReplanId(project,person.getUsername())).getHours());
         return result;
     }
 
@@ -212,12 +214,12 @@ public class StakeholdersRecommenderService {
 /*
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills, Map<String, Requirement> recs) {
         for (String rec : requirement) {
-            if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
+            if (RequirementReplanRepository.findById(new RequirementReplanId(id, rec)) == null) {
                 FeatureReplan featureReplan = replanService.createRequirement(rec, id);
-                RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id, rec));
+                RequirementReplanRepository requirementTrad = new RequirementReplanRepository(new RequirementReplanId(id, rec));
                 requirementTrad.setID_Replan(featureReplan.getId().toString());
                 requirementTrad.setProjectIdQuery(id);
-                RequirementToFeatureRepository.save(requirementTrad);
+                RequirementReplanRepository.save(requirementTrad);
                 replanService.addSkillsToRequirement(id, featureReplan.getId(), skills.get(rec));
             }
         }
@@ -229,7 +231,7 @@ public class StakeholdersRecommenderService {
         List<FeatureReplan> featureList=new ArrayList<FeatureReplan>();
         int code=0;
         for (String rec : requirement) {
-            if (RequirementToFeatureRepository.findById(new RequirementId(id, rec)) == null) {
+            if (RequirementReplanRepository.findById(new RequirementReplanId(id, rec)) == null) {
                 FeatureReplan fet=new FeatureReplan(recs.get(requirement));
                 codeToReq.put(code,recs.get(rec));
                 fet.setCode(code);
@@ -242,29 +244,29 @@ public class StakeholdersRecommenderService {
 
             Requirement req=codeToReq.get(f.getCode());
             String rec=req.getName();
-            RequirementToFeature requirementTrad = new RequirementToFeature(new RequirementId(id, rec));
+            upc.stakeholdersrecommender.entity.RequirementReplan requirementTrad = new upc.stakeholdersrecommender.entity.RequirementReplan(new RequirementReplanId(id, rec));
             requirementTrad.setID_Replan(f.getId().toString());
             requirementTrad.setProjectIdQuery(id);
-            RequirementToFeatureRepository.save(requirementTrad);
+            RequirementReplanRepository.save(requirementTrad);
             replanService.addSkillsToRequirement(id, f.getId(), skills.get(rec));
 
         }
     }
 
-    private String instanciateProject(Project p, Map<String, List<String>> participants) {
+    private String instanciateProject(upc.stakeholdersrecommender.domain.Project p, Map<String, List<String>> participants) {
         String id = null;
-        if (ProjectToPReplanRepository.existsById(p.getId())) {
-            id = ProjectToPReplanRepository.getOne(p.getId()).getIdReplan().toString();
+        if (ProjectRepository.existsById(p.getId())) {
+            id = ProjectRepository.getOne(p.getId()).getIdReplan().toString();
             replanService.deleteProject(id);
             deleteRelated(id);
-            ProjectToPReplanRepository.deleteById(p.getId());
+            ProjectRepository.deleteById(p.getId());
         }
         ProjectReplan projectReplan = replanService.createProject(p);
         id = projectReplan.getId().toString();
-        ProjectToPReplan projectTrad = new ProjectToPReplan(p.getId());
+        Project projectTrad = new Project(p.getId());
         projectTrad.setIdReplan(projectReplan.getId());
         projectTrad.setParticipants(participants.get(p.getId()));
-        ProjectToPReplanRepository.save(projectTrad);
+        ProjectRepository.save(projectTrad);
 
         return id;
     }
@@ -376,7 +378,7 @@ public class StakeholdersRecommenderService {
     private List<Responsible> createOutput(String user, Map<String, Set<String>> output) {
         List<Responsible> returnobject = new ArrayList<Responsible>();
         for (String s : output.keySet()) {
-            String username = PersonToPReplanRepository.findByIdReplan(s).getId().getPersonId();
+            String username = PersonReplanRepository.findByIdReplan(s).getId().getPersonId();
             Set<String> idReplan=output.get(s);
             Set<String> idRecommender=translate(idReplan);
             Set<String> inRetty = reject(user, idRecommender, username);
@@ -416,7 +418,7 @@ public class StakeholdersRecommenderService {
     private List<RecommendReturnSchema> prepareFinal(List<Responsible> returnobject, FeatureSkill featureSkill, String project_replanID) {
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         for (Responsible res : returnobject) {
-            PersonToPReplan traductor = PersonToPReplanRepository.findById(new PersonId(project_replanID, res.getPerson()));
+            PersonReplan traductor = PersonReplanRepository.findById(new PersonReplanId(project_replanID, res.getPerson()));
             List<ResourceSkill> resSkills = replanService.getResourceSkill(project_replanID, traductor.getIdReplan());
             Double total = 0.0;
             for (ResourceSkill resSkill : resSkills) {
@@ -449,29 +451,29 @@ public class StakeholdersRecommenderService {
     private Set<String> translate(Set<String> id_replan) {
         Set<String> aux = new HashSet<String>();
         for (String s : id_replan) {
-            aux.add(RequirementToFeatureRepository.findByIdReplan(s).getID().getRequirementId());
+            aux.add(RequirementReplanRepository.findByIdReplan(s).getID().getRequirementId());
         }
         return aux;
     }
 
     private void deleteRelated(String id) {
         RequirementSkillsRepository.deleteByProjectIdQuery(id);
-        PersonToPReplanRepository.deleteByProjectIdQuery(id);
-        RequirementToFeatureRepository.deleteByProjectIdQuery(id);
+        PersonReplanRepository.deleteByProjectIdQuery(id);
+        RequirementReplanRepository.deleteByProjectIdQuery(id);
     }
 
     public void deleteProject(String id) {
         deleteRelated(id);
-        String idReplan = ProjectToPReplanRepository.getOne(id).getIdReplan().toString();
+        String idReplan = ProjectRepository.getOne(id).getIdReplan().toString();
         replanService.deleteProject(idReplan);
-        ProjectToPReplanRepository.deleteById(id);
+        ProjectRepository.deleteById(id);
     }
 
-    public void extract(ExtractTest request) throws Exception {
+    public void extract(List<String> request) throws Exception {
        // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
        // System.setOut(out);
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        List<Map<String, Double>> res = extractor.computeTFIDF(request.getCorpus());
+        List<Map<String, Double>> res = extractor.computeTFIDF(request);
         Integer i = 0;
         for (Map<String, Double> map : res) {
             System.out.println("------------------------------");

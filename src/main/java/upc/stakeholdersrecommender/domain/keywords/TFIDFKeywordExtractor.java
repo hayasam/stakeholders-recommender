@@ -4,7 +4,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import upc.stakeholdersrecommender.domain.Schemas.CorpusSchema;
 
 import java.io.IOException;
 import java.io.StringReader;

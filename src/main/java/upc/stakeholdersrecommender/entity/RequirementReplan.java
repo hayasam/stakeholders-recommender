@@ -10,29 +10,29 @@ import java.io.Serializable;
 @Entity
 @Table(name = "requirement_to_replan")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RequirementToFeature implements Serializable {
+public class RequirementReplan implements Serializable {
 
     @EmbeddedId
-    private RequirementId id;
+    private RequirementReplanId id;
 
     private String idReplan;
 
     private String projectIdQuery;
 
 
-    public RequirementToFeature() {
+    public RequirementReplan() {
 
     }
 
-    public RequirementToFeature(RequirementId id) {
+    public RequirementReplan(RequirementReplanId id) {
         this.id = id;
     }
 
-    public RequirementId getID() {
+    public RequirementReplanId getID() {
         return id;
     }
 
-    public void setID(RequirementId id) {
+    public void setID(RequirementReplanId id) {
         this.id = id;
     }
 
@@ -44,11 +44,11 @@ public class RequirementToFeature implements Serializable {
         this.idReplan = idReplan;
     }
 
-    public RequirementId getId() {
+    public RequirementReplanId getId() {
         return id;
     }
 
-    public void setId(RequirementId id) {
+    public void setId(RequirementReplanId id) {
         this.id = id;
     }
 

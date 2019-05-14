@@ -43,7 +43,7 @@ public class ReplanService {
                 replanUrl + "/projects",
                 projectReplan,
                 ProjectReplan.class);
-
+        System.out.println(createdPlan.getId());
         return createdPlan;
     }
 
@@ -114,8 +114,6 @@ public class ReplanService {
         for (Skill skill:skills) {
             skillsReplan.add(new SkillReplan(skill));
         }
-        ArraySkillListReplan res=new ArraySkillListReplan();
-        res.setSkillReplan(skillsReplan);
         SkillReplan[] createdReplan = restTemplate.postForObject(
                 replanUrl + "/projects/" + projectId + "/skills/create_n",
                 skillsReplan,

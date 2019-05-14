@@ -99,9 +99,7 @@ public class StakeholdersRecommenderController {
         for (Requirement req : batch.getRequirements()) {
             corpus.add(req.getDescription());
         }
-        ExtractTest ext=new ExtractTest();
-        ext.setCorpus(corpus);
-        stakeholdersRecommenderService.extract(ext);
+        stakeholdersRecommenderService.extract(corpus);
         return new ResponseEntity(HttpStatus.OK);
     }
 

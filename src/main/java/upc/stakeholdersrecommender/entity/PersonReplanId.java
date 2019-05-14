@@ -6,42 +6,42 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-public class RequirementId implements Serializable {
+public class PersonReplanId implements Serializable {
 
     @Column(name = "projectId")
     private String projectId;
 
-    @Column(name = "requirementId")
-    private String requirementId;
+    @Column(name = "personId")
+    private String personId;
 
-    public RequirementId() {
+    public PersonReplanId() {
     }
 
-    public RequirementId(String projectId, String personId) {
+    public PersonReplanId(String projectId, String personId) {
         this.projectId = projectId;
-        this.requirementId = personId;
+        this.personId = personId;
     }
 
     public String getprojectId() {
         return projectId;
     }
 
-    public String getRequirementId() {
-        return requirementId;
+    public String getPersonId() {
+        return personId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RequirementId)) return false;
-        RequirementId that = (RequirementId) o;
+        if (!(o instanceof PersonReplanId)) return false;
+        PersonReplanId that = (PersonReplanId) o;
         return Objects.equals(getprojectId(), that.getprojectId()) &&
-                Objects.equals(getRequirementId(), that.getRequirementId());
+                Objects.equals(getPersonId(), that.getPersonId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getprojectId(), getRequirementId());
+        return Objects.hash(getprojectId(), getPersonId());
     }
 }
 
