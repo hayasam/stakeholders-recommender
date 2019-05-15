@@ -71,6 +71,7 @@ public class StakeholdersRecommenderService {
         Map<String, Set<String>> output = fusePlans(plan);
         List<Responsible> returnobject = createOutput(user, output);
         replanService.deleteRelease(project_replanID, releaseId);
+        System.out.println(plan.length);
         if (plan != null) {
             List<RecommendReturnSchema> ret = prepareFinal(returnobject, featureSkills, project_replanID);
             return ret.stream().sorted().limit(k).collect(Collectors.toList());
@@ -163,7 +164,7 @@ public class StakeholdersRecommenderService {
             Double availability;
             if (withAvailability) {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
-            } else availability = 1.0;
+            } else availability = 100.0;
             person.setAvailability(availability);
             person.setSkills(skills);
             personList.add(person);
