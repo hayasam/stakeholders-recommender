@@ -170,7 +170,6 @@ public class StakeholdersRecommenderService {
                 availability = computeAvailability(p.getSpecifiedRequirements(), personRecs, person,recs,p.getId());
             } else availability = 1.0;
             person.setAvailability(availability);
-            System.out.println(skills.size());
             person.setSkills(skills);
             personList.add(person);
             personIdentifier.put(person.getUsername(),person);

@@ -63,6 +63,7 @@ public class ReplanService {
         for (Person person:p) {
             ResourceNameReplan res=new ResourceNameReplan();
             res.setName(person.getUsername());
+            res.setAvailability(person.getAvailability());
             resourceReplan.add(res);
         }
         ResourceReplan[] createdResource = restTemplate.postForObject(
