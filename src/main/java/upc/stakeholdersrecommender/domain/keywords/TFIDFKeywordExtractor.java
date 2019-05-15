@@ -4,6 +4,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,7 +14,7 @@ import static java.lang.StrictMath.sqrt;
 
 public class TFIDFKeywordExtractor {
 
-    Double cutoffParameter = 2.0;
+    Double cutoffParameter = 4.0;
     Map<String, Map<String, Double>> model;
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
 
@@ -83,24 +84,23 @@ public class TFIDFKeywordExtractor {
         return analyze(text, analyzer);
     }
 
-    /*
-        private List<String> englishLematize(String text) throws IOException,Exception {
-            StanfordLemmatizer stan= new StanfordLemmatizer();
-            List<String> result=stan.lemmatize(text);
-            return result;
-        }
-    */
-    public List<Map<String, Double>> computeTFIDF(List<String> corpus) throws IOException {
+    public Map<String,Map<String, Double>> computeTFIDF(Collection<Requirement> corpus) throws IOException {
         List<List<String>> docs = new ArrayList<List<String>>();
-        for (String s : corpus) {
-            docs.add(englishAnalyze(s));
+        for (Requirement r : corpus) {
+            docs.add(englishAnalyze(r.getDescription()));
         }
-        List<Map<String, Double>> res = tfIdf(docs, corpus);
-        return res;
+        List<Map<String, Double>> res = tfIdf(docs);
+        int counter=0;
+        Map<String,Map<String, Double>> ret=new HashMap<String,Map<String, Double>>();
+        for (Requirement r : corpus) {
+            ret.put(r.getId(),res.get(counter));
+            counter++;
+        }
+        return ret;
 
     }
 
-    private List<Map<String, Double>> tfIdf(List<List<String>> docs, List<String> corpus) {
+    private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
         List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
         List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
         for (List<String> doc : docs) {

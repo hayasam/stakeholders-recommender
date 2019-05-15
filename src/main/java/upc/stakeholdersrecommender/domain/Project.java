@@ -9,7 +9,6 @@ import java.util.List;
 public class Project implements Serializable {
 
     private String id;
-    private Integer created_at;
     private List<String> specifiedRequirements;
 
     public String getId() {
@@ -18,14 +17,6 @@ public class Project implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public Integer getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Integer created_at) {
-        this.created_at = created_at;
     }
 
     public List<String> getSpecifiedRequirements() {

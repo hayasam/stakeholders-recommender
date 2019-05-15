@@ -8,9 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import upc.stakeholdersrecommender.domain.Person;
-import upc.stakeholdersrecommender.domain.Requirement;
-import upc.stakeholdersrecommender.domain.Responsible;
+import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.BugzillaBugsSchema;
 import upc.stakeholdersrecommender.domain.bugzilla.BugzillaBug;
 
@@ -28,6 +26,8 @@ public class BugzillaService {
     private List<Responsible> responsibles;
     private List<Requirement> requirements;
     private List<Person> persons;
+    private List<Participant> participants;
+    private List<Project> project;
 
     private Map<String,List<BugzillaBug>> bugs=new HashMap<String,List<BugzillaBug>>();
 
@@ -43,32 +43,99 @@ public class BugzillaService {
         setBugs();
         extractPersons();
         extractResponsibles();
+        extractParticipants();
+        extractProject();
+    }
+
+    private void extractProject() {
+        Project p=new Project();
+        p.setId("Set your team's name here");
+        List<String> specifiedRequirements=new ArrayList<String>();
+        List<Project> projList=new ArrayList<Project>();
+        projList.add(p);
+        project=projList;
+    }
+
+    private void extractParticipants() {
+        List<Participant> part=new ArrayList<Participant>();
+        for (Person p:persons) {
+        Participant participant=new Participant();
+        participant.setPerson(p.getUsername());
+        participant.setAvailability(100);
+        participant.setProject("1");
+        part.add(participant);
+        }
+        participants=part;
     }
 
     private void setBugs() {
         Integer offset=0;
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&creation_time=2017-01-01&limit=10000&offset="+offset);
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=UI&creation_time=2013-01-01&limit=10000&offset="+offset);
         List<Requirement> reqs= new ArrayList<Requirement>();
-        while (response.getBugs()!=null && response.getBugs().size()>0) {
+        Map<String,Integer> emailToNumber=new HashMap<String,Integer>();
+        Integer counter=0;
+       // while (response.getBugs()!=null && response.getBugs().size()>0) {
             for (BugzillaBug bu:response.getBugs()) {
-                List<BugzillaBug> list= new ArrayList<BugzillaBug>();
-                if (bugs.containsKey(bu.getAssigned_to())) {
-                    List<BugzillaBug> aux=bugs.get(bu.getAssigned_to());
-                    aux.add(bu);
-                    bugs.put(bu.getAssigned_to(),aux);
+                if (bu.getAssigned_to() != "nobody@mozilla.org") {
+                    String[] test = bu.getAssigned_to().split("@");
+                    if (!test[1].equals("bugzilla.bugs")) {
+                        List<BugzillaBug> list = new ArrayList<BugzillaBug>();
+                        String assign;
+                        if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
+                        else {
+                            emailToNumber.put(bu.getAssigned_to(),counter);
+                            assign=counter.toString();
+                            counter++;
+                        }
+                        if (bugs.containsKey(assign)) {
+                            List<BugzillaBug> aux = bugs.get(assign);
+                            aux.add(bu);
+                            bugs.put(assign, aux);
+                        } else {
+                            list.add(bu);
+                            bugs.put(assign, list);
+                        }
+                        Requirement requirement = new Requirement();
+                        requirement.setId(bu.getId());
+                        requirement.setDescription(bu.getSummary());
+                        requirement.setEffort(1);
+                        reqs.add(requirement);
+                    }
                 }
-                else {
-                    list.add(bu);
-                    bugs.put(bu.getAssigned_to(),list);
-                }
-                Requirement requirement = new Requirement();
-                requirement.setId(bu.getId());
-                requirement.setDescription(bu.getSummary());
-                reqs.add(requirement);
             }
-            offset=offset+10000;
-            response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&creation_time=2017-01-01&limit=10000&offset="+offset);
+
+
+        response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=SWT&creation_time=2013-01-01&limit=10000&offset="+offset);
+        for (BugzillaBug bu:response.getBugs()) {
+            if (bu.getAssigned_to() != "nobody@mozilla.org") {
+                String[] test = bu.getAssigned_to().split("@");
+                if (!test[1].equals("bugzilla.bugs")) {
+                    List<BugzillaBug> list = new ArrayList<BugzillaBug>();
+                    String assign;
+                    if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
+                    else {
+                        emailToNumber.put(bu.getAssigned_to(),counter);
+                        assign=counter.toString();
+                        counter++;
+                    }
+                    if (bugs.containsKey(assign)) {
+                        List<BugzillaBug> aux = bugs.get(assign);
+                        aux.add(bu);
+                        bugs.put(assign, aux);
+                    } else {
+                        list.add(bu);
+                        bugs.put(assign, list);
+                    }
+                    Requirement requirement = new Requirement();
+                    requirement.setId(bu.getId());
+                    requirement.setDescription(bu.getSummary());
+                    requirement.setEffort(1);
+                    reqs.add(requirement);
+                }
+            }
         }
+        //}
+        System.out.println(reqs.size());
         requirements=reqs;
 
     }
@@ -166,15 +233,19 @@ public class BugzillaService {
                 });
         return response.getBody();
     }
-    private BugzillaBug calltoService(String param) {
-        String callUrl = bugzillaUrl + "/rest/bug" + param;
-        System.out.println(callUrl);
-        ResponseEntity<BugzillaBug> response = restTemplate.exchange(
-                callUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<BugzillaBug>() {
-                });
-        return response.getBody();
+    public List<Participant> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<Participant> participants) {
+        this.participants = participants;
+    }
+
+    public List<Project> getProject() {
+        return project;
+    }
+
+    public void setProject(List<Project> project) {
+        this.project = project;
     }
 }
