@@ -101,8 +101,22 @@ public class StakeholdersRecommenderController {
         for (Requirement req : batch.getRequirements()) {
             corpus.add(req);
         }
-        stakeholdersRecommenderService.extract(corpus);
-        return new ResponseEntity(batch,HttpStatus.OK);
+        stakeholdersRecommenderService.extract2(corpus);
+        KeywordExtractSchema extr=new KeywordExtractSchema();
+        for (Requirement req:batch.getRequirements()) {
+            RequirementDocument doc=new RequirementDocument();
+            doc.setDescription(req.getDescription());
+            doc.setId(req.getId());
+            extr.addRequirement(doc);
+        }
+        return new ResponseEntity(extr,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "extractKeywords", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Extracts all  keywords of the given corpus, and outputs these giving for each requirement, its id, its description and keywords", notes = "")
+    public ResponseEntity extractKeywords(@RequestBody KeywordExtractSchema extr) throws Exception {
+        OutputKeywordExtraction out=stakeholdersRecommenderService.extract(extr.getRequirements());
+        return new ResponseEntity(out,HttpStatus.OK);
     }
 
     // Añadir funciones para calcular effort historico y poner effort directamente
@@ -120,16 +134,5 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    //Testear con la API de bugzilla ( Usar el historico actual para generar un proyecto pequeño y sacar recomendaciones )
-    //Keyword extraction, conseguir un modelo mas eficiente?
 
-/*
-    @RequestMapping(value = "testTime", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Extract all historic information of the bugzilla API", notes = "")
-    public ResponseEntity extractTime() throws IOException {
-        bugzillaService.testTime();
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
- */
 }

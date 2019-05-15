@@ -181,16 +181,7 @@ public class StakeholdersRecommenderService {
         }
 
     }
-/*
-    private void instanciateResource(Person person, String id, List<SkillListReplan> skills, Double availability) {
-        if (PersonReplanRepository.findById(new PersonReplanId(id, person.getUsername())) == null) {
-            ResourceReplan resourceReplan = replanService.createResource(person, id, availability);
-            PersonReplan personTrad = new PersonReplan(new PersonReplanId(id, person.getUsername()), id, resourceReplan.getId().toString(), availability);
-            PersonReplanRepository.save(personTrad);
-            replanService.addSkillsToPerson(id, resourceReplan.getId(), skills);
-        }
-    }
-*/
+
     private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) throws Exception {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<String>(requirements);
@@ -216,20 +207,6 @@ public class StakeholdersRecommenderService {
         Effort eff = EffortRepository.getOne(project);
         return eff.getEffort()[s];
     }
-/*
-    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills, Map<String, Requirement> recs) {
-        for (String rec : requirement) {
-            if (RequirementReplanRepository.findById(new RequirementReplanId(id, rec)) == null) {
-                FeatureReplan featureReplan = replanService.createRequirement(rec, id);
-                RequirementReplanRepository requirementTrad = new RequirementReplanRepository(new RequirementReplanId(id, rec));
-                requirementTrad.setID_Replan(featureReplan.getId().toString());
-                requirementTrad.setProjectIdQuery(id);
-                RequirementReplanRepository.save(requirementTrad);
-                replanService.addSkillsToRequirement(id, featureReplan.getId(), skills.get(rec));
-            }
-        }
-    }
-*/
 
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, List<SkillListReplan>> skills, Map<String, Requirement> recs) {
         Map<Integer,Requirement> codeToReq=new HashMap<Integer,Requirement>();
@@ -275,39 +252,7 @@ public class StakeholdersRecommenderService {
 
         return id;
     }
-/*
-    private Map<String, List<SkillListReplan>> computeSkillsRequirements(List<String> requirement, String id, Map<String, Requirement> recs) throws Exception {
-        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
-        List<String> corpus = new ArrayList<String>();
-        for (String s : requirement) {
-            corpus.add(recs.get(s).getDescription());
-        }
-        List<Map<String, Double>> keywords = extractor.computeTFIDF(corpus);
-        int i = 0;
-        System.out.println(keywords.size());
-        Map<String, Skill> existingSkills = new HashMap<String, Skill>();
-        for (String s : requirement) {
-            List<SkillListReplan> recSkills = new ArrayList<SkillListReplan>();
-            for (String key : keywords.get(i).keySet()) {
-                if (!existingSkills.containsKey(key)) {
-                    Skill auxiliar = new Skill(key, 1.0);
-                    recs.get(s).addSkill(auxiliar);
-                    SkillReplan skill = replanService.createSkill(auxiliar, id);
-                    auxiliar.setIdReplan(skill.getId());
-                    existingSkills.put(key, auxiliar);
-                    recSkills.add(new SkillListReplan(skill.getId(), 1.0));
-                } else {
-                    recs.get(s).addSkill(existingSkills.get(key));
-                    recSkills.add(new SkillListReplan(existingSkills.get(key).getIdReplan(), 1.0));
-                }
-            }
-            toret.put(s, recSkills);
-            ++i;
-        }
-        return toret;
-    }
-*/
+
     private Map<String, List<SkillListReplan>> computeAllSkillsRequirement(String id, Map<String, Requirement> recs) throws IOException {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String, List<SkillListReplan>> toret = new HashMap<String, List<SkillListReplan>>();
@@ -476,7 +421,7 @@ public class StakeholdersRecommenderService {
         ProjectRepository.deleteById(id);
     }
 
-    public void extract(List<Requirement> request) throws Exception {
+    public void extract2(List<Requirement> request) throws Exception {
        // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         Map<String,Map<String, Double>> res = extractor.computeTFIDF(request);
@@ -484,28 +429,60 @@ public class StakeholdersRecommenderService {
         for (Requirement r:request) {
             traductor.put(r.getId(),r);
         }
+        OutputKeywordExtraction output=new OutputKeywordExtraction();
         PrintStream out = new PrintStream(new FileOutputStream("out.txt", true));
         System.setOut(out);
         Random r = new Random();
+        List<String> id=new ArrayList<String>();
+        List<String> description=new ArrayList<String>();;
+        List<List<String>> keywords= new ArrayList<List<String>>();
         int high = 100;
         int random;
         for (String requir : res.keySet()) {
             random = r.nextInt(high);
             if (random == 50) {
-                System.out.println("");
                 Map<String, Double> map = res.get(requir);
-                System.out.println(traductor.get(requir).getId());
-                System.out.println(traductor.get(requir).getDescription());
-                System.out.println("Keywords :");
-                for (String s : map.keySet()) {
-                    System.out.print(s+" ");
-                }
+                id.add(traductor.get(requir).getId());
+                description.add(traductor.get(requir).getDescription());
+                keywords.add(new ArrayList<String>(map.keySet()));
+            }
+        }
+        for (String i:id) {
+            System.out.println(i);
+        }
+        for (String d:description) {
+            System.out.println(d);
+        }
+        for (List<String> k:keywords) {
+            System.out.println("");
+            for (String k2:k) {
+                System.out.print(k2+" ");
             }
         }
     }
+    public OutputKeywordExtraction extract(List<RequirementDocument> request) throws Exception {
+        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
+        Map<String, Map<String, Double>> res = extractor.computeTFIDF(request);
+        Map<String, RequirementDocument> traductor = new HashMap<String, RequirementDocument>();
+        for (RequirementDocument r : request) {
+            traductor.put(r.getId(), r);
+        }
+        OutputKeywordExtraction output = new OutputKeywordExtraction();
+        for (String requir : res.keySet()) {
+            Map<String, Double> map = res.get(requir);
+            ExtractedRequirement extracted= new ExtractedRequirement();
+            extracted.setDescription(traductor.get(requir).getDescription());
+            extracted.setId(traductor.get(requir).getId());
+            List<String> keys=new ArrayList<String>(map.keySet());
+            extracted.setKeywords(keys);
+            output.addExtractedRequirement(extracted);
+        }
+        return output;
+    }
 
 
-/*
+
+    /*
     public void extract2(ExtractTest request) throws IOException {
         RAKEKeywordExtractor extractor = new RAKEKeywordExtractor();
         List<Map<String, Double>> res = extractor.extractKeywords(request.getCorpus());

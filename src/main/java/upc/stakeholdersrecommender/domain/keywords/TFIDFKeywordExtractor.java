@@ -5,6 +5,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Schemas.RequirementDocument;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -14,7 +15,7 @@ import static java.lang.StrictMath.sqrt;
 
 public class TFIDFKeywordExtractor {
 
-    Double cutoffParameter = 4.0;
+    Double cutoffParameter = 4.0; //This can be set to different values for different selectivity values
     Map<String, Map<String, Double>> model;
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
 
@@ -138,48 +139,7 @@ public class TFIDFKeywordExtractor {
         return cosine;
     }
 
-    /*
 
-    public void extr(CorpusSchema request) throws Exception {
-        Map<String,Map<String,Integer>> keywordGraph= new HashMap<String,Map<String,Integer>>();
-        List<Map<String, Double>> res = computeTFIDF(request.getCorpus());
-        Map<String,Integer> amount=new HashMap<String,Integer>();
-        for (Map<String,Double> words:res) {
-            for (String word: words.keySet()) {
-                Map<String,Integer> keyword=new HashMap<String,Integer>();
-                if (keywordGraph.containsKey(word)) {
-                    keyword=keywordGraph.get(word);
-                    amount.put(word,amount.get(word)+keyword.keySet().size());
-                }
-                else  {
-                    keyword=new HashMap<String,Integer>();
-                    amount.put(word,keyword.keySet().size());
-
-                }
-                for (String adjacentTo: words.keySet()) {
-                    if (keyword.containsKey(adjacentTo)) {
-                        keyword.put(adjacentTo,keyword.get(adjacentTo)+1);
-                    }
-                    else {
-                        keyword.put(adjacentTo,1);
-                    }
-                }
-                keywordGraph.put(word,keyword);
-            }
-        }
-        Map<String,Map<String,Double>> keywordValue= new HashMap<String,Map<String,Double>>();
-//
-        for (String s:keywordGraph.keySet()) {
-            Map<String,Double> aux= new HashMap<String,Double>();
-            Map<String,Integer> line=keywordGraph.get(s);
-            for (String key:line.keySet()) {
-                aux.put(s,line.get(key).doubleValue()/amount.get(s).doubleValue());
-            }
-        }
-
-    }
-
-     */
 
     private Double norm(Map<String, Double> wordsB) {
         Double norm=0.0;
@@ -202,4 +162,20 @@ public class TFIDFKeywordExtractor {
             }
         return result;
      }
+
+    public Map<String,Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
+        List<List<String>> docs = new ArrayList<List<String>>();
+        for (RequirementDocument r : corpus) {
+            docs.add(englishAnalyze(r.getDescription()));
+        }
+        List<Map<String, Double>> res = tfIdf(docs);
+        int counter=0;
+        Map<String,Map<String, Double>> ret=new HashMap<String,Map<String, Double>>();
+        for (RequirementDocument r : corpus) {
+            ret.put(r.getId(),res.get(counter));
+            counter++;
+        }
+        return ret;
+
+    }
 }

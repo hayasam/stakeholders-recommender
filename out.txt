@@ -1,0 +1,316 @@
+537752
+483375
+415235
+504088
+531685
+497937
+434336
+505338
+506698
+537668
+435844
+415380
+440361
+429986
+442920
+519844
+514878
+500274
+424883
+467921
+472403
+538740
+500115
+543261
+501414
+508930
+464090
+442496
+443765
+497558
+507576
+460221
+460236
+536041
+424580
+465092
+466391
+519510
+506205
+416296
+483093
+473637
+498916
+515778
+429230
+420835
+508680
+546943
+413688
+527796
+537170
+527693
+430080
+497179
+442023
+431313
+437456
+502287
+438713
+502111
+486501
+535958
+492389
+414888
+492371
+492318
+426553
+510541
+413216
+481314
+481315
+536974
+436066
+511714
+540298
+413325
+402638
+431178
+546248
+458808
+446860
+438342
+542773
+452608
+413035
+428930
+427623
+397343
+506920
+506949
+433599
+470529
+477779
+531885
+470276
+470233
+531818
+404920
+458719
+421430
+487225
+428892
+543747
+441877
+541123
+Repeated clicking on project folder closes and cursor looses location
+Use EModelService in org.eclipse.e4.ui.tests instead of EMF factory
+java.lang.ArithmeticException: / by zero  at TrimBarLayout
+CycleEditorHandler should extend FilteredTableBaseHandler [Ctrl+F6, Ctrl+Shift+F6]
+Cannot set minimum width of TreeViewer columns
+Replace Ctrl+F6 legacy dialog with Ctrl+E filtered dialog
+Eclipse M7 nightly has no views/perspectives on OSX
+Replace XTestFakeButtonEvent with pure gdk implementation
+"Copy Details" in Problems view menu misses mnemonics
+"Configuration Fetch Job" should not contain "job"
+estudo
+Contexts contributed from extensions remain after the plugin is gone
+[CSS] Font change break dark theme
+Improve Dark theme
+EventBroker does not handle data of type Event correctly
+Improve test_setCursorLocation stability
+CompositeImageDescriptor should better support early callers of getSize()
+[browser] Change default position of "Internal Web Browser" to editor area
+[PerspectiveBar][Regression] Add drag and drop support for re-ordering perspective items
+List in Annotations preference page does not resize
+[Gtk3] Replace deprecated GtkSettings:gtk-show-input-method-menu
+Use flat tabs style in default styling for CTabFolder
+[Windows 10] Multiple instances of tool tip producing error from explorer.exe
+Alt-Shift-X T doesn't work (or any command issued with second letter press)
+[GTK][Printer] Snippet318 doesn't work on Linux
+Make the new Content Type dialogs look like everything else
+Remove Eclipse SWT/emulated/datetime
+[Import/Export] Export window twitching
+Delete unused org.eclipse.e4.ui.compatibility.tests plug-in
+Add minimal Readme.md to org.eclipse.swt for setting the classpath
+Close editor automatically per window
+Some Wizard categories in NewWizard automatically collapses after they was expanded first time
+[Cocoa] cannot edit/paste updatesite in "work with" p2 UI
+[Windows] StyledText has problems with Czech programming keyboard layout
+TextLayout does not render line with single tab correctly
+GUI freeze in GTK layer
+Error in console when running Browser with XULRunner 31
+SimpleListProperty#observe() should be a no-op for IObservableList
+"Save changes?" sheet dialog should be shown in same window as editor
+The toolbar visibility is always be checked, after i customize the toolbar visibility for perspective.
+Dynamic submenus not working in Mars IDE
+Remove typo in @Focus annotation Javadoc
+Use DS annotations in o.e.ui.workbench
+ComputedValue "forgets" its dependencies in case of an error in calculate()
+OleClientSite for Excel "save" button enabled in customize toolbar
+DnDAddon - Replace Green with a nicer color
+[win32] Finish custom Button foreground/background color feature
+Horizontal scrolling is inverted
+Fix compiler warnings in org.eclipse.jface.util caused by moving JFace to Java 1.5
+NullPointerException when opening preferences
+[Win] Table/Tree custom header: sort indicator should use header foreground Color.
+[Wayland] TextTransfer crash (libX11.so) due to an x11 call gdk_x11_display_utf8_to_compound_text
+Improve readability of ModelAssembler
+Web links in dialog are opened in text editor
+[DetachedView] [ViewMgmt] 2nd new Part is moved into main window by EPartService.showPart of the parent window
+NullPointerException in swt.widgets.Widget.toString()
+Title Bar Issue
+Shift Selection doesn't stop when keys no longer held down if scrolling
+StyledText handles already processed KeyDown events
+[CTabFolder] Toolbar items overflow when explicit tab height is used
+Select the root directory dialog truncates names after last dot
+Support for SWT/Swing Integration after JApplet deprecation
+Input Part are still proposed in the PartEditorSashContainer
+[WorkbenchParts] Context menu retained cross editors
+[GTK3] Issues affecting Ubuntu 16.04
+Eclipse CDT Mars.2 can't create project on Ubuntu 16.04
+Update MinMaxProcessor to use EModelService
+[HighDPI] Autoscale problems with OGL canvas
+Plug-in contributed an invalid Menu Extension (org.eclipse.ui.projectConfigure)
+Quick Outline in Java cannot be resized
+[Graphics] Implement new HighDPI APIs Image#getImageDataAtCurrentZoom and Image#getBoundsInPixels
+Orca and flat review problems
+update build.sh for linux.ia64 on 4.2.2+
+Consistent usage of getStructuredSelection for Viewers in eclipse.platform.ui
+[regression] NPE in Widget.filters
+[GTK2 clean-up] FontDialog widget uses unused 2.10 version guard
+Print toolbar does not have a real id,but with a id named org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem
+Remove ICompatibleWorkbenchPage and org.eclipse.ui.workbench.compatibility
+[GTK3] Composite receives to much repaint events
+Trailing whitespace removal & adding missing annotations for SWT codebase
+[CSS] Changed (bold) view title not redrawn promptly with Classic theme
+Luna can't run in Debian 7 64bit
+Eclipse always Open in Run mode
+Eclipse Luna Ubuntu 12.04 blocks keys delete and backspace
+text field control doesn't lose focus after mouse down/up event on CLabel
+Unhandled event loop exception when I click on a link
+[PropertiesView] Exception when opening properties view
+Eclipse mouse right-click issue with X11 forwarding
+"Remove" and "Remove all breakpoints" does not work in Breakpoints view after resetting the perspective
+Save actions cause file corruption on undo
+[CSS] Allow plug-ins to extend existing themes
+FilteredItemsSelectionDialog ignores initial element selection
+Provide default methods for IContentProvider
+[Gtk3] More than 1 control as TableEditor in table is broken. Snippet149
+Black box covers editor when scroling
+Replace new Boolean with Boolean.valueOf
+Update CTabFolderTest to use non deprecated elements
+org.eclipse.ui.internal.introview throws SAXParseException
+Possible bug while handling exception in the eclipse browser
+Tool Items do not display text on sparc solaris 64 bit when built from source
+Implement print screen hotkey for bug report
+Enable  default text encoding should be set to UTF-8 for Eclipse SDK build
+Eclipse crashes just after connecting via Windows Remote desktop
+Include all test suites in org.eclipse.ui.tests in the Tycho test scope
+SWT Build Failed due to incorrect number of libraries built
+
+cursor folder loos locat repeat click 
+factori emodelservic instead emf 
+zero trimbarlayout lang arithmeticexcept 
+extend cycleeditorhandl filteredtablebasehandl ctrl shift 
+width column cannot minimum treeview 
+filter dialog legaci ctrl replac 
+nightli osx ha 
+xtestfakebuttonev implement pure replac gdk 
+problem mnemon copi detail 
+contain configur fetch job 
+estudo 
+extens plugin remain context contribut gone 
+break font 
+improv 
+correctli eventbrok data handl type event 
+stabil improv setcursorloc 
+better caller getsiz compositeimagedescriptor earli 
+area posit default intern web browser 
+drop perspectivebar re regress drag order 
+resiz page list annot 
+input deprec gtkset replac gtk 
+ctabfold default flat style 
+multipl ex tip explor produc instanc tool 
+shift letter alt press ani issu command second 
+snippet printer 
+like everyth type make look els content 
+emul datetim 
+twitch import export 
+unus delet plug compat 
+readm classpath minim md 
+automat per 
+some expand wizard wa automat time categori newwizard thei first collaps 
+updatesit edit past cannot cocoa 
+styledtext layout keyboard problem ha program czech 
+correctli textlayout line singl render 
+gui freez layer 
+consol xulrunn run 
+iobservablelist op simplelistproperti observ 
+same shown save sheet 
+toolbar custom visibl check alwai 
+submenu id dynam mar 
+javadoc typo focu annot 
+annot ds 
+computedvalu forget depend calcul case 
+excel enabl oleclientsit custom save 
+green nicer dndaddon replac 
+featur background custom finish foreground 
+invert scroll horizont 
+warn jface caus move fix util compil 
+nullpointerexcept 
+tabl indic custom tree header sort foreground 
+call libx due texttransf utf so wayland compound gdk 
+readabl modelassembl improv 
+web link 
+parent move viewmgmt detachedview nd part main showpart window epartservic 
+tostr widget nullpointerexcept 
+bar titl issu 
+longer stop held shift scroll down kei 
+styledtext process alreadi handl event keydown 
+explicit ctabfold overflow height 
+truncat last root name dot directori 
+integr swing deprec japplet 
+input still part propos parteditorsashcontain 
+context retain cross workbenchpart 
+ubuntu affect issu 
+can creat cdt ubuntu mar 
+emodelservic minmaxprocessor 
+problem autoscal ogl highdpi canva 
+extens projectconfigur contribut invalid plug 
+quick outlin resiz cannot 
+getboundsinpixel getimagedataatcurrentzoom implement highdpi api imag graphic 
+problem orca flat review 
+sh ia 
+viewer usag getstructuredselect consist 
+filter regress 
+unus guard fontdialog up clean version 
+print have name real id render handledcontributionitem 
+icompatibleworkbenchpag compat 
+receiv composit repaint event much 
+trail ad codebas whitespac annot 
+redrawn classic promptli bold titl 
+can debian run bit luna 
+mode run alwai 
+ubuntu block delet luna kei backspac 
+mous field lose control focu up event down clabel 
+unhandl loop link except event click 
+properti except propertiesview 
+mous forward right click issu 
+all remov reset breakpoint 
+caus undo corrupt save action 
+allow extend exist plug 
+initi filtereditemsselectiondialog ignor element 
+default icontentprovid provid 
+broken snippet tabl more than control tableeditor 
+cover scrole black box 
+boolean valueof replac 
+ctabfoldertest deprec non element 
+introview intern throw saxparseexcept 
+bug possibl handl except while 
+sourc solari built do bit sparc tool 
+print bug hotkei report screen implement 
+enabl default utf sdk encod 
+desktop remot just connect via 
+all includ test scope suit tycho 
+number librari incorrect due built 
