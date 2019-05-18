@@ -196,6 +196,7 @@ public class TFIDFKeywordExtractor {
                 else if (isParsable(aux3[0])) result = result.concat(helper);
                 else result = result.concat(" " + helper);
             }
+            else if (a.equals("for") || a.equals("to") || a.equals("in"));
             else {
                 if (a.length() > 1) {
                     result = result.concat(" " + a);
