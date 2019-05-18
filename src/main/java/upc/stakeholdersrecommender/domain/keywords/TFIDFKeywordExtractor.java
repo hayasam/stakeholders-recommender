@@ -12,6 +12,7 @@ import java.io.StringReader;
 import java.util.*;
 
 import static java.lang.StrictMath.sqrt;
+import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
@@ -151,17 +152,60 @@ public class TFIDFKeywordExtractor {
     }
 
     private String clean_text(String text) {
-            text = text.replaceAll("(\\{.*?})"," code ");
-            text=text.replaceAll("[.$,;\\\"/:|!?=%,()><_0-9\\-\\[\\]{}']", " ");
-            String[] aux2=text.split(" ");
-            String result="";
-            for (String a:aux2) {
-                if (a.length()>1) {
-                    result=result.concat(" "+a);
+        System.out.println(text);
+        text = text.replaceAll("(\\{.*?})", " code ");
+        text = text.replaceAll("[$,;\\\"/:|!?=%,()><_\\[\\]{}']", " ");
+        String[] aux2 = text.split(" ");
+        String result = "";
+        for (String a : aux2) {
+            String helper = "";
+            if (a.contains(".")) {
+                String[] thing = a.split(".");
+                if (thing.length > 2) {
+                    helper = helper.concat(" " + a);
+                } else {
+                    for (String str : thing) {
+                        if (isParsable(str)) {
+                            helper = helper.concat(str);
+                        } else helper = helper.concat(" " + str);
+                    }
                 }
             }
+            else if (a.contains("-")) {
+                String[] thing = a.split("-");
+                if (thing.length > 2) {
+                    helper = helper.concat(" " + a);
+                } else {
+                    for (String str : thing) {
+                        if (isParsable(str)) {
+                            helper = helper.concat(str);
+                        } else helper = helper.concat(" " + str);
+                    }
+                }
+            }
+
+            if (helper.length() > 0 || isParsable(a)) {
+                String[] aux3;
+                if (helper.contains(".")) aux3 = helper.split(".");
+                else if (helper.contains("-")) aux3 = helper.split("-");
+                else {
+                    aux3=new String[1];
+                    aux3[0]=helper;
+                }
+                if (isParsable(a)) result = result.concat(a);
+                else if (isParsable(aux3[0])) result = result.concat(helper);
+                else result = result.concat(" " + helper);
+            }
+            else {
+                if (a.length() > 1) {
+                    result = result.concat(" " + a);
+                }
+
+            }
+        }
+        System.out.println(result);
         return result;
-     }
+    }
 
     public Map<String,Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
         List<List<String>> docs = new ArrayList<List<String>>();
