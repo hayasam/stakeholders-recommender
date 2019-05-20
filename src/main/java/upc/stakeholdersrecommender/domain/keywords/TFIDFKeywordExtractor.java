@@ -154,9 +154,38 @@ public class TFIDFKeywordExtractor {
     private String clean_text(String text) {
         System.out.println(text);
         text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=%,()><_\\[\\]{}']", " ");
-        String[] aux2 = text.split(" ");
+        text = text.replaceAll("[$,;\\\"/:|!?=%,()><_{}']", " ");
+        text = text.replaceAll("] \\[", "][");
         String result = "";
+        if (text.contains("[")) {
+            String[] p=text.split("]\\[");
+          /*  if (text.charAt(text.length()-1)!=']') {
+                String[] tempor = text.split("]");
+                p[p.length - 1] = tempor[tempor.length - 1].concat("]");
+                result = " " + tempor[tempor.length - 1];
+            }*/
+            for (int iter=0;iter<p.length;++iter) {
+                String f=p[iter];
+                if (f.charAt(0)!='[') f="["+f;
+                if (f.charAt(f.length()-1)!=']') f=f.concat("]");
+                String[] thing = f.split("\\[");
+                if (thing.length > 1) {
+                    String[] help = thing[1].split("]");
+                    if (help.length > 0) {
+                        String[] badIdea = help[0].split(" ");
+                        String nice = "";
+                        for (String s : badIdea) {
+                            nice=nice.concat(s);
+                        }
+                        for (int i = 0; i < 10; ++i) {
+                            result = result.concat(" " + nice);
+                        }
+                    }
+                }
+            }
+        }
+        String[] aux4 = text.split("]");
+        String[] aux2=aux4[aux4.length-1].split(" ");
         for (String a : aux2) {
             String helper = "";
             if (a.contains(".")) {
@@ -171,6 +200,7 @@ public class TFIDFKeywordExtractor {
                     }
                 }
             }
+
             else if (a.contains("-")) {
                 String[] thing = a.split("-");
                 if (thing.length > 2) {
