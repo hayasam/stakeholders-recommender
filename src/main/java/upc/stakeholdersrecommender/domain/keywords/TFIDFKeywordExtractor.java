@@ -9,6 +9,7 @@ import upc.stakeholdersrecommender.domain.Schemas.RequirementDocument;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.Instant;
 import java.util.*;
 
 import static java.lang.StrictMath.sqrt;
@@ -16,7 +17,7 @@ import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
-    Double cutoffParameter = 4.0; //This can be set to different values for different selectivity values
+    Double cutoffParameter = 4.5; //This can be set to different values for different selectivity values
     Map<String, Map<String, Double>> model;
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
 
@@ -152,18 +153,20 @@ public class TFIDFKeywordExtractor {
     }
 
     private String clean_text(String text) {
-        System.out.println(text);
         text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=%,()><_{}']", " ");
+        text = text.replaceAll("[$,;\\\"/:|!?=,()><_{}']", " ");
         text = text.replaceAll("] \\[", "][");
         String result = "";
+        if (Character.isDigit(text.charAt(0))) {
+            String[] aux5=text.split(" ");
+            String newText="";
+            for (int i=1;i<aux5.length;++i) {
+                newText=newText.concat(" "+aux5[i]);
+            }
+            text=newText;
+        }
         if (text.contains("[")) {
             String[] p=text.split("]\\[");
-          /*  if (text.charAt(text.length()-1)!=']') {
-                String[] tempor = text.split("]");
-                p[p.length - 1] = tempor[tempor.length - 1].concat("]");
-                result = " " + tempor[tempor.length - 1];
-            }*/
             for (int iter=0;iter<p.length;++iter) {
                 String f=p[iter];
                 if (f.charAt(0)!='[') f="["+f;
@@ -188,6 +191,7 @@ public class TFIDFKeywordExtractor {
         String[] aux2=aux4[aux4.length-1].split(" ");
         for (String a : aux2) {
             String helper = "";
+            a=a.replace("+","");
             if (a.contains(".")) {
                 String[] thing = a.split(".");
                 if (thing.length > 2) {
@@ -200,7 +204,8 @@ public class TFIDFKeywordExtractor {
                     }
                 }
             }
-
+            else if (a.length()>1 && a.charAt(a.length()-1)=='%') a="";
+            else if (a.length()>1 && a.charAt(0)=='x' && Character.isDigit(a.charAt(1))) a="";
             else if (a.contains("-")) {
                 String[] thing = a.split("-");
                 if (thing.length > 2) {
@@ -213,7 +218,12 @@ public class TFIDFKeywordExtractor {
                     }
                 }
             }
+            if (a.toUpperCase().equals(a)) {
+                for (int i = 0; i < 10; ++i) {
+                    helper = helper.concat(" " + a);
+                }
 
+            }
             if (helper.length() > 0 || isParsable(a)) {
                 String[] aux3;
                 if (helper.contains(".")) aux3 = helper.split(".");
@@ -223,10 +233,10 @@ public class TFIDFKeywordExtractor {
                     aux3[0]=helper;
                 }
                 if (isParsable(a)) result = result.concat(a);
-                else if (isParsable(aux3[0])) result = result.concat(helper);
+                else if (aux3.length>0&&isParsable(aux3[0])) result = result.concat(helper);
                 else result = result.concat(" " + helper);
             }
-            else if (a.equals("for") || a.equals("to") || a.equals("in"));
+            else if (a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under"));
             else {
                 if (a.length() > 1) {
                     result = result.concat(" " + a);
@@ -234,11 +244,11 @@ public class TFIDFKeywordExtractor {
 
             }
         }
-        System.out.println(result);
         return result;
     }
 
     public Map<String,Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
+        System.out.println(Instant.now());
         List<List<String>> docs = new ArrayList<List<String>>();
         for (RequirementDocument r : corpus) {
             docs.add(englishAnalyze(r.getDescription()));
@@ -250,6 +260,8 @@ public class TFIDFKeywordExtractor {
             ret.put(r.getId(),res.get(counter));
             counter++;
         }
+        System.out.println(Instant.now());
+
         return ret;
 
     }
