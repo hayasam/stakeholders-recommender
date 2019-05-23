@@ -5,17 +5,17 @@ import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
-import upc.stakeholdersrecommender.domain.replan.*;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.entity.ProjectSR;
 import upc.stakeholdersrecommender.repository.*;
 import upc.stakeholdersrecommender.repository.RequirementSRRepository;
-
+import org.apache.commons.math3.util.Pair;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Double.max;
 
@@ -53,14 +53,29 @@ public class StakeholdersRecommenderService {
             else {
                 persList.addAll(PersonSRRepository.findByProjectIdQuery(p));
             }
-            List<PersonSR> bestPeople=computeBestStakeholders(persList,req, k);
+            removeRejected(persList,request.getUser());
+            PersonSR[] bestPeople=computeBestStakeholders(persList,req, k);
             ret=prepareFinal(bestPeople,req);
         }
         else throw new Exception();
         return ret;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(List<PersonSR> people,RequirementSR req) {
+    private void removeRejected(List<PersonSR> persList, String user) {
+        List<PersonSR> newList=new ArrayList<PersonSR>();
+        if (RejectedPersonRepository.existsById(user)) {
+            RejectedPerson rej = RejectedPersonRepository.getOne(user);
+            if (rej != null) {
+                for (PersonSR pers : persList) {
+                    if (!rej.getDeleted().containsKey(pers.getName())) {
+                        newList.add(pers);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<RecommendReturnSchema> prepareFinal(PersonSR[] people,RequirementSR req) {
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         for (PersonSR pers : people) {
             Map<String,Skill> skillTrad= new HashMap<String,Skill>();
@@ -71,8 +86,6 @@ public class StakeholdersRecommenderService {
             Double total = 0.0;
             for (String skill : skillTrad.keySet()) {
                 for (String done : reqSkills) {
-                    System.out.println(skill+" "+done);
-
                     if (skill.equals(done)) {
                         total = total + skillTrad.get(skill).getWeight();
                     }
@@ -83,11 +96,37 @@ public class StakeholdersRecommenderService {
             Double availability = pers.getAvailability();
             ret.add(new RecommendReturnSchema(req.getID().getRequirementId(), pers.getName(), appropiateness, availability / 100.0));
         }
+        Collections.sort(ret,
+                Comparator.comparingDouble(RecommendReturnSchema::getApropiatenessScore).reversed());
+
         return ret;
     }
 
-    private List<PersonSR> computeBestStakeholders(List<PersonSR> persList, RequirementSR req, int k) {
-        return persList;
+    private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, int k) {
+        List<Pair<PersonSR, Double>> valuesForSR = new ArrayList<Pair<PersonSR, Double>>();
+
+        for (PersonSR person : persList) {
+            Double sum = 0.0;
+            for (String s : req.getSkills()) {
+                for (Skill j : person.getSkills()) {
+                    if (s.equals(j.getName())) {
+                        sum += j.getWeight();
+                    }
+                }
+            }
+            Double res = sum / req.getSkills().size();
+            res = res + person.getAvailability()/100.0;
+            Pair<PersonSR, Double> valuePair = new Pair<PersonSR, Double>(person, res);
+            valuesForSR.add(valuePair);
+        }
+        Collections.sort(valuesForSR,
+                Comparator.comparingDouble(Pair<PersonSR,Double>::getSecond).reversed());
+        PersonSR[] out= new PersonSR[k];
+        for (int i=0;i<k;++i) {
+            System.out.println(valuesForSR.get(i).getSecond());
+            out[i]=valuesForSR.get(i).getFirst();
+        }
+        return out;
     }
 
     private boolean hasTime(PersonSR pers) {
@@ -150,10 +189,22 @@ public class StakeholdersRecommenderService {
             for (Participant par:participants.get(p.getId())) {
                 hourMap.put(par.getPerson(),par.getAvailability());
             }
-
             Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(id, recs);
+            Map<String,Integer> skillfrequency=new HashMap<String,Integer>();
+            for (String s:allSkills.keySet()) {
+                for (String j:allSkills.get(s).keySet()) {
+                    if (!skillfrequency.containsKey(j)) {
+                        skillfrequency.put(j,1);
+                    }
+                    else {
+                        skillfrequency.put(j,skillfrequency.get(j)+1);
+                    }
+                }
+
+            }
+
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
-            instanciateResourceBatch(hourMap,request.getPersons(), recs,allSkills, personRecs, recsPerson, p.getSpecifiedRequirements(), id, withAvailability);
+            instanciateResourceBatch(hourMap,request.getPersons(), recs,allSkills, personRecs, skillfrequency, p.getSpecifiedRequirements(), id, withAvailability);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
     }
@@ -168,12 +219,12 @@ public class StakeholdersRecommenderService {
         }
     }
 
-    private void instanciateResourceBatch(Map<String,Integer> part,List<Person> persons,Map<String,Requirement> recs ,Map<String,Map<String,Double>> allSkills, Map<String, List<String>> personRecs, Map<String, List<String>> recsPerson,List<String> specifiedReq, String id, Boolean withAvailability) throws Exception {
+    private void instanciateResourceBatch(Map<String,Integer> part, List<Person> persons, Map<String,Requirement> recs , Map<String,Map<String,Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability) throws Exception {
         List<PersonSR> toSave=new ArrayList<PersonSR>();
         for (Person person : persons) {
             List<Skill> skills;
             if (personRecs.get(person.getUsername()) != null) {
-                skills = computeSkillsPerson(personRecs.get(person.getUsername()), allSkills, recsPerson);
+                skills = computeSkillsPerson(personRecs.get(person.getUsername()), allSkills, skillFrequency);
             }
             else skills = new ArrayList<Skill>();
             Double availability;
@@ -263,16 +314,15 @@ public class StakeholdersRecommenderService {
 
 
 
-    private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String,Map<String, Double>> recs, Map<String, List<String>> recsPerson) {
+    private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String,Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
         List<Skill> toret = new ArrayList<Skill>();
-        Map<String, Pair<Double>> appearances = new HashMap<String, Pair<Double>>();
+        Map<String, SinglePair<Double>> appearances = new HashMap<String, SinglePair<Double>>();
         for (String s : oldRecs) {
-            System.out.println(recsPerson.get(s).size());
             for (String sk : recs.get(s).keySet()) {
                 if (appearances.containsKey(sk)) {
-                    appearances.put(sk, new Pair<Double>(appearances.get(sk).p1 + 1.0, appearances.get(sk).p2));
+                    appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + 1.0, appearances.get(sk).p2));
                 } else {
-                    appearances.put(sk, new Pair<Double>(1.0, (double) recsPerson.get(s).size()));
+                    appearances.put(sk, new SinglePair<Double>(1.0, (double) skillsFrequency.get(sk)));
                 }
             }
         }
@@ -423,14 +473,16 @@ public class StakeholdersRecommenderService {
         return participants;
     }
 
-    private class Pair<T> {
+    private class SinglePair<T> {
         T p1, p2;
 
-        Pair(T p1, T p2) {
+        SinglePair(T p1, T p2) {
             this.p1 = p1;
             this.p2 = p2;
         }
 
     }
+
+
 
 }
