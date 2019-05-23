@@ -47,7 +47,10 @@ public class StakeholdersRecommenderService {
             RequirementSR req=RequirementSRRepository.findById(new RequirementSRId(p,r));
             if (!projectSpecific) {
                 for (PersonSR pers : PersonSRRepository.findByProjectIdQuery(p)) {
-                    if (hasTime(pers)) persList.add(pers);
+                    if (hasTime(pers)) {
+                        pers.setAvailability(1.0);
+                        persList.add(pers);
+                    }
                 }
             }
             else {
@@ -94,7 +97,7 @@ public class StakeholdersRecommenderService {
             Double amount = (double) req.getSkills().size();
             Double appropiateness = total / amount;
             Double availability = pers.getAvailability();
-            ret.add(new RecommendReturnSchema(req.getID().getRequirementId(), pers.getName(), appropiateness, availability / 100.0));
+            ret.add(new RecommendReturnSchema(req.getID().getRequirementId(), pers.getName(), appropiateness, availability ));
         }
         Collections.sort(ret,
                 Comparator.comparingDouble(RecommendReturnSchema::getApropiatenessScore).reversed());
@@ -115,7 +118,7 @@ public class StakeholdersRecommenderService {
                 }
             }
             Double res = sum / req.getSkills().size();
-            res = res + person.getAvailability()/100.0;
+            res = res + person.getAvailability();
             Pair<PersonSR, Double> valuePair = new Pair<PersonSR, Double>(person, res);
             valuesForSR.add(valuePair);
         }
@@ -230,7 +233,7 @@ public class StakeholdersRecommenderService {
             Double availability;
             if (withAvailability) {
                 availability = computeAvailability(specifiedReq, personRecs, person,recs,id);
-            } else availability = 100.0;
+            } else availability = 1.0;
             PersonSR per=new PersonSR(new PersonSRId(id,person.getUsername()), id, availability,skills);
             per.setHours(part.get(per.getName()));
             toSave.add(per);
@@ -255,7 +258,7 @@ public class StakeholdersRecommenderService {
     }
 
     private Double calculateAvailability(Double hours, Integer i) {
-        return (max(0, (1 - (hours / i.doubleValue())))) * 100;
+        return (max(0, (1 - (hours / i.doubleValue()))));
     }
 
     private Double extractAvailability(Integer s,String project) throws Exception {
