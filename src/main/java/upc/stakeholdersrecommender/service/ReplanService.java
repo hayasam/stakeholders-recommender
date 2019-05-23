@@ -10,7 +10,7 @@ import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.Project;
 import upc.stakeholdersrecommender.domain.Schemas.FeatureSkill;
 import upc.stakeholdersrecommender.domain.Schemas.ResourceSkill;
-import upc.stakeholdersrecommender.domain.Skill;
+import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.domain.replan.*;
 
 import java.util.ArrayList;

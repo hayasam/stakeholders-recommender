@@ -1,12 +1,13 @@
-package upc.stakeholdersrecommender.domain;
+package upc.stakeholdersrecommender.entity;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
 import java.io.Serializable;
 
+@Embeddable
 public class Skill implements Serializable {
 
     private String name;
-
-    private Integer idReplan;
 
     private Double weight;
 
@@ -26,7 +27,6 @@ public class Skill implements Serializable {
     public Skill(String name, Double weight, Integer idReplan) {
         this.name = name;
         this.weight = weight;
-        this.idReplan = idReplan;
     }
 
     public String getName() {
@@ -45,11 +45,4 @@ public class Skill implements Serializable {
         this.weight = weight;
     }
 
-    public Integer getIdReplan() {
-        return idReplan;
-    }
-
-    public void setIdReplan(Integer idReplan) {
-        this.idReplan = idReplan;
-    }
 }

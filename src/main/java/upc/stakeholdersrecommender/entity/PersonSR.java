@@ -2,22 +2,20 @@ package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "person_to_replan")
+@Table(name = "personSR")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class PersonReplan implements Serializable {
+public class PersonSR implements Serializable {
 
     @EmbeddedId
-    private PersonReplanId id;
+    private PersonSRId id;
 
     private String projectIdQuery;
-
-    private String idReplan;
 
     private Double availability;
 
@@ -25,30 +23,39 @@ public class PersonReplan implements Serializable {
 
     private String name;
 
-    public PersonReplan() {
+    @ElementCollection
+    @Embedded
+    private List<Skill> skills;
+
+    public PersonSR() {
 
     }
 
-    public PersonReplan(PersonReplanId id, String projectIdQuer, String idReplan, Double availability) {
+    public PersonSR(PersonSRId id, String projectIdQuer, Double availability) {
         this.id = id;
         this.projectIdQuery = projectIdQuer;
-        this.idReplan = idReplan;
         this.availability = availability;
         this.name=id.getPersonId();
     }
 
-    public PersonReplan(PersonReplanId id) {
+    public PersonSR(PersonSRId id, String projectIdQuer, Double availability,List<Skill> skills) {
         this.id = id;
-        this.idReplan = id.getprojectId();
+        this.projectIdQuery = projectIdQuer;
+        this.availability = availability;
+        this.name=id.getPersonId();
+        this.skills=skills;
+    }
+    public PersonSR(PersonSRId id) {
+        this.id = id;
         this.name=id.getPersonId();
 
     }
 
-    public PersonReplanId getId() {
+    public PersonSRId getId() {
         return id;
     }
 
-    public void setId(PersonReplanId id) {
+    public void setId(PersonSRId id) {
         this.id = id;
     }
 
@@ -68,14 +75,6 @@ public class PersonReplan implements Serializable {
         this.projectIdQuery = projectId;
     }
 
-    public String getIdReplan() {
-        return idReplan;
-    }
-
-    public void setIdReplan(String id_replan) {
-        this.idReplan = id_replan;
-    }
-
     public Integer getHours() {
         return hours;
     }
@@ -90,5 +89,13 @@ public class PersonReplan implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Skill> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(List<Skill> skills) {
+        this.skills = skills;
     }
 }

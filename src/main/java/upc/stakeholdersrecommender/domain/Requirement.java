@@ -1,6 +1,7 @@
 package upc.stakeholdersrecommender.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import upc.stakeholdersrecommender.entity.Skill;
 
 import java.io.Serializable;
 import java.util.ArrayList;
