@@ -1,7 +1,6 @@
 package upc.stakeholdersrecommender.service;
 
 
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -12,8 +11,6 @@ import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.BugzillaBugsSchema;
 import upc.stakeholdersrecommender.domain.bugzilla.BugzillaBug;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -29,7 +26,7 @@ public class BugzillaService {
     private List<Participant> participants;
     private List<Project> project;
 
-    private Map<String,List<BugzillaBug>> bugs=new HashMap<String,List<BugzillaBug>>();
+    private Map<String, List<BugzillaBug>> bugs = new HashMap<String, List<BugzillaBug>>();
 
     public String getBugzillaUrl() {
         return bugzillaUrl;
@@ -48,74 +45,76 @@ public class BugzillaService {
     }
 
     private void extractProject() {
-        Project p=new Project();
+        Project p = new Project();
         p.setId("Set your team's name here");
-        List<String> specifiedRequirements=new ArrayList<String>();
-        List<Project> projList=new ArrayList<Project>();
+        List<String> specifiedRequirements = new ArrayList<String>();
+        List<Project> projList = new ArrayList<Project>();
         projList.add(p);
-        project=projList;
+        project = projList;
     }
 
     private void extractParticipants() {
-        List<Participant> part=new ArrayList<Participant>();
-        for (Person p:persons) {
-        Participant participant=new Participant();
-        participant.setPerson(p.getUsername());
-        participant.setAvailability(100);
-        participant.setProject("1");
-        part.add(participant);
+        List<Participant> part = new ArrayList<Participant>();
+        for (Person p : persons) {
+            Participant participant = new Participant();
+            participant.setPerson(p.getUsername());
+            participant.setAvailability(100);
+            participant.setProject("1");
+            part.add(participant);
         }
-        participants=part;
+        participants = part;
     }
 
     private void setBugs() {
-        Integer offset=0;
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=UI&creation_time=2013-01-01&limit=10000&offset="+offset);
-        List<Requirement> reqs= new ArrayList<Requirement>();
-        Map<String,Integer> emailToNumber=new HashMap<String,Integer>();
-        Integer counter=0;
-       // while (response.getBugs()!=null && response.getBugs().size()>0) {
-            for (BugzillaBug bu:response.getBugs()) {
-                if (bu.getAssigned_to() != "nobody@mozilla.org") {
-                    String[] test = bu.getAssigned_to().split("@");
-                    if (!test[1].equals("bugzilla.bugs")) {
-                        List<BugzillaBug> list = new ArrayList<BugzillaBug>();
-                        String assign;
-                        if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
-                        else {
-                            emailToNumber.put(bu.getAssigned_to(),counter);
-                            assign=counter.toString();
-                            counter++;
-                        }
-                        if (bugs.containsKey(assign)) {
-                            List<BugzillaBug> aux = bugs.get(assign);
-                            aux.add(bu);
-                            bugs.put(assign, aux);
-                        } else {
-                            list.add(bu);
-                            bugs.put(assign, list);
-                        }
-                        Requirement requirement = new Requirement();
-                        requirement.setId(bu.getId());
-                        requirement.setDescription(bu.getSummary());
-                        requirement.setEffort(1);
-                        reqs.add(requirement);
-                    }
-                }
-            }
-
-
-        response=calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=SWT&creation_time=2013-01-01&limit=10000&offset="+offset);
-        for (BugzillaBug bu:response.getBugs()) {
+        Integer offset = 0;
+        BugzillaBugsSchema response = calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=UI&creation_time=2013-01-01&limit=10000&offset=" + offset);
+        List<Requirement> reqs = new ArrayList<Requirement>();
+        Map<String, Integer> emailToNumber = new HashMap<String, Integer>();
+        Integer counter = 0;
+        // while (response.getBugs()!=null && response.getBugs().size()>0) {
+        for (BugzillaBug bu : response.getBugs()) {
             if (bu.getAssigned_to() != "nobody@mozilla.org") {
                 String[] test = bu.getAssigned_to().split("@");
                 if (!test[1].equals("bugzilla.bugs")) {
                     List<BugzillaBug> list = new ArrayList<BugzillaBug>();
                     String assign;
-                    if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
+                    if (emailToNumber.containsKey(bu.getAssigned_to()))
+                        assign = emailToNumber.get(bu.getAssigned_to()).toString();
                     else {
-                        emailToNumber.put(bu.getAssigned_to(),counter);
-                        assign=counter.toString();
+                        emailToNumber.put(bu.getAssigned_to(), counter);
+                        assign = counter.toString();
+                        counter++;
+                    }
+                    if (bugs.containsKey(assign)) {
+                        List<BugzillaBug> aux = bugs.get(assign);
+                        aux.add(bu);
+                        bugs.put(assign, aux);
+                    } else {
+                        list.add(bu);
+                        bugs.put(assign, list);
+                    }
+                    Requirement requirement = new Requirement();
+                    requirement.setId(bu.getId());
+                    requirement.setDescription(bu.getSummary());
+                    requirement.setEffort(1);
+                    reqs.add(requirement);
+                }
+            }
+        }
+
+
+        response = calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=SWT&creation_time=2013-01-01&limit=10000&offset=" + offset);
+        for (BugzillaBug bu : response.getBugs()) {
+            if (bu.getAssigned_to() != "nobody@mozilla.org") {
+                String[] test = bu.getAssigned_to().split("@");
+                if (!test[1].equals("bugzilla.bugs")) {
+                    List<BugzillaBug> list = new ArrayList<BugzillaBug>();
+                    String assign;
+                    if (emailToNumber.containsKey(bu.getAssigned_to()))
+                        assign = emailToNumber.get(bu.getAssigned_to()).toString();
+                    else {
+                        emailToNumber.put(bu.getAssigned_to(), counter);
+                        assign = counter.toString();
                         counter++;
                     }
                     if (bugs.containsKey(assign)) {
@@ -136,7 +135,7 @@ public class BugzillaService {
         }
         //}
         System.out.println(reqs.size());
-        requirements=reqs;
+        requirements = reqs;
 
     }
     /*
@@ -157,7 +156,7 @@ public class BugzillaService {
 
 
     public void extractPersons() {
-        Set<String> stakeholders= new HashSet<String>();
+        Set<String> stakeholders = new HashSet<String>();
         stakeholders.addAll(bugs.keySet());
         List<Person> pers = new ArrayList<Person>();
         for (String s : stakeholders) {
@@ -168,10 +167,10 @@ public class BugzillaService {
 
     public void extractResponsibles() {
         List<Responsible> resp = new ArrayList<Responsible>();
-        int i =0;
+        int i = 0;
         for (Person person : persons) {
-            for (BugzillaBug b: bugs.get(person.getUsername())) {
-                Responsible re= new Responsible();
+            for (BugzillaBug b : bugs.get(person.getUsername())) {
+                Responsible re = new Responsible();
                 re.setPerson(person.getUsername());
                 re.setRequirement(b.getId());
                 resp.add(re);
@@ -179,24 +178,25 @@ public class BugzillaService {
         }
         responsibles = resp;
     }
-/*
-    public void extractRequirements() {
-        List<Requirement> req = new ArrayList<Requirement>();
-        Set<String> reqId = new HashSet<String>();
-        int i =0;
-        for (Responsible resp : responsibles) {
-            reqId.add(resp.getRequirement());
+
+    /*
+        public void extractRequirements() {
+            List<Requirement> req = new ArrayList<Requirement>();
+            Set<String> reqId = new HashSet<String>();
+            int i =0;
+            for (Responsible resp : responsibles) {
+                reqId.add(resp.getRequirement());
+            }
+            for (String s : reqId) {
+                List<BugzillaBug> bug = bugs.getBugs();
+                Requirement requirement = new Requirement();
+                requirement.setId(s);
+                requirement.setDescription(bug.getSummary());
+                req.add(requirement);
+            }
+            requirements = req;
         }
-        for (String s : reqId) {
-            List<BugzillaBug> bug = bugs.getBugs();
-            Requirement requirement = new Requirement();
-            requirement.setId(s);
-            requirement.setDescription(bug.getSummary());
-            req.add(requirement);
-        }
-        requirements = req;
-    }
-*/
+    */
     public List<Responsible> getResponsibles() {
         return responsibles;
     }
@@ -233,6 +233,7 @@ public class BugzillaService {
                 });
         return response.getBody();
     }
+
     public List<Participant> getParticipants() {
         return participants;
     }

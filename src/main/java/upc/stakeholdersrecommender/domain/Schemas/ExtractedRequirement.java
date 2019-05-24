@@ -1,9 +1,8 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
 
-import java.util.List;
-
 import java.io.Serializable;
+import java.util.List;
 
 public class ExtractedRequirement implements Serializable {
 

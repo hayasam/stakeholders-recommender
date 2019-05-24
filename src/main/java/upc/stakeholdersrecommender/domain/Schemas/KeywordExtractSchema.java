@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KeywordExtractSchema implements Serializable {
-    List<RequirementDocument> requirements=new ArrayList<RequirementDocument>();
+    List<RequirementDocument> requirements = new ArrayList<RequirementDocument>();
 
     public List<RequirementDocument> getRequirements() {
         return requirements;

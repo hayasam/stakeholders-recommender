@@ -1,7 +1,6 @@
 package upc.stakeholdersrecommender.entity;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Entity;
 import java.io.Serializable;
 
 @Embeddable

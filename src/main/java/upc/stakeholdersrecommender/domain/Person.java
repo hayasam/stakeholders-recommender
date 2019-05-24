@@ -1,11 +1,6 @@
 package upc.stakeholdersrecommender.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import upc.stakeholdersrecommender.domain.replan.SkillListReplan;
-import upc.stakeholdersrecommender.domain.replan.SkillReplan;
-
 import java.io.Serializable;
-import java.util.List;
 
 public class Person implements Serializable {
 
@@ -13,8 +8,6 @@ public class Person implements Serializable {
 
     private Double availability;
 
-    @JsonIgnore
-    private List<SkillListReplan> skills;
 
     public Person() {
 
@@ -30,14 +23,6 @@ public class Person implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public List<SkillListReplan> getSkills() {
-        return skills;
-    }
-
-    public void setSkills(List<SkillListReplan> skills) {
-        this.skills = skills;
     }
 
     public Double getAvailability() {

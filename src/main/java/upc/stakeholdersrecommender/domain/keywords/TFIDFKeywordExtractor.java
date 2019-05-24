@@ -67,7 +67,7 @@ public class TFIDFKeywordExtractor {
 
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<String>();
-        text=clean_text(text);
+        text = clean_text(text);
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
         tokenStream.reset();
@@ -87,16 +87,16 @@ public class TFIDFKeywordExtractor {
         return analyze(text, analyzer);
     }
 
-    public Map<String,Map<String, Double>> computeTFIDF(Collection<Requirement> corpus) throws IOException {
+    public Map<String, Map<String, Double>> computeTFIDF(Collection<Requirement> corpus) throws IOException {
         List<List<String>> docs = new ArrayList<List<String>>();
         for (Requirement r : corpus) {
             docs.add(englishAnalyze(r.getDescription()));
         }
         List<Map<String, Double>> res = tfIdf(docs);
-        int counter=0;
-        Map<String,Map<String, Double>> ret=new HashMap<String,Map<String, Double>>();
+        int counter = 0;
+        Map<String, Map<String, Double>> ret = new HashMap<String, Map<String, Double>>();
         for (Requirement r : corpus) {
-            ret.put(r.getId(),res.get(counter));
+            ret.put(r.getId(), res.get(counter));
             counter++;
         }
         return ret;
@@ -116,7 +116,7 @@ public class TFIDFKeywordExtractor {
                 Double idf = idf(docs.size(), corpusFrequency.get(s));
                 Integer tf = wordBag.get(i).get(s);
                 Double tfidf = idf * tf;
-                if (tfidf >= cutoffParameter && s.length()>1) aux.put(s, tfidf);
+                if (tfidf >= cutoffParameter && s.length() > 1) aux.put(s, tfidf);
             }
             tfidfComputed.add(aux);
             ++i;
@@ -125,30 +125,29 @@ public class TFIDFKeywordExtractor {
 
     }
 
-    public double cosineSimilarity(Map<String,Double> wordsA,Map<String,Double> wordsB) {
-        Double cosine=0.0;
-        Set<String> intersection= new HashSet<String>(wordsA.keySet());
+    public double cosineSimilarity(Map<String, Double> wordsA, Map<String, Double> wordsB) {
+        Double cosine = 0.0;
+        Set<String> intersection = new HashSet<String>(wordsA.keySet());
         intersection.retainAll(wordsB.keySet());
-        for (String s: intersection) {
-            Double forA=wordsA.get(s);
-            Double forB=wordsB.get(s);
-            cosine+=forA*forB;
+        for (String s : intersection) {
+            Double forA = wordsA.get(s);
+            Double forB = wordsB.get(s);
+            cosine += forA * forB;
         }
-        Double normA=norm(wordsA);
-        Double normB=norm(wordsB);
+        Double normA = norm(wordsA);
+        Double normB = norm(wordsB);
 
-        cosine=cosine/(normA*normB);
+        cosine = cosine / (normA * normB);
         return cosine;
     }
 
 
-
     private Double norm(Map<String, Double> wordsB) {
-        Double norm=0.0;
-        for (String s:wordsB.keySet()) {
-            norm+=wordsB.get(s)*wordsB.get(s);
+        Double norm = 0.0;
+        for (String s : wordsB.keySet()) {
+            norm += wordsB.get(s) * wordsB.get(s);
         }
-        Double result=sqrt(norm);
+        Double result = sqrt(norm);
         return result;
     }
 
@@ -158,19 +157,19 @@ public class TFIDFKeywordExtractor {
         text = text.replaceAll("] \\[", "][");
         String result = "";
         if (Character.isDigit(text.charAt(0))) {
-            String[] aux5=text.split(" ");
-            String newText="";
-            for (int i=1;i<aux5.length;++i) {
-                newText=newText.concat(" "+aux5[i]);
+            String[] aux5 = text.split(" ");
+            String newText = "";
+            for (int i = 1; i < aux5.length; ++i) {
+                newText = newText.concat(" " + aux5[i]);
             }
-            text=newText;
+            text = newText;
         }
         if (text.contains("[")) {
-            String[] p=text.split("]\\[");
-            for (int iter=0;iter<p.length;++iter) {
-                String f=p[iter];
-                if (f.charAt(0)!='[') f="["+f;
-                if (f.charAt(f.length()-1)!=']') f=f.concat("]");
+            String[] p = text.split("]\\[");
+            for (int iter = 0; iter < p.length; ++iter) {
+                String f = p[iter];
+                if (f.charAt(0) != '[') f = "[" + f;
+                if (f.charAt(f.length() - 1) != ']') f = f.concat("]");
                 String[] thing = f.split("\\[");
                 if (thing.length > 1) {
                     String[] help = thing[1].split("]");
@@ -178,7 +177,7 @@ public class TFIDFKeywordExtractor {
                         String[] badIdea = help[0].split(" ");
                         String nice = "";
                         for (String s : badIdea) {
-                            nice=nice.concat(s);
+                            nice = nice.concat(s);
                         }
                         for (int i = 0; i < 10; ++i) {
                             result = result.concat(" " + nice);
@@ -188,10 +187,10 @@ public class TFIDFKeywordExtractor {
             }
         }
         String[] aux4 = text.split("]");
-        String[] aux2=aux4[aux4.length-1].split(" ");
+        String[] aux2 = aux4[aux4.length - 1].split(" ");
         for (String a : aux2) {
             String helper = "";
-            a=a.replace("+","");
+            a = a.replace("+", "");
             if (a.contains(".")) {
                 String[] thing = a.split(".");
                 if (thing.length > 2) {
@@ -203,9 +202,8 @@ public class TFIDFKeywordExtractor {
                         } else helper = helper.concat(" " + str);
                     }
                 }
-            }
-            else if (a.length()>1 && a.charAt(a.length()-1)=='%') a="";
-            else if (a.length()>1 && a.charAt(0)=='x' && Character.isDigit(a.charAt(1))) a="";
+            } else if (a.length() > 1 && a.charAt(a.length() - 1) == '%') a = "";
+            else if (a.length() > 1 && a.charAt(0) == 'x' && Character.isDigit(a.charAt(1))) a = "";
             else if (a.contains("-")) {
                 String[] thing = a.split("-");
                 if (thing.length > 2) {
@@ -229,14 +227,13 @@ public class TFIDFKeywordExtractor {
                 if (helper.contains(".")) aux3 = helper.split(".");
                 else if (helper.contains("-")) aux3 = helper.split("-");
                 else {
-                    aux3=new String[1];
-                    aux3[0]=helper;
+                    aux3 = new String[1];
+                    aux3[0] = helper;
                 }
                 if (isParsable(a)) result = result.concat(a);
-                else if (aux3.length>0&&isParsable(aux3[0])) result = result.concat(helper);
+                else if (aux3.length > 0 && isParsable(aux3[0])) result = result.concat(helper);
                 else result = result.concat(" " + helper);
-            }
-            else if (a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under"));
+            } else if (a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under")) ;
             else {
                 if (a.length() > 1) {
                     result = result.concat(" " + a);
@@ -247,17 +244,17 @@ public class TFIDFKeywordExtractor {
         return result;
     }
 
-    public Map<String,Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
+    public Map<String, Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
         System.out.println(Instant.now());
         List<List<String>> docs = new ArrayList<List<String>>();
         for (RequirementDocument r : corpus) {
             docs.add(englishAnalyze(r.getDescription()));
         }
         List<Map<String, Double>> res = tfIdf(docs);
-        int counter=0;
-        Map<String,Map<String, Double>> ret=new HashMap<String,Map<String, Double>>();
+        int counter = 0;
+        Map<String, Map<String, Double>> ret = new HashMap<String, Map<String, Double>>();
         for (RequirementDocument r : corpus) {
-            ret.put(r.getId(),res.get(counter));
+            ret.put(r.getId(), res.get(counter));
             counter++;
         }
         System.out.println(Instant.now());

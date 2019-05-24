@@ -1,7 +1,6 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class SetEffortSchema implements Serializable {
 

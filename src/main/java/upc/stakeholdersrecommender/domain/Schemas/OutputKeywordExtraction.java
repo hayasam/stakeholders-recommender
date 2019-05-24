@@ -8,7 +8,7 @@ import java.util.List;
 
 public class OutputKeywordExtraction implements Serializable {
 
-    List<ExtractedRequirement> list=new ArrayList<ExtractedRequirement>();
+    List<ExtractedRequirement> list = new ArrayList<ExtractedRequirement>();
 
     public List<ExtractedRequirement> getList() {
         return list;

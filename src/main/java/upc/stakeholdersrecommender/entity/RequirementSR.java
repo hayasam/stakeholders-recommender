@@ -16,13 +16,11 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RequirementSR implements Serializable {
 
-    @EmbeddedId
-    private RequirementSRId id;
-
-    private String projectIdQuery;
-
     @ElementCollection
     List<String> skills;
+    @EmbeddedId
+    private RequirementSRId id;
+    private String projectIdQuery;
 
     public RequirementSR() {
 
@@ -32,9 +30,9 @@ public class RequirementSR implements Serializable {
         this.id = id;
     }
 
-    public RequirementSR(Requirement req,String id) {
-        this.id = new RequirementSRId(id,req.getId());
-        this.projectIdQuery=req.getId();
+    public RequirementSR(Requirement req, String id) {
+        this.id = new RequirementSRId(id, req.getId());
+        this.projectIdQuery = req.getId();
     }
 
     public RequirementSRId getID() {

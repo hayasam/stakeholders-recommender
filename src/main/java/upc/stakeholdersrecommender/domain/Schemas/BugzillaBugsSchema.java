@@ -11,13 +11,13 @@ import java.util.Set;
 
 public class BugzillaBugsSchema implements Serializable {
 
-    List<BugzillaBug> bugs= new ArrayList<BugzillaBug>();
+    List<BugzillaBug> bugs = new ArrayList<BugzillaBug>();
 
     public Set<String> getStakeholders() {
         Set<String> name = new HashSet<String>();
         Set<String> id = new HashSet<String>();
         for (BugzillaBug bug : bugs) {
-            if (bug.getAssigned_to()!=null) {
+            if (bug.getAssigned_to() != null) {
                 name.add(bug.getAssigned_to());
             }
         }
@@ -46,7 +46,7 @@ public class BugzillaBugsSchema implements Serializable {
     }
 
     public void addBugs(BugzillaBugsSchema toFuse) {
-        if (toFuse.bugs!=null) {
+        if (toFuse.bugs != null) {
             this.bugs.addAll(toFuse.bugs);
         }
     }

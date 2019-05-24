@@ -9,11 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.EffortCalculator;
 import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.BugzillaService;
+import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
@@ -44,11 +44,10 @@ public class StakeholdersRecommenderController {
             " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
             " or not.", notes = "", response = BatchReturnSchema.class)
     public ResponseEntity addBatch(@RequestBody BatchSchema batch, @RequestParam Boolean withAvailability) throws Exception {
-        int res=0;
+        int res = 0;
         try {
             res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
@@ -70,10 +69,10 @@ public class StakeholdersRecommenderController {
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Given a requirement and a list of persons, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a list of the best K recommendations." +
-            "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders, or only those" +
-            " specified in \"participants\"", notes = "", response = RecommendReturnSchema[].class)
+    @ApiOperation(value = "Given a REQUIREMENT in a PROJECT, asked by a USER, the Stakeholder Recommender service performs a " +
+            "recommendation and returns a list of the best K stakeholders based on the historic data given in the batch_process." +
+            "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders given in the batch_process, or only those" +
+            " specified in \"PARTICIPANTS\", in the batch_process", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
                                                        @RequestParam Integer k, @RequestParam Boolean projectSpecific) throws Exception {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific);
@@ -97,40 +96,40 @@ public class StakeholdersRecommenderController {
         batch.setRequirements(bugzillaService.getRequirements());
         batch.setParticipants(bugzillaService.getParticipants());
         batch.setProjects(bugzillaService.getProject());
-        List<Requirement> corpus= new ArrayList<Requirement>();
+        List<Requirement> corpus = new ArrayList<Requirement>();
         for (Requirement req : batch.getRequirements()) {
             corpus.add(req);
         }
         stakeholdersRecommenderService.extract2(corpus);
-        KeywordExtractSchema extr=new KeywordExtractSchema();
-        for (Requirement req:batch.getRequirements()) {
-            RequirementDocument doc=new RequirementDocument();
+        KeywordExtractSchema extr = new KeywordExtractSchema();
+        for (Requirement req : batch.getRequirements()) {
+            RequirementDocument doc = new RequirementDocument();
             doc.setDescription(req.getDescription());
             doc.setId(req.getId());
             extr.addRequirement(doc);
         }
-        return new ResponseEntity(extr,HttpStatus.OK);
+        return new ResponseEntity(extr, HttpStatus.OK);
     }
 
     @RequestMapping(value = "extractKeywords", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Extracts all  keywords of the given corpus, and outputs these giving for each requirement, its id, its description and keywords", notes = "")
     public ResponseEntity extractKeywords(@RequestBody KeywordExtractSchema extr) throws Exception {
-        OutputKeywordExtraction out=stakeholdersRecommenderService.extract(extr.getRequirements());
-        return new ResponseEntity(out,HttpStatus.OK);
+        OutputKeywordExtraction out = stakeholdersRecommenderService.extract(extr.getRequirements());
+        return new ResponseEntity(out, HttpStatus.OK);
     }
 
     // Añadir funciones para calcular effort historico y poner effort directamente
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
     public ResponseEntity setEffort(@RequestBody SetEffortSchema eff, @RequestParam String project) throws IOException {
-        effortCalc.setEffort(eff,project);
+        effortCalc.setEffort(eff, project);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "computeEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given", notes = "")
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
-        effortCalc.effortCalc(eff,project);
+        effortCalc.effortCalc(eff, project);
         return new ResponseEntity(HttpStatus.OK);
     }
 

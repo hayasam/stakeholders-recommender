@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,19 +34,20 @@ public class PersonSR implements Serializable {
         this.id = id;
         this.projectIdQuery = projectIdQuer;
         this.availability = availability;
-        this.name=id.getPersonId();
+        this.name = id.getPersonId();
     }
 
-    public PersonSR(PersonSRId id, String projectIdQuer, Double availability,List<Skill> skills) {
+    public PersonSR(PersonSRId id, String projectIdQuer, Double availability, List<Skill> skills) {
         this.id = id;
         this.projectIdQuery = projectIdQuer;
         this.availability = availability;
-        this.name=id.getPersonId();
-        this.skills=skills;
+        this.name = id.getPersonId();
+        this.skills = skills;
     }
+
     public PersonSR(PersonSRId id) {
         this.id = id;
-        this.name=id.getPersonId();
+        this.name = id.getPersonId();
 
     }
 
