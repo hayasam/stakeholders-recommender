@@ -81,8 +81,8 @@ public class TFIDFKeywordExtractor {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
-                .addTokenFilter("porterstem")
                 .addTokenFilter("stop")
+                .addTokenFilter("porterstem")
                 .build();
         return analyze(text, analyzer);
     }
