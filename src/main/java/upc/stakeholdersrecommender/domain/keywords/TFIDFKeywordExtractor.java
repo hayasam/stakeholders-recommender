@@ -233,7 +233,7 @@ public class TFIDFKeywordExtractor {
                 if (isParsable(a)) result = result.concat(a);
                 else if (aux3.length > 0 && isParsable(aux3[0])) result = result.concat(helper);
                 else result = result.concat(" " + helper);
-            } else if (a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under")) ;
+            } else if (a.equals("which")||a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under")) ;
             else {
                 if (a.length() > 1) {
                     result = result.concat(" " + a);
