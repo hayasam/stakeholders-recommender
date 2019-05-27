@@ -186,23 +186,28 @@ public class StakeholdersRecommenderService {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
             Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(id, recs);
-            Map<String,Integer> skillfrequency=new HashMap<String,Integer>();
-            for (String s:allSkills.keySet()) {
-                for (String j:allSkills.get(s).keySet()) {
-                    if (!skillfrequency.containsKey(j)) {
-                        skillfrequency.put(j,1);
-                    }
-                    else {
-                        skillfrequency.put(j,skillfrequency.get(j)+1);
-                    }
-                }
-
-            }
+            Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
 
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills,recs);
             instanciateResourceBatch(hourMap,request.getPersons(), recs,allSkills, personRecs, skillfrequency, p.getSpecifiedRequirements(), id, withAvailability);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
+    }
+
+    private Map<String, Integer> getSkillFrequency(Map<String, Map<String, Double>> allSkills) {
+        Map<String,Integer> skillfrequency=new HashMap<String,Integer>();
+        for (String s:allSkills.keySet()) {
+            for (String j:allSkills.get(s).keySet()) {
+                if (!skillfrequency.containsKey(j)) {
+                    skillfrequency.put(j,1);
+                }
+                else {
+                    skillfrequency.put(j,skillfrequency.get(j)+1);
+                }
+            }
+
+        }
+        return skillfrequency;
     }
 
     private void setHours(List<Participant> participants) {
