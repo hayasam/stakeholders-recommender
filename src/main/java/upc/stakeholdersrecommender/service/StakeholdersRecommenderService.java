@@ -178,7 +178,6 @@ public class StakeholdersRecommenderService {
             recs.put(r.getId(), r);
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
-        Map<String, List<String>> recsPerson = getRecsPerson(request);
         Map<String, List<Participant>> participants = getParticipants(request);
         for (Project p : request.getProjects()) {
             String id = instanciateProject(p, participants.get(p.getId()));
@@ -232,9 +231,7 @@ public class StakeholdersRecommenderService {
             per.setHours(part.get(per.getName()));
             toSave.add(per);
         }
-        System.out.println(Instant.now());
         PersonSRRepository.saveAll(toSave);
-        System.out.println(Instant.now());
     }
 
     private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) throws Exception {
@@ -338,18 +335,6 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private Set<String> reject(String rejector, Set<String> stuff, String person) {
-        if (RejectedPersonRepository.existsById(rejector)) {
-            RejectedPerson rej = RejectedPersonRepository.getOne(rejector);
-            HashMap<String, Set<String>> rejectedRequirements = rej.getDeleted();
-            if (rejectedRequirements.containsKey(person)) {
-                stuff.removeAll(rejectedRequirements.get(person));
-            }
-        }
-        return stuff;
-    }
-
-
     private void deleteRelated(String id) {
         PersonSRRepository.deleteByProjectIdQuery(id);
         RequirementSRRepository.deleteByProjectIdQuery(id);
@@ -418,22 +403,6 @@ public class StakeholdersRecommenderService {
             output.addExtractedRequirement(extracted);
         }
         return output;
-    }
-
-    private Map<String, List<String>> getRecsPerson(BatchSchema request) {
-        Map<String, List<String>> recsPerson = new HashMap<String, List<String>>();
-        for (Responsible resp : request.getResponsibles()) {
-            if (recsPerson.containsKey(resp.getRequirement())) {
-                List<String> aux = recsPerson.get(resp.getRequirement());
-                aux.add(resp.getPerson());
-                recsPerson.put(resp.getRequirement(), aux);
-            } else {
-                List<String> aux = new ArrayList<String>();
-                aux.add(resp.getPerson());
-                recsPerson.put(resp.getRequirement(), aux);
-            }
-        }
-        return recsPerson;
     }
 
     private Map<String, List<String>> getPersonRecs(BatchSchema request) {
