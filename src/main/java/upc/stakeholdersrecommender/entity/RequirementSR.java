@@ -21,7 +21,8 @@ public class RequirementSR implements Serializable {
     @EmbeddedId
     private RequirementSRId id;
     private String projectIdQuery;
-
+    private String modified_at;
+// De 1 a 0.5, lineal, de entre ahora a final.
     public RequirementSR() {
 
     }

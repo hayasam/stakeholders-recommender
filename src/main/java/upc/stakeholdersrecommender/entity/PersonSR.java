@@ -3,11 +3,13 @@ package upc.stakeholdersrecommender.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name = "personSR")
+@Table(name = "personSR" ,
+        indexes = { @Index(name = "name_index", columnList = "name") })
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PersonSR implements Serializable {
 

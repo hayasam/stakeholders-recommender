@@ -53,12 +53,6 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "purge", method = RequestMethod.DELETE)
-    @ApiOperation(value = "Removes all data from the service database.")
-    public ResponseEntity purge() {
-        stakeholdersRecommenderService.purge();
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Recommendation rejection method: used to state that the user identified by REJECTED must not be assigned to REQUIREMENT. The" +
@@ -80,42 +74,10 @@ public class StakeholdersRecommenderController {
     }
 
     @RequestMapping(value = "deleteProject", method = RequestMethod.DELETE)
-    @ApiOperation(value = "Deletes a project from the database", notes = "")
+    @ApiOperation(value = "Deletes a project from the database, identified by \"id\"", notes = "")
     public ResponseEntity extract(@RequestParam String id) throws IOException {
         stakeholdersRecommenderService.deleteProject(id);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "extractHistoric", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Extract all historic information of the bugzilla API", notes = "")
-    public ResponseEntity extractBugzilla() throws Exception {
-        bugzillaService.extractInfo();
-        BatchSchema batch = new BatchSchema();
-        batch.setPersons(bugzillaService.getPersons());
-        batch.setResponsibles(bugzillaService.getResponsibles());
-        batch.setRequirements(bugzillaService.getRequirements());
-        batch.setParticipants(bugzillaService.getParticipants());
-        batch.setProjects(bugzillaService.getProject());
-        List<Requirement> corpus = new ArrayList<Requirement>();
-        for (Requirement req : batch.getRequirements()) {
-            corpus.add(req);
-        }
-        stakeholdersRecommenderService.extract2(corpus);
-        KeywordExtractSchema extr = new KeywordExtractSchema();
-        for (Requirement req : batch.getRequirements()) {
-            RequirementDocument doc = new RequirementDocument();
-            doc.setDescription(req.getDescription());
-            doc.setId(req.getId());
-            extr.addRequirement(doc);
-        }
-        return new ResponseEntity(extr, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "extractKeywords", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Extracts all  keywords of the given corpus, and outputs these giving for each requirement, its id, its description and keywords", notes = "")
-    public ResponseEntity extractKeywords(@RequestBody KeywordExtractSchema extr) throws Exception {
-        OutputKeywordExtraction out = stakeholdersRecommenderService.extract(extr.getRequirements());
-        return new ResponseEntity(out, HttpStatus.OK);
     }
 
     // Añadir funciones para calcular effort historico y poner effort directamente
@@ -127,7 +89,9 @@ public class StakeholdersRecommenderController {
     }
 
     @RequestMapping(value = "computeEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given", notes = "")
+    @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given" +
+            ",a list of hours per effort point, based on the time a requirement with those effort points required to be finished. The effort points go" +
+            "in a scale from 1 to 5", notes = "")
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
         effortCalc.effortCalc(eff, project);
         return new ResponseEntity(HttpStatus.OK);
