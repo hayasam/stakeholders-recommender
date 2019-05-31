@@ -18,6 +18,8 @@ public class Requirement implements Serializable {
 
     private String description;
 
+    private String modified_at;
+
 
     public Requirement() {
 
@@ -61,5 +63,13 @@ public class Requirement implements Serializable {
 
     public void setEffort(Integer effort) {
         this.effort = effort;
+    }
+
+    public String getModified_at() {
+        return modified_at;
+    }
+
+    public void setModified_at(String modified_at) {
+        this.modified_at = modified_at;
     }
 }
