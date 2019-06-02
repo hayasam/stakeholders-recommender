@@ -12,7 +12,9 @@ import upc.stakeholdersrecommender.repository.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Double.max;
 
@@ -172,6 +174,9 @@ public class StakeholdersRecommenderService {
     public Integer addBatch(BatchSchema request, Boolean withAvailability) throws Exception {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
+            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+            Date dtIn = inFormat.parse(r.getModified_at());  //where dateString is a date in ISO-8601 format
+            r.setModified(dtIn);
             recs.put(r.getId(), r);
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
@@ -292,6 +297,17 @@ public class StakeholdersRecommenderService {
             corpus.add(r.getDescription());
         }
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
+        for (String s:keywords.keySet()) {
+            Requirement req=recs.get(s);
+            Date dat=new Date();
+            long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
+            long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            Map<String,Double> aux=keywords.get(s);
+            for (String j:aux.keySet()) {
+                aux.put(j,1-max(0.5,diff*(0.5/365)));
+            }
+            keywords.put(s,aux);
+        }
         return keywords;
     }
 
@@ -300,11 +316,12 @@ public class StakeholdersRecommenderService {
         List<Skill> toret = new ArrayList<Skill>();
         Map<String, SinglePair<Double>> appearances = new HashMap<String, SinglePair<Double>>();
         for (String s : oldRecs) {
-            for (String sk : recs.get(s).keySet()) {
+            Map<String,Double> help=recs.get(s);
+            for (String sk : help.keySet()) {
                 if (appearances.containsKey(sk)) {
-                    appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + 1.0, appearances.get(sk).p2));
+                    appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
                 } else {
-                    appearances.put(sk, new SinglePair<Double>(1.0, (double) skillsFrequency.get(sk)));
+                    appearances.put(sk, new SinglePair<Double>(help.get(sk), (double) skillsFrequency.get(sk)));
                 }
             }
         }
