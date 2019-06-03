@@ -181,7 +181,7 @@ public class StakeholdersRecommenderService {
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-            Date dtIn = inFormat.parse(r.getModified_at());  //where dateString is a date in ISO-8601 format
+            Date dtIn = inFormat.parse(r.getModified_at());
             r.setModified(dtIn);
             recs.put(r.getId(), r);
         }
@@ -193,7 +193,7 @@ public class StakeholdersRecommenderService {
             for (Participant par : participants.get(p.getId())) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
-            Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(id, recs);
+            Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs);
             Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
 
             instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills, recs);
@@ -289,7 +289,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private Map<String, Map<String, Double>> computeAllSkillsRequirement(String id, Map<String, Requirement> recs) throws IOException {
+    private Map<String, Map<String, Double>> computeAllSkillsRequirement(Map<String, Requirement> recs) throws IOException {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         List<String> corpus = new ArrayList<String>();
         for (Requirement r : recs.values()) {
