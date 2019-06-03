@@ -5,7 +5,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import upc.stakeholdersrecommender.domain.Requirement;
-import upc.stakeholdersrecommender.domain.Schemas.RequirementDocument;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -21,29 +20,6 @@ public class TFIDFKeywordExtractor {
     Map<String, Map<String, Double>> model;
     private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
 
-    public Map<String, Integer> getCorpusFrequency() {
-        return corpusFrequency;
-    }
-
-    public void setCorpusFrequency(Map<String, Integer> corpusFrequency) {
-        this.corpusFrequency = corpusFrequency;
-    }
-
-    public Double getCutoffParameter() {
-        return cutoffParameter;
-    }
-
-    public void setCutoffParameter(Double cutoffParameter) {
-        this.cutoffParameter = cutoffParameter;
-    }
-
-    public Map<String, Map<String, Double>> getModel() {
-        return model;
-    }
-
-    public void setModel(Map<String, Map<String, Double>> model) {
-        this.model = model;
-    }
 
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<String, Integer>();
@@ -123,22 +99,6 @@ public class TFIDFKeywordExtractor {
         }
         return tfidfComputed;
 
-    }
-
-    public double cosineSimilarity(Map<String, Double> wordsA, Map<String, Double> wordsB) {
-        Double cosine = 0.0;
-        Set<String> intersection = new HashSet<String>(wordsA.keySet());
-        intersection.retainAll(wordsB.keySet());
-        for (String s : intersection) {
-            Double forA = wordsA.get(s);
-            Double forB = wordsB.get(s);
-            cosine += forA * forB;
-        }
-        Double normA = norm(wordsA);
-        Double normB = norm(wordsB);
-
-        cosine = cosine / (normA * normB);
-        return cosine;
     }
 
 
@@ -251,22 +211,30 @@ public class TFIDFKeywordExtractor {
         return result;
     }
 
-    public Map<String, Map<String, Double>> computeTFIDF(List<RequirementDocument> corpus) throws IOException {
-        System.out.println(Instant.now());
-        List<List<String>> docs = new ArrayList<List<String>>();
-        for (RequirementDocument r : corpus) {
-            docs.add(englishAnalyze(r.getDescription()));
-        }
-        List<Map<String, Double>> res = tfIdf(docs);
-        int counter = 0;
-        Map<String, Map<String, Double>> ret = new HashMap<String, Map<String, Double>>();
-        for (RequirementDocument r : corpus) {
-            ret.put(r.getId(), res.get(counter));
-            counter++;
-        }
-        System.out.println(Instant.now());
 
-        return ret;
-
+    public Map<String, Integer> getCorpusFrequency() {
+        return corpusFrequency;
     }
+
+    public void setCorpusFrequency(Map<String, Integer> corpusFrequency) {
+        this.corpusFrequency = corpusFrequency;
+    }
+
+    public Double getCutoffParameter() {
+        return cutoffParameter;
+    }
+
+    public void setCutoffParameter(Double cutoffParameter) {
+        this.cutoffParameter = cutoffParameter;
+    }
+
+    public Map<String, Map<String, Double>> getModel() {
+        return model;
+    }
+
+    public void setModel(Map<String, Map<String, Double>> model) {
+        this.model = model;
+    }
+
+
 }

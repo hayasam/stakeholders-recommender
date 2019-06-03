@@ -9,19 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
-import upc.stakeholdersrecommender.service.BugzillaService;
 import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-/*
-Llega horas por
- */
 
 
 @SuppressWarnings("ALL")
@@ -33,8 +27,6 @@ public class StakeholdersRecommenderController {
     private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
-    @Autowired
-    BugzillaService bugzillaService;
     @Autowired
     EffortCalculator effortCalc;
 
@@ -73,7 +65,6 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 
-    // Añadir funciones para calcular effort historico y poner effort directamente
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
     public ResponseEntity setEffort(@RequestBody SetEffortSchema eff, @RequestParam String project) throws IOException {
@@ -88,21 +79,6 @@ public class StakeholdersRecommenderController {
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
         effortCalc.effortCalc(eff, project);
         return new ResponseEntity(HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "extractHistoric", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given" +
-            ",a list of hours per effort point, based on the time a requirement with those effort points required to be finished. The effort points go" +
-            "in a scale from 1 to 5", notes = "")
-    public ResponseEntity extractHistoric() throws IOException {
-        bugzillaService.extractInfo();
-        BatchSchema batch=new BatchSchema();
-        batch.setParticipants(bugzillaService.getParticipants());
-        batch.setPersons(bugzillaService.getPersons());
-        batch.setRequirements(bugzillaService.getRequirements());
-        batch.setResponsibles(bugzillaService.getResponsibles());
-        batch.setProjects(bugzillaService.getProject());
-        return new ResponseEntity(batch,HttpStatus.OK);
     }
 
 

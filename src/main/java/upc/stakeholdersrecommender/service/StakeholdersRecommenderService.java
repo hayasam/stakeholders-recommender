@@ -5,14 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
-import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
+import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +24,6 @@ public class StakeholdersRecommenderService {
 
     @Value("${skill.dropoff.days}")
     private String dropoffDays;
-
 
 
     @Autowired
@@ -123,8 +122,11 @@ public class StakeholdersRecommenderService {
         }
         Collections.sort(valuesForSR,
                 Comparator.comparingDouble(Pair<PersonSR, Double>::getSecond).reversed());
-        PersonSR[] out = new PersonSR[k];
-        for (int i = 0; i < k; ++i) {
+        if (k<valuesForSR.size()) {
+            k=valuesForSR.size();
+        }
+        PersonSR[] out=new PersonSR[k];
+        for (int i = 0; i < k && i<valuesForSR.size(); ++i) {
             System.out.println(valuesForSR.get(i).getSecond());
             out[i] = valuesForSR.get(i).getFirst();
         }
@@ -263,13 +265,13 @@ public class StakeholdersRecommenderService {
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs) {
         List<RequirementSR> reqs = new ArrayList<RequirementSR>();
         for (String rec : requirement) {
-                RequirementSR req = new RequirementSR(recs.get(rec), id);
-                ArrayList<String> aux = new ArrayList<String>();
-                for (String s : keywordsForReq.get(rec).keySet()) {
-                    aux.add(s);
-                }
-                req.setSkills(aux);
-                reqs.add(req);
+            RequirementSR req = new RequirementSR(recs.get(rec), id);
+            ArrayList<String> aux = new ArrayList<String>();
+            for (String s : keywordsForReq.get(rec).keySet()) {
+                aux.add(s);
+            }
+            req.setSkills(aux);
+            reqs.add(req);
 
         }
         RequirementSRRepository.saveAll(reqs);
@@ -295,16 +297,16 @@ public class StakeholdersRecommenderService {
             corpus.add(r.getDescription());
         }
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
-        for (String s:keywords.keySet()) {
-            Requirement req=recs.get(s);
-            Date dat=new Date();
+        for (String s : keywords.keySet()) {
+            Requirement req = recs.get(s);
+            Date dat = new Date();
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
             long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-            Map<String,Double> aux=keywords.get(s);
-            for (String j:aux.keySet()) {
-                aux.put(j,1-max(0.5,diff*(0.5/Double.parseDouble(dropoffDays))));
+            Map<String, Double> aux = keywords.get(s);
+            for (String j : aux.keySet()) {
+                aux.put(j, 1 - max(0.5, diff * (0.5 / Double.parseDouble(dropoffDays))));
             }
-            keywords.put(s,aux);
+            keywords.put(s, aux);
         }
         return keywords;
     }
@@ -314,7 +316,7 @@ public class StakeholdersRecommenderService {
         List<Skill> toret = new ArrayList<Skill>();
         Map<String, SinglePair<Double>> appearances = new HashMap<String, SinglePair<Double>>();
         for (String s : oldRecs) {
-            Map<String,Double> help=recs.get(s);
+            Map<String, Double> help = recs.get(s);
             for (String sk : help.keySet()) {
                 if (appearances.containsKey(sk)) {
                     appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
@@ -335,68 +337,6 @@ public class StakeholdersRecommenderService {
         Double aux = appearances;
         Double aux2 = requirement;
         return aux / aux2;
-    }
-
-
-
-    public void extract2(List<Requirement> request) throws Exception {
-        // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
-        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        Map<String, Map<String, Double>> res = extractor.computeTFIDF(request);
-        Map<String, Requirement> traductor = new HashMap<String, Requirement>();
-        for (Requirement r : request) {
-            traductor.put(r.getId(), r);
-        }
-        OutputKeywordExtraction output = new OutputKeywordExtraction();
-        PrintStream out = new PrintStream(new FileOutputStream("out.txt", true));
-        System.setOut(out);
-        Random r = new Random();
-        List<String> id = new ArrayList<String>();
-        List<String> description = new ArrayList<String>();
-        List<List<String>> keywords = new ArrayList<List<String>>();
-        int high = 100;
-        int random;
-        for (String requir : res.keySet()) {
-            random = r.nextInt(high);
-            if (random == 50) {
-                Map<String, Double> map = res.get(requir);
-                id.add(traductor.get(requir).getId());
-                description.add(traductor.get(requir).getDescription());
-                keywords.add(new ArrayList<String>(map.keySet()));
-            }
-        }
-        for (String i : id) {
-            System.out.println(i);
-        }
-        for (String d : description) {
-            System.out.println(d);
-        }
-        for (List<String> k : keywords) {
-            System.out.println();
-            for (String k2 : k) {
-                System.out.print(k2 + " ");
-            }
-        }
-    }
-
-    public OutputKeywordExtraction extract(List<RequirementDocument> request) throws Exception {
-        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
-        Map<String, Map<String, Double>> res = extractor.computeTFIDF(request);
-        Map<String, RequirementDocument> traductor = new HashMap<String, RequirementDocument>();
-        for (RequirementDocument r : request) {
-            traductor.put(r.getId(), r);
-        }
-        OutputKeywordExtraction output = new OutputKeywordExtraction();
-        for (String requir : res.keySet()) {
-            Map<String, Double> map = res.get(requir);
-            ExtractedRequirement extracted = new ExtractedRequirement();
-            extracted.setDescription(traductor.get(requir).getDescription());
-            extracted.setId(traductor.get(requir).getId());
-            List<String> keys = new ArrayList<String>(map.keySet());
-            extracted.setKeywords(keys);
-            output.addExtractedRequirement(extracted);
-        }
-        return output;
     }
 
     private Map<String, List<String>> getPersonRecs(BatchSchema request) {

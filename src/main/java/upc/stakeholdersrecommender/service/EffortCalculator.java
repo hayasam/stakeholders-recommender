@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class EffortCalculator {
-
+    //Separate so more complex methods of computing effort can be implemented with ease
     @Autowired
     EffortRepository effortRepository;
 
