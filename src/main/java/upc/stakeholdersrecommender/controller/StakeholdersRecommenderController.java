@@ -34,15 +34,17 @@ public class StakeholdersRecommenderController {
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation." +
             " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
-            " or not.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @RequestParam Boolean withAvailability) throws Exception {
+            " or not. All information in the database is purged every time this method is called. A person's relation to the project is defined with" +
+            "PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's" +
+            "relation to a requirement in RESPONSIBLES.", notes = "", response = BatchReturnSchema.class)
+    public ResponseEntity<BatchReturnSchema> addBatch(@RequestBody BatchSchema batch, @RequestParam Boolean withAvailability) throws Exception {
         int res = 0;
         try {
             res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
         } catch (IOException e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity(new BatchReturnSchema(res), HttpStatus.CREATED);
+        return new ResponseEntity<BatchReturnSchema>(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
 
@@ -59,17 +61,17 @@ public class StakeholdersRecommenderController {
             "recommendation and returns a list of the best K stakeholders based on the historic data given in the batch_process." +
             "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders given in the batch_process, or only those" +
             " specified in \"PARTICIPANTS\", in the batch_process", notes = "", response = RecommendReturnSchema[].class)
-    public ResponseEntity<List<Responsible>> recommend(@RequestBody RecommendSchema request,
+    public ResponseEntity<List<RecommendReturnSchema>> recommend(@RequestBody RecommendSchema request,
                                                        @RequestParam Integer k, @RequestParam Boolean projectSpecific) throws Exception {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific);
-        return new ResponseEntity(ret, HttpStatus.CREATED);
+        return new ResponseEntity<List<RecommendReturnSchema>>(ret, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
     public ResponseEntity setEffort(@RequestBody SetEffortSchema eff, @RequestParam String project) throws IOException {
         effortCalc.setEffort(eff, project);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "computeEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -78,7 +80,7 @@ public class StakeholdersRecommenderController {
             "in a scale from 1 to 5", notes = "")
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
         effortCalc.effortCalc(eff, project);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 
 
