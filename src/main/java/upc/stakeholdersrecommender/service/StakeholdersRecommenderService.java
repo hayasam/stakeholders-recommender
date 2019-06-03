@@ -122,7 +122,7 @@ public class StakeholdersRecommenderService {
         }
         Collections.sort(valuesForSR,
                 Comparator.comparingDouble(Pair<PersonSR, Double>::getSecond).reversed());
-        if (k<valuesForSR.size()) {
+        if (k>=valuesForSR.size()) {
             k=valuesForSR.size();
         }
         PersonSR[] out=new PersonSR[k];
@@ -187,17 +187,17 @@ public class StakeholdersRecommenderService {
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<Participant>> participants = getParticipants(request);
-        for (Project p : request.getProjects()) {
-            String id = instanciateProject(p, participants.get(p.getId()));
+        for (Project proj : request.getProjects()) {
+            String id = instanciateProject(proj, participants.get(proj.getId()));
             Map<String, Integer> hourMap = new HashMap<String, Integer>();
-            for (Participant par : participants.get(p.getId())) {
+            for (Participant par : participants.get(proj.getId())) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
             Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs);
             Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
 
-            instanciateFeatureBatch(p.getSpecifiedRequirements(), id, allSkills, recs);
-            instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, p.getSpecifiedRequirements(), id, withAvailability);
+            instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs);
+            instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
     }
@@ -276,9 +276,9 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.saveAll(reqs);
     }
 
-    private String instanciateProject(Project p, List<Participant> participants) {
-        String id = p.getId();
-        ProjectSR projectSRTrad = new ProjectSR(p.getId());
+    private String instanciateProject(Project proj, List<Participant> participants) {
+        String id = proj.getId();
+        ProjectSR projectSRTrad = new ProjectSR(proj.getId());
         List<String> parts = new ArrayList<String>();
         for (Participant par : participants) {
             parts.add(par.getPerson());
