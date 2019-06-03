@@ -127,7 +127,6 @@ public class StakeholdersRecommenderService {
         }
         PersonSR[] out=new PersonSR[k];
         for (int i = 0; i < k && i<valuesForSR.size(); ++i) {
-            System.out.println(valuesForSR.get(i).getSecond());
             out[i] = valuesForSR.get(i).getFirst();
         }
         return out;
