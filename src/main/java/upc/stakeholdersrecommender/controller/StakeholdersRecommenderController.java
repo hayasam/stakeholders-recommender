@@ -73,13 +73,6 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(ret, HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "deleteProject", method = RequestMethod.DELETE)
-    @ApiOperation(value = "Deletes a project from the database, identified by \"id\"", notes = "")
-    public ResponseEntity extract(@RequestParam String id) throws IOException {
-        stakeholdersRecommenderService.deleteProject(id);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     // Añadir funciones para calcular effort historico y poner effort directamente
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
@@ -95,6 +88,21 @@ public class StakeholdersRecommenderController {
     public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff, @RequestParam String project) throws IOException {
         effortCalc.effortCalc(eff, project);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "extractHistoric", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given" +
+            ",a list of hours per effort point, based on the time a requirement with those effort points required to be finished. The effort points go" +
+            "in a scale from 1 to 5", notes = "")
+    public ResponseEntity extractHistoric() throws IOException {
+        bugzillaService.extractInfo();
+        BatchSchema batch=new BatchSchema();
+        batch.setParticipants(bugzillaService.getParticipants());
+        batch.setPersons(bugzillaService.getPersons());
+        batch.setRequirements(bugzillaService.getRequirements());
+        batch.setResponsibles(bugzillaService.getResponsibles());
+        batch.setProjects(bugzillaService.getProject());
+        return new ResponseEntity(batch,HttpStatus.OK);
     }
 
 

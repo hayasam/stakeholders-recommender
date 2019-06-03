@@ -2,6 +2,7 @@ package upc.stakeholdersrecommender.service;
 
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
@@ -20,6 +21,11 @@ import static java.lang.Double.max;
 
 @Service
 public class StakeholdersRecommenderService {
+
+    @Value("${skill.dropoff.days}")
+    private String dropoffDays;
+
+
 
     @Autowired
     private PersonSRRepository PersonSRRepository;
@@ -138,9 +144,7 @@ public class StakeholdersRecommenderService {
     }
 
     public void purge() {
-        for (ProjectSR pr : ProjectRepository.findAll()) {
-            deleteProject(pr.getId());
-        }
+        ProjectRepository.deleteAll();
         PersonSRRepository.deleteAll();
         RequirementSRRepository.deleteAll();
         RejectedPersonRepository.deleteAll();
@@ -172,9 +176,10 @@ public class StakeholdersRecommenderService {
 
 
     public Integer addBatch(BatchSchema request, Boolean withAvailability) throws Exception {
+        purge();
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
-            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());  //where dateString is a date in ISO-8601 format
             r.setModified(dtIn);
             recs.put(r.getId(), r);
@@ -258,7 +263,6 @@ public class StakeholdersRecommenderService {
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs) {
         List<RequirementSR> reqs = new ArrayList<RequirementSR>();
         for (String rec : requirement) {
-            if (RequirementSRRepository.findById(new RequirementSRId(id, rec)) == null) {
                 RequirementSR req = new RequirementSR(recs.get(rec), id);
                 ArrayList<String> aux = new ArrayList<String>();
                 for (String s : keywordsForReq.get(rec).keySet()) {
@@ -266,19 +270,13 @@ public class StakeholdersRecommenderService {
                 }
                 req.setSkills(aux);
                 reqs.add(req);
-            }
+
         }
         RequirementSRRepository.saveAll(reqs);
     }
 
     private String instanciateProject(Project p, List<Participant> participants) {
-        String id;
-        if (ProjectRepository.existsById(p.getId())) {
-            id = ProjectRepository.getOne(p.getId()).getId();
-            deleteRelated(id);
-            ProjectRepository.deleteById(p.getId());
-        }
-        id = p.getId();
+        String id = p.getId();
         ProjectSR projectSRTrad = new ProjectSR(p.getId());
         List<String> parts = new ArrayList<String>();
         for (Participant par : participants) {
@@ -304,7 +302,7 @@ public class StakeholdersRecommenderService {
             long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             Map<String,Double> aux=keywords.get(s);
             for (String j:aux.keySet()) {
-                aux.put(j,1-max(0.5,diff*(0.5/365)));
+                aux.put(j,1-max(0.5,diff*(0.5/Double.parseDouble(dropoffDays))));
             }
             keywords.put(s,aux);
         }
@@ -340,15 +338,6 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private void deleteRelated(String id) {
-        PersonSRRepository.deleteByProjectIdQuery(id);
-        RequirementSRRepository.deleteByProjectIdQuery(id);
-    }
-
-    public void deleteProject(String id) {
-        deleteRelated(id);
-        ProjectRepository.deleteById(id);
-    }
 
     public void extract2(List<Requirement> request) throws Exception {
         // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));

@@ -20,7 +20,6 @@ public class Requirement implements Serializable {
     @JsonIgnore
     private Date modified;
 
-
     private String description;
 
     private String modified_at;
