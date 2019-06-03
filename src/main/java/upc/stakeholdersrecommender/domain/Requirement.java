@@ -5,6 +5,7 @@ import upc.stakeholdersrecommender.entity.Skill;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Requirement implements Serializable {
@@ -16,10 +17,12 @@ public class Requirement implements Serializable {
     @JsonIgnore
     private List<Skill> skills = new ArrayList<Skill>();
 
+    @JsonIgnore
+    private Date modified;
+
     private String description;
 
     private String modified_at;
-
 
     public Requirement() {
 
@@ -71,5 +74,13 @@ public class Requirement implements Serializable {
 
     public void setModified_at(String modified_at) {
         this.modified_at = modified_at;
+    }
+
+    public Date getModified() {
+        return modified;
+    }
+
+    public void setModified(Date modified) {
+        this.modified = modified;
     }
 }

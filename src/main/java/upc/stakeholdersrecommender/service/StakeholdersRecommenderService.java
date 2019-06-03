@@ -2,6 +2,7 @@ package upc.stakeholdersrecommender.service;
 
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
@@ -12,12 +13,19 @@ import upc.stakeholdersrecommender.repository.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Double.max;
 
 @Service
 public class StakeholdersRecommenderService {
+
+    @Value("${skill.dropoff.days}")
+    private String dropoffDays;
+
+
 
     @Autowired
     private PersonSRRepository PersonSRRepository;
@@ -136,9 +144,7 @@ public class StakeholdersRecommenderService {
     }
 
     public void purge() {
-        for (ProjectSR pr : ProjectRepository.findAll()) {
-            deleteProject(pr.getId());
-        }
+        ProjectRepository.deleteAll();
         PersonSRRepository.deleteAll();
         RequirementSRRepository.deleteAll();
         RejectedPersonRepository.deleteAll();
@@ -170,8 +176,12 @@ public class StakeholdersRecommenderService {
 
 
     public Integer addBatch(BatchSchema request, Boolean withAvailability) throws Exception {
+        purge();
         Map<String, Requirement> recs = new HashMap<String, Requirement>();
         for (Requirement r : request.getRequirements()) {
+            SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+            Date dtIn = inFormat.parse(r.getModified_at());  //where dateString is a date in ISO-8601 format
+            r.setModified(dtIn);
             recs.put(r.getId(), r);
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
@@ -253,7 +263,6 @@ public class StakeholdersRecommenderService {
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs) {
         List<RequirementSR> reqs = new ArrayList<RequirementSR>();
         for (String rec : requirement) {
-            if (RequirementSRRepository.findById(new RequirementSRId(id, rec)) == null) {
                 RequirementSR req = new RequirementSR(recs.get(rec), id);
                 ArrayList<String> aux = new ArrayList<String>();
                 for (String s : keywordsForReq.get(rec).keySet()) {
@@ -261,19 +270,13 @@ public class StakeholdersRecommenderService {
                 }
                 req.setSkills(aux);
                 reqs.add(req);
-            }
+
         }
         RequirementSRRepository.saveAll(reqs);
     }
 
     private String instanciateProject(Project p, List<Participant> participants) {
-        String id;
-        if (ProjectRepository.existsById(p.getId())) {
-            id = ProjectRepository.getOne(p.getId()).getId();
-            deleteRelated(id);
-            ProjectRepository.deleteById(p.getId());
-        }
-        id = p.getId();
+        String id = p.getId();
         ProjectSR projectSRTrad = new ProjectSR(p.getId());
         List<String> parts = new ArrayList<String>();
         for (Participant par : participants) {
@@ -292,6 +295,17 @@ public class StakeholdersRecommenderService {
             corpus.add(r.getDescription());
         }
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
+        for (String s:keywords.keySet()) {
+            Requirement req=recs.get(s);
+            Date dat=new Date();
+            long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
+            long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            Map<String,Double> aux=keywords.get(s);
+            for (String j:aux.keySet()) {
+                aux.put(j,1-max(0.5,diff*(0.5/Double.parseDouble(dropoffDays))));
+            }
+            keywords.put(s,aux);
+        }
         return keywords;
     }
 
@@ -300,11 +314,12 @@ public class StakeholdersRecommenderService {
         List<Skill> toret = new ArrayList<Skill>();
         Map<String, SinglePair<Double>> appearances = new HashMap<String, SinglePair<Double>>();
         for (String s : oldRecs) {
-            for (String sk : recs.get(s).keySet()) {
+            Map<String,Double> help=recs.get(s);
+            for (String sk : help.keySet()) {
                 if (appearances.containsKey(sk)) {
-                    appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + 1.0, appearances.get(sk).p2));
+                    appearances.put(sk, new SinglePair<Double>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
                 } else {
-                    appearances.put(sk, new SinglePair<Double>(1.0, (double) skillsFrequency.get(sk)));
+                    appearances.put(sk, new SinglePair<Double>(help.get(sk), (double) skillsFrequency.get(sk)));
                 }
             }
         }
@@ -323,15 +338,6 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private void deleteRelated(String id) {
-        PersonSRRepository.deleteByProjectIdQuery(id);
-        RequirementSRRepository.deleteByProjectIdQuery(id);
-    }
-
-    public void deleteProject(String id) {
-        deleteRelated(id);
-        ProjectRepository.deleteById(id);
-    }
 
     public void extract2(List<Requirement> request) throws Exception {
         // PrintStream out = new PrintStream(new FileOutputStream("output.txt"));

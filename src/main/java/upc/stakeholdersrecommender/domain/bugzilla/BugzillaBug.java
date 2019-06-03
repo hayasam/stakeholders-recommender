@@ -8,6 +8,7 @@ public class BugzillaBug implements Serializable {
     String id;
     String status;
     String summary;
+    String last_change_time;
 
     public String getAssigned_to() {
         return assigned_to;
@@ -39,5 +40,13 @@ public class BugzillaBug implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getLast_change_time() {
+        return last_change_time;
+    }
+
+    public void setLast_change_time(String last_change_time) {
+        this.last_change_time = last_change_time;
     }
 }

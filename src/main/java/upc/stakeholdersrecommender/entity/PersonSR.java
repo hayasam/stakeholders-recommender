@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "personSR" ,
-        indexes = { @Index(name = "name_index", columnList = "name") })
+        indexes = { @Index(name = "name_index", columnList = "name"),@Index(name = "project_index", columnList = "projectIdQuery") })
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PersonSR implements Serializable {
 

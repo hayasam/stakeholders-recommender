@@ -67,7 +67,7 @@ public class BugzillaService {
 
     private void setBugs() {
         Integer offset = 0;
-        BugzillaBugsSchema response = calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=UI&creation_time=2013-01-01&limit=10000&offset=" + offset);
+        BugzillaBugsSchema response = calltoServiceBugs("?include_fields=id,last_change_time,assigned_to,summary&status=closed&product=Platform&component=UI&creation_time=2013-01-01&limit=10000&offset=" + offset);
         List<Requirement> reqs = new ArrayList<Requirement>();
         Map<String, Integer> emailToNumber = new HashMap<String, Integer>();
         Integer counter = 0;
@@ -97,13 +97,14 @@ public class BugzillaService {
                     requirement.setId(bu.getId());
                     requirement.setDescription(bu.getSummary());
                     requirement.setEffort(1);
+                    requirement.setModified_at(bu.getLast_change_time());
                     reqs.add(requirement);
                 }
             }
         }
 
 
-        response = calltoServiceBugs("?include_fields=id,assigned_to,summary&status=closed&product=Platform&component=SWT&creation_time=2013-01-01&limit=10000&offset=" + offset);
+        response = calltoServiceBugs("?include_fields=id,last_change_time,assigned_to,summary&status=closed&product=Platform&component=SWT&creation_time=2013-01-01&limit=10000&offset=" + offset);
         for (BugzillaBug bu : response.getBugs()) {
             if (bu.getAssigned_to() != "nobody@mozilla.org") {
                 String[] test = bu.getAssigned_to().split("@");
@@ -129,6 +130,7 @@ public class BugzillaService {
                     requirement.setId(bu.getId());
                     requirement.setDescription(bu.getSummary());
                     requirement.setEffort(1);
+                    requirement.setModified_at(bu.getLast_change_time());
                     reqs.add(requirement);
                 }
             }
