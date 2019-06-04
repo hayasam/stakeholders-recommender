@@ -1,5 +1,6 @@
 package upc.stakeholdersrecommender.entity;
 
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OrderColumn;

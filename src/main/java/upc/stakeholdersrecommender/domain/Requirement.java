@@ -1,6 +1,8 @@
 package upc.stakeholdersrecommender.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import upc.stakeholdersrecommender.entity.Skill;
 
 import java.io.Serializable;
@@ -8,10 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@ApiModel(description = "Class representing a requirement.")
 public class Requirement implements Serializable {
-
+    @ApiModelProperty(notes = "Identifier of the requirement.", example = "1", required = true)
     private String id;
-
+    @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false", example = "3", required = false)
     private Integer effort;
 
     @JsonIgnore
@@ -19,9 +22,9 @@ public class Requirement implements Serializable {
 
     @JsonIgnore
     private Date modified;
-
+    @ApiModelProperty(notes = "The requirement's description.", example = "This is not really a requirement, but an example", required = true)
     private String description;
-
+    @ApiModelProperty(notes = "When was the requirement last modified.", example = "2014-01-13T15:14:17Z", required = true)
     private String modified_at;
 
     public Requirement() {

@@ -1,11 +1,17 @@
 package upc.stakeholdersrecommender.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
+
+@ApiModel(description = "Class representing a stakeholder.")
 public class Person implements Serializable {
-
+    @ApiModelProperty(notes = "Identifier of the stakeholder.", example = "John Doe", required = true)
     private String username;
-
+    @JsonIgnore
     private Double availability;
 
 

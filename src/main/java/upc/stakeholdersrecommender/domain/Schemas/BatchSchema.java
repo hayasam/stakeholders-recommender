@@ -1,16 +1,23 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import upc.stakeholdersrecommender.domain.*;
 
 import java.io.Serializable;
 import java.util.List;
 
+@ApiModel(description = "Class representing the information needed for the recommendation of stakeholders.")
 public class BatchSchema implements Serializable {
-
+    @ApiModelProperty(notes = "List of projects.", required = true)
     List<Project> projects;
+    @ApiModelProperty(notes = "List of stakeholders.", required = true)
     List<Person> persons;
+    @ApiModelProperty(notes = "List of responsibles.", required = true)
     List<Responsible> responsibles;
+    @ApiModelProperty(notes = "List of requirements.", required = true)
     List<Requirement> requirements;
+    @ApiModelProperty(notes = "List of participants.", required = true)
     List<Participant> participants;
 
     public List<Project> getProjects() {

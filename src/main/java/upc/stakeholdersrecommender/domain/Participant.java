@@ -1,11 +1,18 @@
 package upc.stakeholdersrecommender.domain;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
+@ApiModel(description = "Class representing the relation of a person working for a project, and the time this person has with the project.")
 public class Participant implements Serializable {
 
+    @ApiModelProperty(notes = "Identifier of the project.", example = "1", required = true)
     private String project;
+    @ApiModelProperty(notes = "Identifier of the person.", example = "John Doe", required = true)
     private String person;
+    @ApiModelProperty(notes = "Hours the person has for this project, necessary if parameter withAvailability is true.", example = "40", required = true)
     private Integer availability;
 
     public Participant() {

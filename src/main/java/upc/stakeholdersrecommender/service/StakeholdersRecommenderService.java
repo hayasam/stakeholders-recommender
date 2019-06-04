@@ -294,8 +294,14 @@ public class StakeholdersRecommenderService {
         for (Requirement r : recs.values()) {
             corpus.add(r.getDescription());
         }
+        //Extract map with (Requirement / KeywordValue)
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
         Date dat = new Date();
+
+        //Transform the map from (Requirement / KeywordValue) to (Requirement / SkillFactor)
+
+        //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
+        //since the requirement was last touched
         for (String s : keywords.keySet()) {
             Requirement req = recs.get(s);
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
