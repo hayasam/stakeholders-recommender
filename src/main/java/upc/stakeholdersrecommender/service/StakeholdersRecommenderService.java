@@ -187,15 +187,14 @@ public class StakeholdersRecommenderService {
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Map<String, List<Participant>> participants = getParticipants(request);
+        Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs);
+        Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
         for (Project proj : request.getProjects()) {
             String id = instanciateProject(proj, participants.get(proj.getId()));
             Map<String, Integer> hourMap = new HashMap<String, Integer>();
             for (Participant par : participants.get(proj.getId())) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
-            Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs);
-            Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
-
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs);
             instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability);
         }
@@ -296,14 +295,14 @@ public class StakeholdersRecommenderService {
             corpus.add(r.getDescription());
         }
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
+        Date dat = new Date();
         for (String s : keywords.keySet()) {
             Requirement req = recs.get(s);
-            Date dat = new Date();
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
-            long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             Map<String, Double> aux = keywords.get(s);
             for (String j : aux.keySet()) {
-                aux.put(j, 1 - max(0.5, diff * (0.5 / Double.parseDouble(dropoffDays))));
+                aux.put(j, 1 - max(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
             }
             keywords.put(s, aux);
         }
