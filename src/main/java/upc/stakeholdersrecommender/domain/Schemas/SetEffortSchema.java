@@ -7,15 +7,15 @@ import java.io.Serializable;
 
 @ApiModel(description = "Class representing the mapping between effort and hours that is to be set.")
 public class SetEffortSchema implements Serializable {
-    @ApiModelProperty(notes = "Hours for effort 1.", example = "[1,1,1,1]", required = true)
+    @ApiModelProperty(notes = "Hours for effort 1.", example = "1", required = true)
     public Integer one;
-    @ApiModelProperty(notes = "Hours for effort 2.", example = "[2,2,2,2]", required = true)
+    @ApiModelProperty(notes = "Hours for effort 2.", example = "2", required = true)
     public Integer two;
-    @ApiModelProperty(notes = "Hours for effort 3.", example = "[3,3,3,3]", required = true)
+    @ApiModelProperty(notes = "Hours for effort 3.", example = "3", required = true)
     public Integer three;
-    @ApiModelProperty(notes = "Hours for effort 4.", example = "[4,4,4,4]", required = true)
+    @ApiModelProperty(notes = "Hours for effort 4.", example = "4", required = true)
     public Integer four;
-    @ApiModelProperty(notes = "Hours for effort 5.", example = "[5,5,5,5]", required = true)
+    @ApiModelProperty(notes = "Hours for effort 5.", example = "5", required = true)
     public Integer five;
 
     public Integer getOne() {
