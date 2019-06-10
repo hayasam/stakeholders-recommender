@@ -5,9 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
-import upc.stakeholdersrecommender.domain.Schemas.BatchSchema;
-import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
-import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
+import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
@@ -36,15 +34,29 @@ public class StakeholdersRecommenderService {
     private RejectedPersonRepository RejectedPersonRepository;
     @Autowired
     private EffortRepository EffortRepository;
+    @Autowired
+    private KeywordExtractionModelRepository KeywordExtractionModelRepository;
+    @Autowired
+    private KeywordExtractionModelRepository modelRepository;
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific) throws Exception {
-        String p = request.getProject();
-        String r = request.getRequirement();
+        String p = request.getProject().getId();
+        String r = request.getRequirement().getId();
         List<RecommendReturnSchema> ret = new ArrayList<RecommendReturnSchema>();
         List<PersonSR> persList = new ArrayList<PersonSR>();
+        RequirementSR req;
         if (RequirementSRRepository.findById(new RequirementSRId(p, r)) != null) {
-            RequirementSR req = RequirementSRRepository.findById(new RequirementSRId(p, r));
+            req = RequirementSRRepository.findById(new RequirementSRId(p, r));
+        }
+        else {
+            RequirementSR newReq=new RequirementSR();
+            newReq.setProjectIdQuery(request.getProject().getId());
+            newReq.setID(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId()));
+            newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(request.getRequirement(),KeywordExtractionModelRepository.getOne("1").getModel()));
+            RequirementSRRepository.save(newReq);
+            req=newReq;
+        }
             if (!projectSpecific) {
                 for (PersonSR pers : PersonSRRepository.findByProjectIdQuery(p)) {
                     if (hasTime(pers)) {
@@ -55,10 +67,9 @@ public class StakeholdersRecommenderService {
             } else {
                 persList.addAll(PersonSRRepository.findByProjectIdQuery(p));
             }
-            removeRejected(persList, request.getUser());
+            removeRejected(persList, request.getUser().getUsername());
             PersonSR[] bestPeople = computeBestStakeholders(persList, req, k);
             ret = prepareFinal(bestPeople, req);
-        } else throw new Exception();
         return ret;
     }
 
@@ -95,11 +106,12 @@ public class StakeholdersRecommenderService {
             Double amount = (double) req.getSkills().size();
             Double appropiateness = total / amount;
             Double availability = pers.getAvailability();
-            ret.add(new RecommendReturnSchema(req.getID().getRequirementId(), pers.getName(), appropiateness, availability));
+            PersonMinimal min=new PersonMinimal();
+            min.setUsername(pers.getName());
+            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getID().getRequirementId()),min, appropiateness, availability));
         }
         Collections.sort(ret,
                 Comparator.comparingDouble(RecommendReturnSchema::getApropiatenessScore).reversed());
-
         return ret;
     }
 
@@ -150,6 +162,7 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.deleteAll();
         RejectedPersonRepository.deleteAll();
         ProjectRepository.deleteAll();
+        KeywordExtractionModelRepository.deleteAll();
 
     }
 
@@ -159,15 +172,15 @@ public class StakeholdersRecommenderService {
             if (rejected.getDeleted().containsKey(rejectedId)) {
                 rejected.getDeleted().get(rejectedId).add(requirementId);
             } else {
-                Set<String> aux = new HashSet<String>();
+                HashSet<String> aux = new HashSet<String>();
                 aux.add(requirementId);
                 rejected.getDeleted().put(rejectedId, aux);
             }
             RejectedPersonRepository.save(rejected);
         } else {
             RejectedPerson reject = new RejectedPerson(userId);
-            HashMap<String, Set<String>> aux = new HashMap<String, Set<String>>();
-            Set<String> auxset = new HashSet<String>();
+            HashMap<String, HashSet<String>> aux = new HashMap<String, HashSet<String>>();
+            HashSet<String> auxset = new HashSet<String>();
             auxset.add(requirementId);
             aux.put(rejectedId, auxset);
             reject.setDeleted(aux);
@@ -252,12 +265,12 @@ public class StakeholdersRecommenderService {
         return (max(0, (1 - (hours / i.doubleValue()))));
     }
 
-    private Double extractAvailability(Integer s, String project) throws Exception {
+    private Double extractAvailability(String s, String project) throws Exception {
         if (!EffortRepository.existsById(project)) {
             throw new Exception();
         }
         Effort eff = EffortRepository.getOne(project);
-        return eff.getEffort()[s];
+        return eff.getEffortMap().get(s);
     }
 
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs) {
@@ -302,6 +315,12 @@ public class StakeholdersRecommenderService {
 
         //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
         //since the requirement was last touched
+        HashMap<String,Integer> mod=extractor.getCorpusFrequency();
+        KeywordExtractionModel toSave=new KeywordExtractionModel();
+        toSave.setModel(mod);
+        toSave.setId("1");
+        KeywordExtractionModelRepository.save(toSave);
+        KeywordExtractionModelRepository.flush();
         for (String s : keywords.keySet()) {
             Requirement req = recs.get(s);
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());

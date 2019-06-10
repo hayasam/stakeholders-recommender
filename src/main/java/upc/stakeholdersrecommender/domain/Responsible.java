@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @ApiModel(description = "Class representing the relation between a requirement and a person.")
 public class Responsible implements Serializable {
-    @ApiModelProperty(notes = "Identifier of the requirement.", example = "1", required = true)
+    @ApiModelProperty(notes = "Identifier of the requirement.", example = "\"1\"", required = true)
     private String requirement;
     @ApiModelProperty(notes = "Identifier of the person.", example = "John Doe", required = true)
     private String person;

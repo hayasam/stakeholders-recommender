@@ -12,10 +12,10 @@ import java.util.List;
 
 @ApiModel(description = "Class representing a requirement.")
 public class Requirement implements Serializable {
-    @ApiModelProperty(notes = "Identifier of the requirement.", example = "1", required = true)
+    @ApiModelProperty(notes = "Identifier of the requirement.", example = "\"1\"", required = true)
     private String id;
-    @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false", example = "3", required = false)
-    private Integer effort;
+    @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false", example = "\"3\"", required = false)
+    private String effort;
 
     @JsonIgnore
     private List<Skill> skills = new ArrayList<Skill>();
@@ -63,11 +63,11 @@ public class Requirement implements Serializable {
         this.skills.add(auxiliar);
     }
 
-    public Integer getEffort() {
+    public String getEffort() {
         return effort;
     }
 
-    public void setEffort(Integer effort) {
+    public void setEffort(String effort) {
         this.effort = effort;
     }
 

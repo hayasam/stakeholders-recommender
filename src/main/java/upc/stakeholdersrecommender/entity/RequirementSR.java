@@ -68,4 +68,16 @@ public class RequirementSR implements Serializable {
     public void setSkills(ArrayList<String> skills) {
         this.skills = skills;
     }
+
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
+    }
+
+    public String getModified_at() {
+        return modified_at;
+    }
+
+    public void setModified_at(String modified_at) {
+        this.modified_at = modified_at;
+    }
 }

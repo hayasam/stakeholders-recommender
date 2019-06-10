@@ -2,11 +2,11 @@ package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -16,7 +16,8 @@ public class RejectedPerson implements Serializable {
 
     @Id
     private String user;
-    private HashMap<String, Set<String>> deleted;
+    @ElementCollection
+    private Map<String, HashSet<String>> deleted;
 
     public RejectedPerson() {
         user = null;
@@ -35,11 +36,11 @@ public class RejectedPerson implements Serializable {
         this.user = user;
     }
 
-    public HashMap<String, Set<String>> getDeleted() {
+    public Map<String, HashSet<String>> getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(HashMap<String, Set<String>> deleted) {
+    public void setDeleted(Map<String, HashSet<String>> deleted) {
         this.deleted = deleted;
     }
 

@@ -6,6 +6,8 @@ import javax.persistence.Id;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "effort_project")
@@ -13,16 +15,7 @@ public class Effort implements Serializable {
     @Id
     private String id;
 
-    @OrderColumn
-    private Double[] effort = new Double[5];
-
-    public Double[] getEffort() {
-        return effort;
-    }
-
-    public void setEffort(Double[] effort) {
-        this.effort = effort;
-    }
+    private HashMap<String,Double> effortMap;
 
     public String getId() {
         return id;
@@ -30,5 +23,13 @@ public class Effort implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Map<String, Double> getEffortMap() {
+        return effortMap;
+    }
+
+    public void setEffortMap(HashMap<String, Double> effortMap) {
+        this.effortMap = effortMap;
     }
 }

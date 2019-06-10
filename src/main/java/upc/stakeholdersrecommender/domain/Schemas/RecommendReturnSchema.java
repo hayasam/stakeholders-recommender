@@ -1,14 +1,22 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
+@ApiModel(description = "Class representing the recommendation of a stakeholder.")
 public class RecommendReturnSchema implements Serializable, Comparable<RecommendReturnSchema> {
-    private String requirement;
-    private String person;
+    @ApiModelProperty(notes = "Requirement that was requested.", required = true)
+    private RequirementMinimal requirement;
+    @ApiModelProperty(notes = "Person that is recommended.", required = true)
+    private PersonMinimal person;
+    @ApiModelProperty(notes = "Availability score of the person.", example = "0.5", required = true)
     private Double availabilityScore;
+    @ApiModelProperty(notes = "Appropiateness of the recommendation.", example = "0.223", required = true)
     private Double apropiatenessScore;
 
-    public RecommendReturnSchema(String requirement, String person, Double apropiatenessScore, Double availabilityScore) {
+    public RecommendReturnSchema(RequirementMinimal requirement, PersonMinimal person, Double apropiatenessScore, Double availabilityScore) {
         this.requirement = requirement;
         this.person = person;
         this.availabilityScore = availabilityScore;
@@ -16,19 +24,19 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
 
     }
 
-    public String getRequirement() {
+    public RequirementMinimal getRequirement() {
         return requirement;
     }
 
-    public void setRequirement(String requirement) {
+    public void setRequirement(RequirementMinimal requirement) {
         this.requirement = requirement;
     }
 
-    public String getPerson() {
+    public PersonMinimal getPerson() {
         return person;
     }
 
-    public void setPerson(String person) {
+    public void setPerson(PersonMinimal person) {
         this.person = person;
     }
 

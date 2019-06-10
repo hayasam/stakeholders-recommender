@@ -4,11 +4,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.springframework.beans.factory.annotation.Autowired;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.repository.KeywordExtractionModelRepository;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.time.Instant;
 import java.util.*;
 
 import static java.lang.StrictMath.sqrt;
@@ -16,9 +17,10 @@ import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
-    Double cutoffParameter = 4.5; //This can be set to different values for different selectivity (more or less keywords)
-    Map<String, Map<String, Double>> model;
-    private Map<String, Integer> corpusFrequency = new HashMap<String, Integer>();
+    private Double cutoffParameter = 4.5; //This can be set to different values for different selectivity (more or less keywords)
+    private HashMap<String, Integer> corpusFrequency = new HashMap<String, Integer>();
+
+
 
 
     private Map<String, Integer> tf(List<String> doc) {
@@ -78,6 +80,23 @@ public class TFIDFKeywordExtractor {
         return ret;
 
     }
+    public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model) throws IOException {
+        List<String> doc=englishAnalyze(clean_text(req.getDescription()));
+        Map<String,Integer> wordBag=tf(doc);
+        List<String> keywords=new ArrayList<String>();
+        for (String s:wordBag.keySet()) {
+            if (model.containsKey(s)) {
+                model.put(s,model.get(s)+1);
+                if (wordBag.get(s)*idf(model.keySet().size(),model.get(s))>=cutoffParameter) keywords.add(s);
+            }
+            else {
+                model.put(s,1);
+                if (wordBag.get(s)*idf(model.keySet().size(),model.get(s))>=cutoffParameter) keywords.add(s);
+            }
+        }
+        return keywords;
+    }
+
 
     private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
         List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
@@ -212,11 +231,11 @@ public class TFIDFKeywordExtractor {
     }
 
 
-    public Map<String, Integer> getCorpusFrequency() {
+    public HashMap<String, Integer> getCorpusFrequency() {
         return corpusFrequency;
     }
 
-    public void setCorpusFrequency(Map<String, Integer> corpusFrequency) {
+    public void setCorpusFrequency(HashMap<String, Integer> corpusFrequency) {
         this.corpusFrequency = corpusFrequency;
     }
 
@@ -226,14 +245,6 @@ public class TFIDFKeywordExtractor {
 
     public void setCutoffParameter(Double cutoffParameter) {
         this.cutoffParameter = cutoffParameter;
-    }
-
-    public Map<String, Map<String, Double>> getModel() {
-        return model;
-    }
-
-    public void setModel(Map<String, Map<String, Double>> model) {
-        this.model = model;
     }
 
 

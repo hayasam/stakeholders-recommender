@@ -12,7 +12,7 @@ import java.util.List;
 public class Project implements Serializable {
     @ApiModelProperty(notes = "Identifier of the project.", example = "1", required = true)
     private String id;
-    @ApiModelProperty(notes = "List of requirement identifiers.", example = "[1]", required = true)
+    @ApiModelProperty(notes = "List of requirement identifiers.", example = "[\"1\"]", required = true)
     private List<String> specifiedRequirements;
 
     public String getId() {
