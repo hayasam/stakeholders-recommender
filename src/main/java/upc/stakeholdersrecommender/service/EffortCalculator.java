@@ -23,7 +23,7 @@ public class EffortCalculator {
         if (effortRepository.existsById(id)) {
             effortRepository.deleteById(id);
         }
-        Map<String,List<Double>> auxiliar=new HashMap<String,List<Double>>();
+        Map<String,List<Double>> auxiliar=new HashMap<>();
         for (RequirementBasic req: eff.getRequirements()) {
             if (auxiliar.containsKey(req.getEffort())) {
                 List<Double> intList= auxiliar.get(req.getEffort());
@@ -31,12 +31,12 @@ public class EffortCalculator {
                 auxiliar.put(req.getEffort(),intList);
             }
             else {
-                List<Double> intList= new ArrayList<Double>();
+                List<Double> intList= new ArrayList<>();
                 intList.add(req.getHours());
                 auxiliar.put(req.getEffort(),intList);
             }
         }
-        HashMap<String,Double> effortMap=new HashMap<String,Double>();
+        HashMap<String,Double> effortMap=new HashMap<>();
         for (String s:auxiliar.keySet()) {
             List<Double> d=auxiliar.get(s);
             Double count=0.0;
@@ -56,7 +56,7 @@ public class EffortCalculator {
         if (effortRepository.existsById(id)) {
             effortRepository.deleteById(id);
         }
-        HashMap<String,Double> effortMap=new HashMap<String,Double>();
+        HashMap<String,Double> effortMap=new HashMap<>();
         for (EffortHour r:set.getEffortToHour()) {
             effortMap.put(r.getEffort(),r.getHours());
         }

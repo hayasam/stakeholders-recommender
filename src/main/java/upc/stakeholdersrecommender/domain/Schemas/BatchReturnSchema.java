@@ -3,7 +3,7 @@ package upc.stakeholdersrecommender.domain.Schemas;
 import java.io.Serializable;
 
 public class BatchReturnSchema implements Serializable {
-    Integer processed_items;
+    private Integer processed_items;
 
 
     public BatchReturnSchema(Integer res) {

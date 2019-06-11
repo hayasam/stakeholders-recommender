@@ -12,7 +12,7 @@ import java.util.List;
 @ApiModel(description = "Class representing the requirements with their effort points and hours.")
 public class EffortCalculatorSchema implements Serializable {
     @ApiModelProperty(notes = "List of requirements with their effort points and hours.", required = true)
-    public List<RequirementBasic> requirements;
+    private List<RequirementBasic> requirements;
 
     public List<RequirementBasic> getRequirements() {
         return requirements;

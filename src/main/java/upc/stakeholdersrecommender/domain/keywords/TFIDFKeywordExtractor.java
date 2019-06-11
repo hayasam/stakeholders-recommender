@@ -4,9 +4,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.springframework.beans.factory.annotation.Autowired;
 import upc.stakeholdersrecommender.domain.Requirement;
-import upc.stakeholdersrecommender.repository.KeywordExtractionModelRepository;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -18,13 +16,13 @@ import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 public class TFIDFKeywordExtractor {
 
     private Double cutoffParameter = 4.5; //This can be set to different values for different selectivity (more or less keywords)
-    private HashMap<String, Integer> corpusFrequency = new HashMap<String, Integer>();
+    private HashMap<String, Integer> corpusFrequency = new HashMap<>();
 
 
 
 
     private Map<String, Integer> tf(List<String> doc) {
-        Map<String, Integer> frequency = new HashMap<String, Integer>();
+        Map<String, Integer> frequency = new HashMap<>();
         for (String s : doc) {
             if (frequency.containsKey(s)) frequency.put(s, frequency.get(s) + 1);
             else {
@@ -39,12 +37,12 @@ public class TFIDFKeywordExtractor {
 
 
     private double idf(Integer size, Integer frequency) {
-        return Math.log(size / frequency + 1);
+        return Math.log( size.doubleValue() / frequency.doubleValue() + 1.0);
     }
 
 
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         text = clean_text(text);
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
@@ -66,13 +64,13 @@ public class TFIDFKeywordExtractor {
     }
 
     public Map<String, Map<String, Double>> computeTFIDF(Collection<Requirement> corpus) throws IOException {
-        List<List<String>> docs = new ArrayList<List<String>>();
+        List<List<String>> docs = new ArrayList<>();
         for (Requirement r : corpus) {
             docs.add(englishAnalyze(r.getDescription()));
         }
         List<Map<String, Double>> res = tfIdf(docs);
         int counter = 0;
-        Map<String, Map<String, Double>> ret = new HashMap<String, Map<String, Double>>();
+        Map<String, Map<String, Double>> ret = new HashMap<>();
         for (Requirement r : corpus) {
             ret.put(r.getId(), res.get(counter));
             counter++;
@@ -83,7 +81,7 @@ public class TFIDFKeywordExtractor {
     public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model) throws IOException {
         List<String> doc=englishAnalyze(clean_text(req.getDescription()));
         Map<String,Integer> wordBag=tf(doc);
-        List<String> keywords=new ArrayList<String>();
+        List<String> keywords=new ArrayList<>();
         for (String s:wordBag.keySet()) {
             if (model.containsKey(s)) {
                 model.put(s,model.get(s)+1);
@@ -99,14 +97,14 @@ public class TFIDFKeywordExtractor {
 
 
     private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
-        List<Map<String, Double>> tfidfComputed = new ArrayList<Map<String, Double>>();
-        List<Map<String, Integer>> wordBag = new ArrayList<Map<String, Integer>>();
+        List<Map<String, Double>> tfidfComputed = new ArrayList<>();
+        List<Map<String, Integer>> wordBag = new ArrayList<>();
         for (List<String> doc : docs) {
             wordBag.add(tf(doc));
         }
-        Integer i = 0;
+        int i = 0;
         for (List<String> doc : docs) {
-            HashMap<String, Double> aux = new HashMap<String, Double>();
+            HashMap<String, Double> aux = new HashMap<>();
             for (String s : doc) {
                 Double idf = idf(docs.size(), corpusFrequency.get(s));
                 Integer tf = wordBag.get(i).get(s);
@@ -120,19 +118,9 @@ public class TFIDFKeywordExtractor {
 
     }
 
-
-    private Double norm(Map<String, Double> wordsB) {
-        Double norm = 0.0;
-        for (String s : wordsB.keySet()) {
-            norm += wordsB.get(s) * wordsB.get(s);
-        }
-        Double result = sqrt(norm);
-        return result;
-    }
-
     private String clean_text(String text) {
         text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=,()><_{}']", " ");
+        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}']", " ");
         text = text.replaceAll("] \\[", "][");
         String result = "";
         if (Character.isDigit(text.charAt(0))) {
@@ -145,8 +133,7 @@ public class TFIDFKeywordExtractor {
         }
         if (text.contains("[")) {
             String[] p = text.split("]\\[");
-            for (int iter = 0; iter < p.length; ++iter) {
-                String f = p[iter];
+            for (String f: p) {
                 if (f.charAt(0) != '[') f = "[" + f;
                 if (f.charAt(f.length() - 1) != ']') f = f.concat("]");
                 String[] thing = f.split("\\[");
@@ -218,9 +205,8 @@ public class TFIDFKeywordExtractor {
                 } else {
                     result = result.concat(" " + helper);
                 }
-            } else if (a.equals("which") || a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under"))
-                ;
-            else {
+            }
+            else if (!(a.equals("which") || a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under"))) {
                 if (a.length() > 1) {
                     result = result.concat(" " + a);
                 }

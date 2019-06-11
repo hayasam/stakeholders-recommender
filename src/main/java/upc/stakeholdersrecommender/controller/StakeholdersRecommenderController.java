@@ -3,14 +3,11 @@ package upc.stakeholdersrecommender.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
@@ -18,6 +15,11 @@ import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 import java.io.IOException;
 import java.util.List;
 
+/*
+New parameter for Vogella, that takes into account the component of the bug. computed like skills
+requirementParts
+
+ */
 
 @SuppressWarnings("ALL")
 @RestController
@@ -25,7 +27,6 @@ import java.util.List;
 @Api(value = "Stakeholders Recommender API", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StakeholdersRecommenderController {
 
-    private static final Logger logger = LoggerFactory.getLogger(StakeholdersRecommenderController.class);
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
     @Autowired
