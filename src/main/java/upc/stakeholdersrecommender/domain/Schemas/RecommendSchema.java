@@ -2,11 +2,10 @@ package upc.stakeholdersrecommender.domain.Schemas;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import upc.stakeholdersrecommender.domain.Person;
 import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.Serializable;
-// Change to use minimal classes
+
 @ApiModel(description = "Class representing the information needed to generate a recommendation for a requirement.")
 public class RecommendSchema implements Serializable {
     @ApiModelProperty(notes = "The identifier of the requirement to recommend.", required = true)

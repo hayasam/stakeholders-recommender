@@ -199,7 +199,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent) throws Exception {
         purge();
         Map<String, Requirement> recs = new HashMap<>();
         for (Requirement r : request.getRequirements()) {
@@ -219,6 +219,7 @@ public class StakeholdersRecommenderService {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs);
+            // Add a way to pass the components
             instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();

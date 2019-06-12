@@ -40,21 +40,22 @@ public class StakeholdersRecommenderController {
             "PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's" +
             "relation to a requirement in RESPONSIBLES.", notes = "", response = BatchReturnSchema.class)
     public ResponseEntity<BatchReturnSchema> addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not.", example = "false", required=true)
-    @RequestParam Boolean withAvailability) throws Exception {
+    @RequestParam Boolean withAvailability,@ApiParam(value = "Whether the recommendation takes into account the requirement's component.", example = "false", required=true)
+    @RequestParam Boolean withComponent ) throws Exception {
         int res = 0;
         try {
-            res = stakeholdersRecommenderService.addBatch(batch, withAvailability);
+            res = stakeholdersRecommenderService.addBatch(batch, withAvailability,withComponent);
         } catch (IOException e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<BatchReturnSchema>(new BatchReturnSchema(res), HttpStatus.CREATED);
+        return new ResponseEntity<>(new BatchReturnSchema(res), HttpStatus.CREATED);
     }
 
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Recommendation rejection method: used to state that the user identified by REJECTED must not be assigned to REQUIREMENT. The" +
             " rejection is performed by USER.", notes = "")
-    public ResponseEntity recommend_reject(@ApiParam(value = "Person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Person who rejects.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "From which requirement is the person rejected.", example = "1", required=true) @RequestParam("requirement") String requirement) {
+    public ResponseEntity recommendReject(@ApiParam(value = "Person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Person who rejects.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "From which requirement is the person rejected.", example = "1", required=true) @RequestParam("requirement") String requirement) {
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -67,7 +68,7 @@ public class StakeholdersRecommenderController {
     public ResponseEntity<List<RecommendReturnSchema>> recommend(@RequestBody RecommendSchema request,
                                                                  @ApiParam(value = "Returns the top k stakeholders.", example = "10",required=true)@RequestParam Integer k,@ApiParam(value = "Considers stakeholders from all projects or only from one.", example = "false") @RequestParam Boolean projectSpecific) throws Exception {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific);
-        return new ResponseEntity<List<RecommendReturnSchema>>(ret, HttpStatus.CREATED);
+        return new ResponseEntity<>(ret, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

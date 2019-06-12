@@ -26,6 +26,9 @@ public class PersonSR implements Serializable {
     @ElementCollection
     @Embedded
     private List<Skill> skills;
+    @ElementCollection
+    @Embedded
+    private List<Component> components;
 
     public PersonSR() {
 
@@ -98,5 +101,13 @@ public class PersonSR implements Serializable {
 
     public void setSkills(List<Skill> skills) {
         this.skills = skills;
+    }
+
+    public List<Component> getComponents() {
+        return components;
+    }
+
+    public void setComponents(List<Component> components) {
+        this.components = components;
     }
 }
