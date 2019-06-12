@@ -13,7 +13,7 @@ import upc.stakeholdersrecommender.domain.Schemas.SetEffortSchema;
 
 
 public class EffortCalculatorTest {
-    
+    /*
     public EffortCalculatorTest() {
     }
     
@@ -56,5 +56,5 @@ public class EffortCalculatorTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-    
+    */
 }

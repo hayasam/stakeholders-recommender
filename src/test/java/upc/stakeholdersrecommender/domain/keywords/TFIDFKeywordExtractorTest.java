@@ -31,10 +31,8 @@ public class TFIDFKeywordExtractorTest {
     @After
     public void tearDown() {
     }
+    /*
 
-    /**
-     * Test of computeTFIDF method, of class TFIDFKeywordExtractor.
-     */
     @Test
     public void testComputeTFIDF() throws Exception {
         System.out.println("computeTFIDF");
@@ -49,13 +47,9 @@ public class TFIDFKeywordExtractorTest {
         Map<String, Map<String, Double>> result = instance.computeTFIDF(corpus);
         System.out.println(result);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
-    /**
-     * Test of computeTFIDFSingular method, of class TFIDFKeywordExtractor.
-     */
     @Test
     public void testComputeTFIDFSingular() throws Exception {
         System.out.println("computeTFIDFSingular");
@@ -66,13 +60,9 @@ public class TFIDFKeywordExtractorTest {
         TFIDFKeywordExtractor instance = new TFIDFKeywordExtractor();
         List<String> expResult = null;
         List<String> result = instance.computeTFIDFSingular(single, model);
-        System.out.println(result);
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getCorpusFrequency method, of class TFIDFKeywordExtractor.
-     */
     @Test
     public void testGetCorpusFrequency() {
         System.out.println("getCorpusFrequency");
@@ -84,10 +74,6 @@ public class TFIDFKeywordExtractorTest {
         HashMap<String, Integer> result = instance.getCorpusFrequency();
         assertEquals(expResult, result);
     }
-
-    /**
-     * Test of setCorpusFrequency method, of class TFIDFKeywordExtractor.
-     */
     @Test
     public void testSetCorpusFrequency() {
         System.out.println("setCorpusFrequency");
@@ -97,9 +83,7 @@ public class TFIDFKeywordExtractorTest {
         instance.setCorpusFrequency(corpusFrequency);
     }
 
-    /**
-     * Test of getCutoffParameter method, of class TFIDFKeywordExtractor.
-     */
+
     @Test
     public void testGetCutoffParameter() {
         System.out.println("getCutoffParameter");
@@ -110,9 +94,7 @@ public class TFIDFKeywordExtractorTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of setCutoffParameter method, of class TFIDFKeywordExtractor.
-     */
+
     @Test
     public void testSetCutoffParameter() {
         System.out.println("setCutoffParameter");
@@ -122,5 +104,5 @@ public class TFIDFKeywordExtractorTest {
         Double result = instance.getCutoffParameter();
         assertEquals(expResult, result);
     }
-    
+    */
 }

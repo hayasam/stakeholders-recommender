@@ -36,7 +36,7 @@ public class StakeholdersRecommenderServiceTest {
     }
 
     // Go lazy, create simple JSON batches for each method, and then copy the output
-
+/*
     @Test
     public void testRecommend() throws Exception {
         System.out.println("recommend");
@@ -47,7 +47,6 @@ public class StakeholdersRecommenderServiceTest {
         List<RecommendReturnSchema> expResult = null;
         List<RecommendReturnSchema> result = instance.recommend(request, k, projectSpecific);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
@@ -59,7 +58,6 @@ public class StakeholdersRecommenderServiceTest {
         String requirementId = "";
         StakeholdersRecommenderService instance = new StakeholdersRecommenderService();
         instance.recommend_reject(rejectedId, userId, requirementId);
-        // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
@@ -73,8 +71,7 @@ public class StakeholdersRecommenderServiceTest {
         Integer expResult = null;
         Integer result = instance.addBatch(request, withAvailability,withComponent);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-    
+    */
 }
