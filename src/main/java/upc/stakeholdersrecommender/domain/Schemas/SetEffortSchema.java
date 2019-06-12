@@ -11,13 +11,13 @@ import java.util.List;
 @ApiModel(description = "Class representing the mapping between effort and hours that is to be set.")
 public class SetEffortSchema implements Serializable {
     @ApiModelProperty(notes = "Array of effort with their respective hours to map.",required = true)
-    private List<EffortHour> requirements;
+    private List<EffortHour> effortToHour;
 
     public List<EffortHour> getEffortToHour() {
-        return requirements;
+        return effortToHour;
     }
 
     public void setEffortToHour(List<EffortHour> effortToHour) {
-        this.requirements = effortToHour;
+        this.effortToHour = effortToHour;
     }
 }
