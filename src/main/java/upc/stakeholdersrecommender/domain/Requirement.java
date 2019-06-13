@@ -3,6 +3,7 @@ package upc.stakeholdersrecommender.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import upc.stakeholdersrecommender.domain.Schemas.RequirementPart;
 import upc.stakeholdersrecommender.entity.Skill;
 
 import java.io.Serializable;
@@ -16,6 +17,8 @@ public class Requirement implements Serializable {
     private String id;
     @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false", example = "\"3\"", required = false)
     private String effort;
+    @ApiModelProperty(notes = "The requirement parts of the requirement", required = false)
+    private List<RequirementPart> requirementParts;
 
     @JsonIgnore
     private List<Skill> skills = new ArrayList<Skill>();
@@ -24,7 +27,7 @@ public class Requirement implements Serializable {
     private Date modified;
     @ApiModelProperty(notes = "The requirement's description.", example = "This is not really a requirement, but an example", required = true)
     private String description;
-    @ApiModelProperty(notes = "When was the requirement last modified.", example = "2014-01-13T15:14:17Z", required = true)
+    @ApiModelProperty(notes = "When was the requirement last modified.", example = "2014-01-13T15:14:17Z", required = false)
     private String modified_at;
 
     public Requirement() {
@@ -85,5 +88,13 @@ public class Requirement implements Serializable {
 
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+
+    public List<RequirementPart> getRequirementParts() {
+        return requirementParts;
+    }
+
+    public void setRequirementParts(List<RequirementPart> requirementParts) {
+        this.requirementParts = requirementParts;
     }
 }

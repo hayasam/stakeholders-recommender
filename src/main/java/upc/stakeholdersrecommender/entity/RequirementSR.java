@@ -17,6 +17,8 @@ import java.util.List;
 public class RequirementSR implements Serializable {
 
     @ElementCollection
+    List<String> component;
+    @ElementCollection
     List<String> skills;
     @EmbeddedId
     private RequirementSRId id;
@@ -79,5 +81,13 @@ public class RequirementSR implements Serializable {
 
     public void setModified_at(String modified_at) {
         this.modified_at = modified_at;
+    }
+
+    public List<String> getComponent() {
+        return component;
+    }
+
+    public void setComponent(List<String> component) {
+        this.component = component;
     }
 }

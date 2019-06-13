@@ -67,12 +67,16 @@ public class StakeholdersRecommenderService {
             }
             List<PersonSR> clean=removeRejected(persList, request.getUser().getUsername());
             Double hours=100.0;
-            if (!projectSpecific) {
+            System.out.println(clean.size());
+            if (projectSpecific) {
                 String effort = request.getRequirement().getEffort();
-                hours = EffortRepository.getOne(request.getProject().getId()).getEffortMap().get(effort);
+                if (EffortRepository.existsById(request.getProject().getId())) {
+                    hours = EffortRepository.getOne(request.getProject().getId()).getEffortMap().get(effort);
+                }
             }
             PersonSR[] bestPeople = computeBestStakeholders(clean, req,hours, k,projectSpecific);
-            ret = prepareFinal(bestPeople, req);
+        System.out.println(bestPeople.length);
+        ret = prepareFinal(bestPeople, req);
         return ret;
     }
 
@@ -88,6 +92,7 @@ public class StakeholdersRecommenderService {
                 }
             }
         }
+        else newList=persList;
         return newList;
     }
 
@@ -124,6 +129,8 @@ public class StakeholdersRecommenderService {
 
         for (PersonSR person : persList) {
             Double sum = 0.0;
+            Double compSum = 0.0;
+            Double resComp=0.0;
             for (String s : req.getSkills()) {
                 for (Skill j : person.getSkills()) {
                     if (s.equals(j.getName())) {
@@ -131,8 +138,19 @@ public class StakeholdersRecommenderService {
                     }
                 }
             }
+            if (req.getComponent()!=null) {
+                for (String s : req.getComponent()) {
+                    for (Component j : person.getComponents()) {
+                        if (s.equals(j.getName())) {
+                            compSum += j.getWeight();
+                        }
+                    }
+                }
+                resComp = compSum / req.getComponent().size();
+            }
             Double res = sum / req.getSkills().size();
-            res = res*3 + person.getAvailability();
+            res = res*3 + person.getAvailability()+resComp*10;
+            System.out.println(res);
             if (projectSpecific && person.getAvailability()>=hours/person.getHours()) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
@@ -212,17 +230,51 @@ public class StakeholdersRecommenderService {
         Map<String, List<Participant>> participants = getParticipants(request);
         Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs);
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
+        Map<String, Map<String, Double>> allComponents = new HashMap<>();
+        Map<String, Integer> componentFrequency = new HashMap<>();
+        if (withComponent) {
+            for (Requirement req : request.getRequirements()) {
+                Map<String, Double> component=new HashMap<>();
+                for (RequirementPart str:req.getRequirementParts()) {
+                    component.put(str.getId(),0.0);
+                    if (componentFrequency.containsKey(str.getId())) {
+                        componentFrequency.put(str.getId(),componentFrequency.get(str.getId()+1));
+                    }
+                    else componentFrequency.put(str.getId(),+1);
+                }
+                allComponents.put(req.getId(),component);
+            }
+            extractDate(recs, allComponents);
+        }
         for (Project proj : request.getProjects()) {
             String id = instanciateProject(proj, participants.get(proj.getId()));
             Map<String, Integer> hourMap = new HashMap<>();
             for (Participant par : participants.get(proj.getId())) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
-            instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs);
+            instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs, withComponent, allComponents);
             // Add a way to pass the components
-            instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability);
+            instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents,componentFrequency);
         }
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
+    }
+
+    private void extractDate(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents) {
+        Date dat=new Date();
+        computeTimeFactor(recs, allComponents, dat);
+    }
+
+    private void computeTimeFactor(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents, Date dat) {
+        for (String s : allComponents.keySet()) {
+            Requirement req = recs.get(s);
+            long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
+            long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            Map<String, Double> aux = allComponents.get(s);
+            for (String j : aux.keySet()) {
+                aux.put(j, 1 - max(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
+            }
+            allComponents.put(s, aux);
+        }
     }
 
     private Map<String, Integer> getSkillFrequency(Map<String, Map<String, Double>> allSkills) {
@@ -240,22 +292,57 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private void instanciateResourceBatch(Map<String, Integer> part, List<Person> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability) throws Exception {
+    private void instanciateResourceBatch(Map<String, Integer> part, List<Person> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
+    , Map<String,Map<String,Double>> allComponents, Map<String,Integer> componentFrequency) throws Exception {
         List<PersonSR> toSave = new ArrayList<>();
         for (Person person : persons) {
             List<Skill> skills;
+            List<Component> components;
             if (personRecs.get(person.getUsername()) != null) {
                 skills = computeSkillsPerson(personRecs.get(person.getUsername()), allSkills, skillFrequency);
-            } else skills = new ArrayList<>();
+                if (withComponent) components = computeComponentsPerson(personRecs.get(person.getUsername()),allComponents, componentFrequency);
+                else components=new ArrayList<>();;
+            } else{
+                skills = new ArrayList<>();
+                components = new ArrayList<>();
+            }
             Double availability;
             if (withAvailability) {
                 availability = computeAvailability(specifiedReq, personRecs, person, recs, id);
             } else availability = 1.0;
             PersonSR per = new PersonSR(new PersonSRId(id, person.getUsername()), id, availability, skills);
             per.setHours(part.get(per.getName()));
+            per.setComponents(components);
             toSave.add(per);
         }
         PersonSRRepository.saveAll(toSave);
+    }
+
+    private List<Component> computeComponentsPerson(List<String> oldRecs,Map<String, Map<String,Double>> allComponents, Map<String,Integer> componentFrequency) {
+        List<Component> toret = new ArrayList<>();
+        Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
+        for (String key : appearances.keySet()) {
+            Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
+            Component helper = new Component(key, ability);
+            toret.add(helper);
+        }
+        return toret;
+
+    }
+
+    private Map<String, SinglePair<Double>> getAppearances(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
+        Map<String, SinglePair<Double>> appearances = new HashMap<>();
+        for (String s : oldRecs) {
+            Map<String, Double> help = allComponents.get(s);
+            for (String sk : help.keySet()) {
+                if (appearances.containsKey(sk)) {
+                    appearances.put(sk, new SinglePair<>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
+                } else {
+                    appearances.put(sk, new SinglePair<>(help.get(sk), (double) componentFrequency.get(sk)));
+                }
+            }
+        }
+        return appearances;
     }
 
     private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project) throws Exception {
@@ -283,12 +370,13 @@ public class StakeholdersRecommenderService {
         return eff.getEffortMap().get(s);
     }
 
-    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs) {
+    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs, Boolean withComponent,Map<String,Map<String,Double>> allComponents) {
         List<RequirementSR> reqs = new ArrayList<>();
         for (String rec : requirement) {
             RequirementSR req = new RequirementSR(recs.get(rec), id);
             ArrayList<String> aux = new ArrayList<>(keywordsForReq.get(rec).keySet());
             req.setSkills(aux);
+            if (withComponent) req.setComponent(new ArrayList<String>(allComponents.get(rec).keySet()));
             reqs.add(req);
         }
         RequirementSRRepository.saveAll(reqs);
@@ -323,33 +411,14 @@ public class StakeholdersRecommenderService {
         toSave.setId("1");
         KeywordExtractionModelRepository.save(toSave);
         KeywordExtractionModelRepository.flush();
-        for (String s : keywords.keySet()) {
-            Requirement req = recs.get(s);
-            long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
-            long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-            Map<String, Double> aux = keywords.get(s);
-            for (String j : aux.keySet()) {
-                aux.put(j, 1 - max(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
-            }
-            keywords.put(s, aux);
-        }
+        computeTimeFactor(recs, keywords, dat);
         return keywords;
     }
 
 
     private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
         List<Skill> toret = new ArrayList<>();
-        Map<String, SinglePair<Double>> appearances = new HashMap<>();
-        for (String s : oldRecs) {
-            Map<String, Double> help = recs.get(s);
-            for (String sk : help.keySet()) {
-                if (appearances.containsKey(sk)) {
-                    appearances.put(sk, new SinglePair<>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
-                } else {
-                    appearances.put(sk, new SinglePair<>(help.get(sk), (double) skillsFrequency.get(sk)));
-                }
-            }
-        }
+        Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, recs, skillsFrequency);
         for (String key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
             Skill helper = new Skill(key, ability);
