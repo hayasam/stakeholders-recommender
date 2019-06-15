@@ -19,9 +19,11 @@ public class PersonSR implements Serializable {
 
     private Double availability;
 
-    private Integer hours;
+    private Double hours;
 
     private String name;
+
+    private String organization;
 
     @ElementCollection
     @Embedded
@@ -34,19 +36,14 @@ public class PersonSR implements Serializable {
 
     }
 
-    public PersonSR(PersonSRId id, String projectIdQuer, Double availability) {
-        this.id = id;
-        this.projectIdQuery = projectIdQuer;
-        this.availability = availability;
-        this.name = id.getPersonId();
-    }
 
-    public PersonSR(PersonSRId id, String projectIdQuer, Double availability, List<Skill> skills) {
+    public PersonSR(PersonSRId id, String projectIdQuer, Double availability, List<Skill> skills, String org) {
         this.id = id;
         this.projectIdQuery = projectIdQuer;
         this.availability = availability;
         this.name = id.getPersonId();
         this.skills = skills;
+        this.organization=org;
     }
 
     public PersonSR(PersonSRId id) {
@@ -79,11 +76,11 @@ public class PersonSR implements Serializable {
         this.projectIdQuery = projectId;
     }
 
-    public Integer getHours() {
+    public Double getHours() {
         return hours;
     }
 
-    public void setHours(Integer hours) {
+    public void setHours(Double hours) {
         this.hours = hours;
     }
 
@@ -109,5 +106,13 @@ public class PersonSR implements Serializable {
 
     public void setComponents(List<Component> components) {
         this.components = components;
+    }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
     }
 }

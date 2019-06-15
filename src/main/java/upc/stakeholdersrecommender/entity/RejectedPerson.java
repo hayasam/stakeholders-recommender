@@ -14,25 +14,34 @@ import java.util.Set;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RejectedPerson implements Serializable {
 
-    @Id
-    private String user;
+    @EmbeddedId
+    private RejectedPersonId user;
     @ElementCollection
     private Map<String, HashSet<String>> deleted;
 
+    private String organization;
+
     public RejectedPerson() {
-        user = null;
-        deleted = null;
     }
 
-    public RejectedPerson(String user) {
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    public RejectedPerson(RejectedPersonId user) {
         this.user = user;
+        this.organization=user.getOrganizationId();
     }
 
-    public String getUser() {
+    public RejectedPersonId getUser() {
         return user;
     }
 
-    public void setUser(String user) {
+    public void setUser(RejectedPersonId user) {
         this.user = user;
     }
 

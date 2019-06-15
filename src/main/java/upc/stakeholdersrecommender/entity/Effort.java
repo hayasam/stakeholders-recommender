@@ -1,10 +1,7 @@
 package upc.stakeholdersrecommender.entity;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,24 +9,24 @@ import java.util.Map;
 @Entity
 @Table(name = "effort_project")
 public class Effort implements Serializable {
-    @Id
-    private String id;
+    @EmbeddedId
+    private ProjectSRId id;
 
-    private HashMap<String,Double> effortMap;
+    private HashMap<Double,Double> effortMap;
 
-    public String getId() {
+    public ProjectSRId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ProjectSRId id) {
         this.id = id;
     }
 
-    public Map<String, Double> getEffortMap() {
+    public HashMap<Double, Double> getEffortMap() {
         return effortMap;
     }
 
-    public void setEffortMap(HashMap<String, Double> effortMap) {
+    public void setEffortMap(HashMap<Double, Double> effortMap) {
         this.effortMap = effortMap;
     }
 }

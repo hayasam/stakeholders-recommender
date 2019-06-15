@@ -13,13 +13,37 @@ public class RequirementSRId implements Serializable {
 
     @Column(name = "requirementId")
     private String requirementId;
+    @Column(name = "organizationId")
+    private String organizationId;
+
 
     public RequirementSRId() {
     }
 
-    public RequirementSRId(String projectId, String personId) {
+    public RequirementSRId(String projectId, String personId, String org) {
         this.projectId = projectId;
         this.requirementId = personId;
+        this.organizationId=org;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public void setRequirementId(String requirementId) {
+        this.requirementId = requirementId;
+    }
+
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 
     public String getprojectId() {
@@ -36,12 +60,13 @@ public class RequirementSRId implements Serializable {
         if (!(o instanceof RequirementSRId)) return false;
         RequirementSRId that = (RequirementSRId) o;
         return Objects.equals(getprojectId(), that.getprojectId()) &&
-                Objects.equals(getRequirementId(), that.getRequirementId());
+                Objects.equals(getRequirementId(), that.getRequirementId()) &&
+                Objects.equals(getOrganizationId(), that.getOrganizationId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getprojectId(), getRequirementId());
+        return Objects.hash(getprojectId(), getRequirementId(),getOrganizationId());
     }
 }
 

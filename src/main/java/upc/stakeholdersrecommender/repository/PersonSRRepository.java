@@ -10,13 +10,16 @@ import java.util.List;
 
 @Repository
 public interface PersonSRRepository extends JpaRepository<PersonSR, String> {
-    List<PersonSR> findByProjectIdQuery(String projectId);
+    List<PersonSR> findByProjectIdQueryAndOrganization(String projectId,String organization);
 
     PersonSR findById(PersonSRId id);
 
 
     @Transactional
-    void deleteByProjectIdQuery(String projectId);
+    void deleteByOrganization(String organization);
 
-    List<PersonSR> findByName(String name);
+    List<PersonSR> findByNameAndOrganization(String name, String organization);
+
+    List<PersonSR> findByOrganization( String organization);
+
 }

@@ -7,10 +7,13 @@ import io.swagger.annotations.ApiModelProperty;
 public class RequirementBasic {
     @ApiModelProperty(notes = "The id of the requirement.", example="\"1\"",required = true)
     private String id;
-    @ApiModelProperty(notes = "The effort points of the requirement.", example="\"1\"",required = true)
-    private String effort;
+    @ApiModelProperty(notes = "The effort points of the requirement.", example="\"1.0\"",required = true)
+    private Double effort;
     @ApiModelProperty(notes = "The hours it took to finish the requirement.", example="\"1.0\"",required = true)
     private Double hours;
+    @ApiModelProperty(notes = "The title of the requirement", example = "This is a title", required = true)
+    private String name;
+
 
     public String getId() {
         return id;
@@ -20,11 +23,11 @@ public class RequirementBasic {
         this.id = id;
     }
 
-    public String getEffort() {
+    public Double getEffort() {
         return effort;
     }
 
-    public void setEffort(String effort) {
+    public void setEffort(Double effort) {
         this.effort = effort;
     }
 
@@ -34,5 +37,13 @@ public class RequirementBasic {
 
     public void setHours(Double hours) {
         this.hours = hours;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

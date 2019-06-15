@@ -10,4 +10,8 @@ import upc.stakeholdersrecommender.entity.RequirementSRId;
 public interface RequirementSRRepository extends JpaRepository<RequirementSR, String> {
     RequirementSR findById(RequirementSRId id);
 
+    @Transactional
+    void deleteByOrganization(String organization);
+
+
 }

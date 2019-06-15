@@ -2,10 +2,7 @@ package upc.stakeholdersrecommender.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
@@ -14,30 +11,36 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProjectSR implements Serializable {
 
-    @Id
-    private String id;
+    @EmbeddedId
+    private ProjectSRId id;
 
     @ElementCollection
     private List<String> participants;
+
+    private String organization;
 
     public ProjectSR() {
 
     }
 
-    public ProjectSR(String id) {
-        this.id = id;
+    public ProjectSR(ProjectSRId newId) {
+        this.id=newId;
     }
 
-    public String getId() {
+    public ProjectSRId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ProjectSRId id) {
         this.id = id;
     }
 
-    public void setID(String id) {
-        this.id = id;
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
     }
 
     public List<String> getParticipants() {

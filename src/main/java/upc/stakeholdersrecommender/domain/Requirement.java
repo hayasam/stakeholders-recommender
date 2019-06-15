@@ -15,10 +15,12 @@ import java.util.List;
 public class Requirement implements Serializable {
     @ApiModelProperty(notes = "Identifier of the requirement.", example = "\"1\"", required = true)
     private String id;
-    @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false", example = "\"3\"", required = false)
-    private String effort;
+    @ApiModelProperty(notes = "How much effort the requirement will take. It is not required if using the parameter withAvailability as false, or using autoMapping", example = "\"3.0\"", required = false)
+    private Double effort;
     @ApiModelProperty(notes = "The requirement parts of the requirement", required = false)
     private List<RequirementPart> requirementParts;
+    @ApiModelProperty(notes = "The title of the requirement", example = "This is a title", required = true)
+    private String name;
 
     @JsonIgnore
     private List<Skill> skills = new ArrayList<Skill>();
@@ -66,11 +68,11 @@ public class Requirement implements Serializable {
         this.skills.add(auxiliar);
     }
 
-    public String getEffort() {
+    public Double getEffort() {
         return effort;
     }
 
-    public void setEffort(String effort) {
+    public void setEffort(Double effort) {
         this.effort = effort;
     }
 
@@ -96,5 +98,13 @@ public class Requirement implements Serializable {
 
     public void setRequirementParts(List<RequirementPart> requirementParts) {
         this.requirementParts = requirementParts;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

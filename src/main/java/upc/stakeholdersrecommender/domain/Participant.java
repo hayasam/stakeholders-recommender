@@ -13,7 +13,7 @@ public class Participant implements Serializable {
     @ApiModelProperty(notes = "Identifier of the person.", example = "John Doe", required = true)
     private String person;
     @ApiModelProperty(notes = "Hours the person has for this project, necessary if parameter withAvailability is true.", example = "40", required = true)
-    private Integer availability;
+    private Double availability;
 
     public Participant() {
     }
@@ -39,11 +39,11 @@ public class Participant implements Serializable {
         this.person = person;
     }
 
-    public Integer getAvailability() {
+    public Double getAvailability() {
         return availability;
     }
 
-    public void setAvailability(Integer availability) {
+    public void setAvailability(Double availability) {
         this.availability = availability;
     }
 }

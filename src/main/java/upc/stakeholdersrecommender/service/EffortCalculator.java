@@ -7,6 +7,7 @@ import upc.stakeholdersrecommender.domain.Schemas.EffortHour;
 import upc.stakeholdersrecommender.domain.Schemas.RequirementBasic;
 import upc.stakeholdersrecommender.domain.Schemas.SetEffortSchema;
 import upc.stakeholdersrecommender.entity.Effort;
+import upc.stakeholdersrecommender.entity.ProjectSRId;
 import upc.stakeholdersrecommender.repository.EffortRepository;
 
 import java.util.ArrayList;
@@ -19,11 +20,11 @@ public class EffortCalculator {
     @Autowired
     EffortRepository effortRepository;
 
-    public void effortCalc(EffortCalculatorSchema eff, String id) {
+    public void effortCalc(EffortCalculatorSchema eff, String id, String organization) {
         if (effortRepository.existsById(id)) {
             effortRepository.deleteById(id);
         }
-        Map<String,List<Double>> auxiliar=new HashMap<>();
+        Map<Double,List<Double>> auxiliar=new HashMap<>();
         for (RequirementBasic req: eff.getRequirements()) {
             if (auxiliar.containsKey(req.getEffort())) {
                 List<Double> intList= auxiliar.get(req.getEffort());
@@ -36,8 +37,8 @@ public class EffortCalculator {
                 auxiliar.put(req.getEffort(),intList);
             }
         }
-        HashMap<String,Double> effortMap=new HashMap<>();
-        for (String s:auxiliar.keySet()) {
+        HashMap<Double,Double> effortMap=new HashMap<>();
+        for (Double s:auxiliar.keySet()) {
             List<Double> d=auxiliar.get(s);
             Double count=0.0;
             for (Double dub:d) {
@@ -48,21 +49,21 @@ public class EffortCalculator {
         }
         Effort effort=new Effort();
         effort.setEffortMap(effortMap);
-        effort.setId(id);
+        effort.setId(new ProjectSRId(id,organization));
         effortRepository.save(effort);
     }
 
-    public void setEffort(SetEffortSchema set, String id) {
+    public void setEffort(SetEffortSchema set, String id, String organization) {
         if (effortRepository.existsById(id)) {
             effortRepository.deleteById(id);
         }
-        HashMap<String,Double> effortMap=new HashMap<>();
+        HashMap<Double,Double> effortMap=new HashMap<>();
         for (EffortHour r:set.getEffortToHour()) {
             effortMap.put(r.getEffort(),r.getHours());
         }
         Effort effort=new Effort();
         effort.setEffortMap(effortMap);
-        effort.setId(id);
+        effort.setId(new ProjectSRId(id,organization));
         effortRepository.save(effort);
     }
 
