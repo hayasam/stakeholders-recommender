@@ -1,5 +1,6 @@
 package upc.stakeholdersrecommender.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,5 +14,5 @@ public interface RequirementSRRepository extends JpaRepository<RequirementSR, St
     @Transactional
     void deleteByOrganization(String organization);
 
-
+    List<RequirementSR> findByOrganization(String organization);
 }

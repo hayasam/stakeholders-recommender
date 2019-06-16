@@ -10,6 +10,7 @@ import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -19,6 +20,7 @@ import static java.lang.Double.max;
 import static java.lang.Math.min;
 
 @Service
+@Transactional
 public class StakeholdersRecommenderService {
 
     @Value("${skill.dropoff.days}")
@@ -72,8 +74,8 @@ public class StakeholdersRecommenderService {
             Double hours=100.0;
             if (projectSpecific) {
                 Double effort = request.getRequirement().getEffort();
-                if (EffortRepository.existsById(request.getProject().getId())) {
-                    HashMap<Double,Double> effMap=EffortRepository.getOne(request.getProject().getId()).getEffortMap();
+                if (EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization))!=null) {
+                    HashMap<Double,Double> effMap=EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization)).getEffortMap();
                     if (effMap.containsKey(effort)) {
                         hours = effMap.get(effort);
                     }
@@ -204,11 +206,10 @@ public class StakeholdersRecommenderService {
     }
 
     private void purge(String organization) {
-        ProjectRepository.deleteByOrganization(organization);
-        PersonSRRepository.deleteByOrganization(organization);
-        RequirementSRRepository.deleteByOrganization(organization);
-        RejectedPersonRepository.deleteByOrganization(organization);
-        ProjectRepository.deleteByOrganization(organization);
+        if (ProjectRepository.findByOrganization(organization)!=null)ProjectRepository.deleteByOrganization(organization);
+        if (PersonSRRepository.findByOrganization(organization)!=null)PersonSRRepository.deleteByOrganization(organization);
+        if (RequirementSRRepository.findByOrganization(organization)!=null)RequirementSRRepository.deleteByOrganization(organization);
+        if (RejectedPersonRepository.findByOrganization(organization)!=null)RejectedPersonRepository.deleteByOrganization(organization);
         if (KeywordExtractionModelRepository.existsById(organization)) KeywordExtractionModelRepository.deleteById(organization);
 
     }

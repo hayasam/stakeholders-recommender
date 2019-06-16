@@ -12,4 +12,5 @@ public interface ProjectRepository extends JpaRepository<ProjectSR, String> {
     void deleteByOrganization(String organization);
 
 
+    ProjectSR findByOrganization(String organization);
 }
