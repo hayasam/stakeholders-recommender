@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Double.max;
+import static java.lang.Math.min;
 
 @Service
 public class StakeholdersRecommenderService {
@@ -50,6 +51,11 @@ public class StakeholdersRecommenderService {
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setID(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
         newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel()));
+        List<String> comps=new ArrayList<String>();
+        for (RequirementPart l:request.getRequirement().getRequirementParts()) {
+            comps.add(l.getId());
+        }
+        newReq.setComponent(comps);
         RequirementSRRepository.save(newReq);
         req=newReq;
             if (!projectSpecific) {
@@ -116,7 +122,11 @@ public class StakeholdersRecommenderService {
                 }
             }
             Double amount = (double) req.getSkills().size();
-            Double appropiateness = total / amount;
+            Double appropiateness;
+            if (amount==0.0) {
+                appropiateness=0.0;
+            }
+            else appropiateness = total / amount;
             Double availability = pers.getAvailability();
             PersonMinimal min=new PersonMinimal();
             min.setUsername(pers.getName());
@@ -145,15 +155,21 @@ public class StakeholdersRecommenderService {
                 for (String s : req.getComponent()) {
                     for (Component j : person.getComponents()) {
                         if (s.equals(j.getName())) {
+                            System.out.println(j.getWeight());
                             compSum += j.getWeight();
                         }
                     }
                 }
                 resComp = compSum / req.getComponent().size();
             }
-            Double res = sum / req.getSkills().size();
-            res = res*3 + person.getAvailability()+resComp*10;
-            System.out.println(res);
+            Double res;
+            if (req.getSkills().size()==0) {
+                res=0.0;
+            }
+            else {
+                res = sum / req.getSkills().size();
+            }
+            res = res * 3 + person.getAvailability() + resComp * 10;
             if (projectSpecific && person.getAvailability()>=hours/person.getHours()) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
@@ -262,7 +278,7 @@ public class StakeholdersRecommenderService {
                     }
                 effortMap.setEffortMap(eff);
                 effortMap.setId(new ProjectSRId(proj.getId(),organization));
-                if (EffortRepository.existsById(proj.getId())) EffortRepository.deleteById(proj.getId());
+                if (EffortRepository.findById(new ProjectSRId(proj.getId(),organization))!=null) EffortRepository.deleteById(new ProjectSRId(proj.getId(),organization));
                 EffortRepository.save(effortMap);
             }
             String id = instanciateProject(proj, participants.get(proj.getId()),organization);
@@ -288,7 +304,7 @@ public class StakeholdersRecommenderService {
             long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             Map<String, Double> aux = allComponents.get(s);
             for (String j : aux.keySet()) {
-                aux.put(j, 1 - max(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
+                aux.put(j, 1.0 - min(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
             }
             allComponents.put(s, aux);
         }
@@ -325,7 +341,7 @@ public class StakeholdersRecommenderService {
             }
             Double availability;
             if (withAvailability) {
-                availability = computeAvailability(specifiedReq, personRecs, person, recs, id,part.get(person.getUsername()));
+                availability = computeAvailability(specifiedReq, personRecs, person, recs, id,part.get(person.getUsername()),organization);
             } else availability = 1.0;
             PersonSR per = new PersonSR(new PersonSRId(id, person.getUsername(),organization), id, availability, skills,organization);
             per.setHours(part.get(per.getName()));
@@ -362,7 +378,7 @@ public class StakeholdersRecommenderService {
         return appearances;
     }
 
-    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project, Double totalHours) throws Exception {
+    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<>(requirements);
         List<String> toRemove = new ArrayList<>(requirements);
@@ -370,7 +386,7 @@ public class StakeholdersRecommenderService {
         intersection.removeAll(toRemove);
         Double hours = 0.0;
         for (String s : intersection) {
-            hours += extractAvailability(requirementMap.get(s).getEffort(), project);
+            hours += extractAvailability(requirementMap.get(s).getEffort(), project,organization);
         }
         return calculateAvailability(hours,totalHours);
     }
@@ -379,11 +395,11 @@ public class StakeholdersRecommenderService {
         return max(0, (1 - (hours / i)));
     }
 
-    private Double extractAvailability(Double s, String project) throws Exception {
-        if (!EffortRepository.existsById(project)) {
+    private Double extractAvailability(Double s, String project,String organization) throws Exception {
+        if (EffortRepository.findById(new ProjectSRId(project,organization))==null) {
             throw new Exception();
         }
-        Effort eff = EffortRepository.getOne(project);
+        Effort eff = EffortRepository.findById(new ProjectSRId(project,organization));
         return eff.getEffortMap().get(s);
     }
 

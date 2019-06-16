@@ -21,8 +21,8 @@ public class EffortCalculator {
     EffortRepository effortRepository;
 
     public void effortCalc(EffortCalculatorSchema eff, String id, String organization) {
-        if (effortRepository.existsById(id)) {
-            effortRepository.deleteById(id);
+        if (effortRepository.findById(new ProjectSRId(id,organization))!=null) {
+            effortRepository.deleteById(new ProjectSRId(id,organization));
         }
         Map<Double,List<Double>> auxiliar=new HashMap<>();
         for (RequirementBasic req: eff.getRequirements()) {
@@ -54,8 +54,8 @@ public class EffortCalculator {
     }
 
     public void setEffort(SetEffortSchema set, String id, String organization) {
-        if (effortRepository.existsById(id)) {
-            effortRepository.deleteById(id);
+        if (effortRepository.findById(new ProjectSRId(id,organization))!=null) {
+            effortRepository.deleteById(new ProjectSRId(id,organization));
         }
         HashMap<Double,Double> effortMap=new HashMap<>();
         for (EffortHour r:set.getEffortToHour()) {

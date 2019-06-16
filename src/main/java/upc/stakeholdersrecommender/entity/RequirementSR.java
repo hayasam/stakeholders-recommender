@@ -77,6 +77,14 @@ public class RequirementSR implements Serializable {
         this.skills = skills;
     }
 
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
     public String getModified_at() {
         return modified_at;
     }
