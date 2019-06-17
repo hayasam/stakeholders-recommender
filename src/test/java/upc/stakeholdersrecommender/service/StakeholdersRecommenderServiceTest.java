@@ -38,33 +38,68 @@ public class StakeholdersRecommenderServiceTest {
         RecommendSchema req=new RecommendSchema();
         testAddBatch();
         String jsonInString = "{\n" +
-                    "  \"project\": {\n" +
-                    "    \"id\": \"1\"\n" +
-                    "  },\n" +
-                    "  \"requirement\": {\n" +
-                    "    \"description\": \"This is not really a requirement, but an example\",\n" +
-                    "    \"effort\": \"3.0\",\n" +
-                    "    \"id\": \"1\",\n" +
-                    "    \"modified_at\": \"2014-01-13T15:14:17Z\",\n" +
-                    "    \"name\": \"This is a title\",\n" +
-                    "    \"requirementParts\": [\n" +
-                    "      {\n" +
-                    "        \"id\": \"3\",\n" +
-                    "        \"name\": \"UI\"\n" +
-                    "      }\n" +
-                    "    ]\n" +
-                    "  },\n" +
-                    "  \"user\": {\n" +
-                    "    \"username\": \"John Doe\"\n" +
-                    "  }\n" +
-                    "}";
-            req = mapper.readValue(jsonInString, RecommendSchema.class);
+                "  \"project\": {\n" +
+                "    \"id\": \"1\"\n" +
+                "  },\n" +
+                "  \"requirement\": {\n" +
+                "    \"description\": \"This is not really a requirement, but an example\",\n" +
+                "    \"effort\": \"3.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"modified_at\": \"2014-01-13T15:14:17Z\",\n" +
+                "    \"name\": \"This is a title\",\n" +
+                "    \"requirementParts\": [\n" +
+                "      {\n" +
+                "        \"id\": \"3\",\n" +
+                "        \"name\": \"UI\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"user\": {\n" +
+                "    \"username\": \"John Doe\"\n" +
+                "  }\n" +
+                "}";
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
 
-       int k = 10;
+        int k = 10;
         List<RecommendReturnSchema> result = instance.recommend(req, k, true,"UPC");
         String res = mapper.writeValueAsString(result);
         assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"apropiatenessScore\":0.0}]");
     }
+    @Test
+    public void testNotProjectSpecific() throws Exception {
+        System.out.println("recommend");
+        ObjectMapper mapper = new ObjectMapper();
+        RecommendSchema req=new RecommendSchema();
+        testAddBatch();
+        String jsonInString = "{\n" +
+                "  \"project\": {\n" +
+                "    \"id\": \"1\"\n" +
+                "  },\n" +
+                "  \"requirement\": {\n" +
+                "    \"description\": \"This is not really a requirement, but an example\",\n" +
+                "    \"effort\": \"3.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"modified_at\": \"2014-01-13T15:14:17Z\",\n" +
+                "    \"name\": \"This is a title\",\n" +
+                "    \"requirementParts\": [\n" +
+                "      {\n" +
+                "        \"id\": \"3\",\n" +
+                "        \"name\": \"UI\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"user\": {\n" +
+                "    \"username\": \"John Doe\"\n" +
+                "  }\n" +
+                "}";
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
+
+        int k = 10;
+        List<RecommendReturnSchema> result = instance.recommend(req, k, false,"UPC");
+        String res = mapper.writeValueAsString(result);
+        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"apropiatenessScore\":0.0}]");
+    }
+
 /*
     @Test
     public void testRecommend_reject() {

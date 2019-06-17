@@ -63,8 +63,13 @@ public class StakeholdersRecommenderService {
             if (!projectSpecific) {
                 for (PersonSR pers : PersonSRRepository.findByOrganization(organization)) {
                     if (hasTime(pers,organization)) {
-                        pers.setAvailability(1.0);
-                        persList.add(pers);
+                        PersonSR per=new PersonSR();
+                        per.setComponents(pers.getComponents());
+                        per.setAvailability(1.0);
+                        per.setHours(pers.getHours());
+                        per.setSkills(pers.getSkills());
+                        per.setName(pers.getName());
+                        persList.add(per);
                     }
                 }
             } else {
@@ -157,7 +162,6 @@ public class StakeholdersRecommenderService {
                 for (String s : req.getComponent()) {
                     for (Component j : person.getComponents()) {
                         if (s.equals(j.getName())) {
-                            System.out.println(j.getWeight());
                             compSum += j.getWeight();
                         }
                     }
@@ -347,6 +351,7 @@ public class StakeholdersRecommenderService {
             PersonSR per = new PersonSR(new PersonSRId(id, person.getUsername(),organization), id, availability, skills,organization);
             per.setHours(part.get(per.getName()));
             per.setComponents(components);
+            per.setAvailability(availability);
             toSave.add(per);
         }
         PersonSRRepository.saveAll(toSave);

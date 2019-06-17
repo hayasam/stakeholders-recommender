@@ -7,8 +7,6 @@ import upc.stakeholdersrecommender.domain.Requirement;
 import java.io.Serializable;
 import java.util.List;
 
-// Use requirement, using effort and hours
-// effort_points   // hours
 @ApiModel(description = "Class representing the requirements with their effort points and hours.")
 public class EffortCalculatorSchema implements Serializable {
     @ApiModelProperty(notes = "List of requirements with their effort points and hours.", required = true)
