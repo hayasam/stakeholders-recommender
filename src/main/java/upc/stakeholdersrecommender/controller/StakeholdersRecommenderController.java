@@ -38,18 +38,24 @@ public class StakeholdersRecommenderController {
             " or not. All information in the database is purged every time this method is called. A person's relation to the project is defined with" +
             "PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's" +
             "relation to a requirement in RESPONSIBLES.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity<BatchReturnSchema> addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not.", example = "false", required=true)
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not.", example = "false", required=true)
     @RequestParam Boolean withAvailability,@ApiParam(value = "Whether the recommendation takes into account the requirement's component.", example = "false", required=true)
     @RequestParam Boolean withComponent,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)
     @RequestParam String organization ,@ApiParam(value = "Auto-generate mapping from effort to hours.", example = "true", required=true)
-    @RequestParam Boolean autoMapping  ) throws Exception {
+    @RequestParam Boolean autoMapping,@ApiParam(value = "Return each requirement with its set of skills." ,example = "true", required=true)
+    @RequestParam Boolean keywords  ) throws Exception {
         int res = 0;
         try {
             res = stakeholdersRecommenderService.addBatch(batch, withAvailability,withComponent,organization,autoMapping);
         } catch (IOException e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        if (!keywords)
         return new ResponseEntity<>(new BatchReturnSchema(res), HttpStatus.CREATED);
+        else {
+            List<ProjectKeywordSchema> keys=stakeholdersRecommenderService.extractKeywords(organization,batch);
+            return new ResponseEntity<>(keys,HttpStatus.CREATED);
+        }
     }
 
 

@@ -15,4 +15,6 @@ public interface RequirementSRRepository extends JpaRepository<RequirementSR, St
     void deleteByOrganization(String organization);
 
     List<RequirementSR> findByOrganization(String organization);
+    List<RequirementSR> findByOrganizationAndProj(String organization,String id);
+
 }

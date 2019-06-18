@@ -25,6 +25,8 @@ public class RequirementSR implements Serializable {
     private String projectIdQuery;
     private String modified_at;
     private String organization;
+    private String proj;
+
 
     // De 1 a 0.5, lineal, de entre ahora a final.
     public RequirementSR() {
@@ -39,6 +41,7 @@ public class RequirementSR implements Serializable {
         this.id = new RequirementSRId(id, req.getId(),org);
         this.projectIdQuery = req.getId();
         this.organization=org;
+        this.proj=id;
     }
 
     public RequirementSRId getID() {
@@ -99,5 +102,13 @@ public class RequirementSR implements Serializable {
 
     public void setComponent(List<String> component) {
         this.component = component;
+    }
+
+    public String getProj() {
+        return proj;
+    }
+
+    public void setProj(String proj) {
+        this.proj = proj;
     }
 }

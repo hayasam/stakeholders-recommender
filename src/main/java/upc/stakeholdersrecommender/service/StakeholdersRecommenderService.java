@@ -509,6 +509,25 @@ public class StakeholdersRecommenderService {
         return participants;
     }
 
+    public List<ProjectKeywordSchema> extractKeywords(String organization,BatchSchema batch) {
+        List<ProjectKeywordSchema> res=new ArrayList<>();
+        for (Project j:batch.getProjects()) {
+            ProjectKeywordSchema proje=new ProjectKeywordSchema();
+            List<KeywordReturnSchema> reqs=new ArrayList<>();
+            String id=j.getId();
+            proje.setProjectId(id);
+            for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization,id)) {
+                KeywordReturnSchema key = new KeywordReturnSchema();
+                key.setRequirement(req.getID().getRequirementId());
+                key.setSkills(req.getSkills());
+                reqs.add(key);
+            }
+            proje.setRequirements(reqs);
+            res.add(proje);
+        }
+        return res;
+    }
+
     private class SinglePair<T> {
         T p1, p2;
 

@@ -120,7 +120,7 @@ public class TFIDFKeywordExtractor {
 
     private String clean_text(String text) {
         text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}']", " ");
+        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'][1-9]", " ");
         text = text.replaceAll("] \\[", "][");
         String result = "";
         if (Character.isDigit(text.charAt(0))) {
@@ -155,63 +155,14 @@ public class TFIDFKeywordExtractor {
         String[] aux4 = text.split("]");
         String[] aux2 = aux4[aux4.length - 1].split(" ");
         for (String a : aux2) {
-            String helper = "";
-            a = a.replace("+", "");
-            if (a.contains(".")) {
-                String[] thing = a.split(".");
-                if (thing.length > 2) {
-                    helper = helper.concat(" " + a);
-                } else {
-                    for (String str : thing) {
-                        if (isParsable(str)) {
-                            helper = helper.concat(str);
-                        } else helper = helper.concat(" " + str);
-                    }
-                }
-            } else if (a.length() > 1 && a.charAt(a.length() - 1) == '%') a = "";
-            else if (a.length() > 1 && a.charAt(0) == 'x' && Character.isDigit(a.charAt(1))) a = "";
-            else if (a.contains("-")) {
-                String[] thing = a.split("-");
-                if (thing.length > 2) {
-                    helper = helper.concat(" " + a);
-                } else {
-                    for (String str : thing) {
-                        if (isParsable(str)) {
-                            helper = helper.concat(str);
-                        } else helper = helper.concat(" " + str);
-                    }
-                }
-            }
+            String helper="";
             if (a.toUpperCase().equals(a)) {
                 for (int i = 0; i < 10; ++i) {
                     helper = helper.concat(" " + a);
                 }
-
+                a=helper;
             }
-            if (helper.length() > 0 || isParsable(a)) {
-                String[] aux3;
-                if (helper.contains(".")) aux3 = helper.split(".");
-                else if (helper.contains("-")) aux3 = helper.split("-");
-                else {
-                    aux3 = new String[1];
-                    aux3[0] = helper;
-                }
-                if (isParsable(a)) result = result.concat(a);
-                else if (aux3.length > 0 && isParsable(aux3[0])) result = result.concat(helper);
-                else if (aux3.length < 3) {
-                    for (String st : aux3) {
-                        result = result + " " + st;
-                    }
-                } else {
-                    result = result.concat(" " + helper);
-                }
-            }
-            else if (!(a.equals("which") || a.equals("for") || a.equals("to") || a.equals("in") || a.equals("any") || a.equals("under"))) {
-                if (a.length() > 1) {
-                    result = result.concat(" " + a);
-                }
-
-            }
+            result = result.concat(" " + a);
         }
         return result;
     }
