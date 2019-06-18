@@ -43,7 +43,6 @@ public class StakeholdersRecommenderService {
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
         String p = request.getProject().getId();
-        String r = request.getRequirement().getId();
         List<RecommendReturnSchema> ret;
         List<PersonSR> persList = new ArrayList<>();
         RequirementSR req;
@@ -53,9 +52,11 @@ public class StakeholdersRecommenderService {
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setID(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
         newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel()));
-        List<String> comps=new ArrayList<String>();
-        for (RequirementPart l:request.getRequirement().getRequirementParts()) {
-            comps.add(l.getId());
+        List<String> comps=new ArrayList<>();
+        if (request.getRequirement().getRequirementParts()!=null) {
+            for (RequirementPart l : request.getRequirement().getRequirementParts()) {
+                comps.add(l.getId());
+            }
         }
         newReq.setComponent(comps);
         RequirementSRRepository.save(newReq);
@@ -213,22 +214,28 @@ public class StakeholdersRecommenderService {
         if (ProjectRepository.findByOrganization(organization)!=null)ProjectRepository.deleteByOrganization(organization);
         if (PersonSRRepository.findByOrganization(organization)!=null)PersonSRRepository.deleteByOrganization(organization);
         if (RequirementSRRepository.findByOrganization(organization)!=null)RequirementSRRepository.deleteByOrganization(organization);
-        if (RejectedPersonRepository.findByOrganization(organization)!=null)RejectedPersonRepository.deleteByOrganization(organization);
+        //if (RejectedPersonRepository.findByOrganization(organization)!=null)RejectedPersonRepository.deleteByOrganization(organization);
         if (KeywordExtractionModelRepository.existsById(organization)) KeywordExtractionModelRepository.deleteById(organization);
 
     }
 
     public void recommend_reject(String rejectedId, String userId, String requirementId, String organization) {
-        if (RejectedPersonRepository.existsById(userId)) {
-            RejectedPerson rejected = RejectedPersonRepository.getOne(userId);
+        if (RejectedPersonRepository.findByUser(new RejectedPersonId(userId,organization))!=null) {
+            RejectedPerson rejected = RejectedPersonRepository.findByUser(new RejectedPersonId(userId,organization));
             if (rejected.getDeleted().containsKey(rejectedId)) {
-                rejected.getDeleted().get(rejectedId).add(requirementId);
-            } else {
-                HashSet<String> aux = new HashSet<>();
+                HashSet<String> aux=rejected.getDeleted().get(rejectedId);
                 aux.add(requirementId);
-                rejected.getDeleted().put(rejectedId, aux);
+                Map<String,HashSet<String>> auxMap=rejected.getDeleted();
+                auxMap.put(rejectedId,aux);
+                rejected.setDeleted(auxMap);
+            } else {
+                HashSet<String> aux=new HashSet<>();
+                aux.add(requirementId);
+                Map<String,HashSet<String>> auxMap=rejected.getDeleted();
+                auxMap.put(rejectedId,aux);
+                rejected.setDeleted(auxMap);
             }
-            RejectedPersonRepository.save(rejected);
+            RejectedPersonRepository.saveAndFlush(rejected);
         } else {
             RejectedPerson reject = new RejectedPerson(new RejectedPersonId(userId,organization));
             HashMap<String, HashSet<String>> aux = new HashMap<>();
@@ -236,7 +243,7 @@ public class StakeholdersRecommenderService {
             auxset.add(requirementId);
             aux.put(rejectedId, auxset);
             reject.setDeleted(aux);
-            RejectedPersonRepository.save(reject);
+            RejectedPersonRepository.saveAndFlush(reject);
         }
     }
 

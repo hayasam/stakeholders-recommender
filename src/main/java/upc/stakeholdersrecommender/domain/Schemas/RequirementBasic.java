@@ -11,9 +11,6 @@ public class RequirementBasic {
     private Double effort;
     @ApiModelProperty(notes = "The hours it took to finish the requirement.", example="\"1.0\"",required = true)
     private Double hours;
-    @ApiModelProperty(notes = "The title of the requirement", example = "This is a title", required = true)
-    private String name;
-
 
     public String getId() {
         return id;
@@ -39,11 +36,4 @@ public class RequirementBasic {
         this.hours = hours;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

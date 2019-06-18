@@ -16,8 +16,7 @@ import java.io.IOException;
 import java.util.List;
 
 /*
-New parameter for Vogella, that takes into account the component of the bug. computed like skills
-requirementParts
+Add capacity to retrieve keywords
 
  */
 

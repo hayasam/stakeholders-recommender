@@ -10,12 +10,14 @@ import upc.stakeholdersrecommender.entity.Effort;
 import upc.stakeholdersrecommender.entity.ProjectSRId;
 import upc.stakeholdersrecommender.repository.EffortRepository;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class EffortCalculator {
     @Autowired
     EffortRepository effortRepository;
