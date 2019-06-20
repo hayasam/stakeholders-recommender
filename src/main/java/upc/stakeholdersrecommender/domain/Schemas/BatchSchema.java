@@ -12,7 +12,7 @@ public class BatchSchema implements Serializable {
     @ApiModelProperty(notes = "List of projects.", required = true)
     private List<Project> projects;
     @ApiModelProperty(notes = "List of stakeholders.", required = true)
-    private List<Person> persons;
+    private List<PersonMinimal> persons;
     @ApiModelProperty(notes = "List of responsibles.", required = true)
     private List<Responsible> responsibles;
     @ApiModelProperty(notes = "List of requirements.", required = true)
@@ -28,11 +28,11 @@ public class BatchSchema implements Serializable {
         this.projects = projects;
     }
 
-    public List<Person> getPersons() {
+    public List<PersonMinimal> getPersons() {
         return persons;
     }
 
-    public void setPersons(List<Person> persons) {
+    public void setPersons(List<PersonMinimal> persons) {
         this.persons = persons;
     }
 
