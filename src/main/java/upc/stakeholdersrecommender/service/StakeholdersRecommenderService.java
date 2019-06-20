@@ -270,9 +270,9 @@ public class StakeholdersRecommenderService {
                 for (RequirementPart str:req.getRequirementParts()) {
                     component.put(str.getId(),0.0);
                     if (componentFrequency.containsKey(str.getId())) {
-                        componentFrequency.put(str.getId(),componentFrequency.get(str.getId()+1));
+                        componentFrequency.put(str.getId(),componentFrequency.get(str.getId())+1);
                     }
-                    else componentFrequency.put(str.getId(),+1);
+                    else componentFrequency.put(str.getId(),1);
                 }
                 allComponents.put(req.getId(),component);
             }
@@ -337,10 +337,10 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private void instanciateResourceBatch(Map<String, Double> part, List<Person> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
+    private void instanciateResourceBatch(Map<String, Double> part, List<PersonMinimal> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
     , Map<String,Map<String,Double>> allComponents, Map<String,Integer> componentFrequency, String organization) throws Exception {
         List<PersonSR> toSave = new ArrayList<>();
-        for (Person person : persons) {
+        for (PersonMinimal person : persons) {
             List<Skill> skills;
             List<Component> components;
             if (personRecs.get(person.getUsername()) != null) {
@@ -391,7 +391,7 @@ public class StakeholdersRecommenderService {
         return appearances;
     }
 
-    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Person person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
+    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, PersonMinimal person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<>(requirements);
         List<String> toRemove = new ArrayList<>(requirements);
