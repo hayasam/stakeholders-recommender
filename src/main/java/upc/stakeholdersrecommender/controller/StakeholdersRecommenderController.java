@@ -98,5 +98,4 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-
 }
