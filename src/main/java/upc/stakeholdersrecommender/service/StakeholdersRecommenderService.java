@@ -282,12 +282,14 @@ public class StakeholdersRecommenderService {
             if (autoMapping) {
                 Effort effortMap = new Effort();
                 HashMap<Double, Double> eff = new HashMap<>();
+                if (proj.getSpecifiedRequirements()!=null) {
                     for (String r : proj.getSpecifiedRequirements()) {
                         Requirement aux = recs.get(r);
                         if (!eff.containsKey(aux.getEffort())) {
                             eff.put(aux.getEffort(), aux.getEffort());
                         }
                     }
+                }
                 effortMap.setEffortMap(eff);
                 effortMap.setId(new ProjectSRId(proj.getId(),organization));
                 if (EffortRepository.findById(new ProjectSRId(proj.getId(),organization))!=null) EffortRepository.deleteById(new ProjectSRId(proj.getId(),organization));
@@ -395,11 +397,16 @@ public class StakeholdersRecommenderService {
         List<String> requirements = personRecs.get(person.getUsername());
         List<String> intersection = new ArrayList<>(requirements);
         List<String> toRemove = new ArrayList<>(requirements);
-        toRemove.removeAll(recs);
-        intersection.removeAll(toRemove);
+        if (recs!=null) {
+            toRemove.removeAll(recs);
+            intersection.removeAll(toRemove);
+        }
+        else intersection=null;
         Double hours = 0.0;
-        for (String s : intersection) {
-            hours += extractAvailability(requirementMap.get(s).getEffort(), project,organization);
+        if (intersection!=null) {
+            for (String s : intersection) {
+                hours += extractAvailability(requirementMap.get(s).getEffort(), project, organization);
+            }
         }
         return calculateAvailability(hours,totalHours);
     }
@@ -418,12 +425,14 @@ public class StakeholdersRecommenderService {
 
     private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs, Boolean withComponent,Map<String,Map<String,Double>> allComponents, String organization) {
         List<RequirementSR> reqs = new ArrayList<>();
-        for (String rec : requirement) {
-            RequirementSR req = new RequirementSR(recs.get(rec), id,organization);
-            ArrayList<String> aux = new ArrayList<>(keywordsForReq.get(rec).keySet());
-            req.setSkills(aux);
-            if (withComponent) req.setComponent(new ArrayList<>(allComponents.get(rec).keySet()));
-            reqs.add(req);
+        if (requirement!=null) {
+            for (String rec : requirement) {
+                RequirementSR req = new RequirementSR(recs.get(rec), id, organization);
+                ArrayList<String> aux = new ArrayList<>(keywordsForReq.get(rec).keySet());
+                req.setSkills(aux);
+                if (withComponent) req.setComponent(new ArrayList<>(allComponents.get(rec).keySet()));
+                reqs.add(req);
+            }
         }
         RequirementSRRepository.saveAll(reqs);
     }
