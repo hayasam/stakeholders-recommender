@@ -30,7 +30,7 @@ public class PersonSR implements Serializable {
     private List<Skill> skills;
     @ElementCollection
     @Embedded
-    private List<Component> components;
+    private List<Skill> components;
 
     public PersonSR() {
 
@@ -100,11 +100,11 @@ public class PersonSR implements Serializable {
         this.skills = skills;
     }
 
-    public List<Component> getComponents() {
+    public List<Skill> getComponents() {
         return components;
     }
 
-    public void setComponents(List<Component> components) {
+    public void setComponents(List<Skill> components) {
         this.components = components;
     }
 

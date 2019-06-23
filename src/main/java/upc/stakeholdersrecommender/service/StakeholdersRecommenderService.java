@@ -161,7 +161,7 @@ public class StakeholdersRecommenderService {
             }
             if (req.getComponent()!=null) {
                 for (String s : req.getComponent()) {
-                    for (Component j : person.getComponents()) {
+                    for (Skill j : person.getComponents()) {
                         if (s.equals(j.getName())) {
                             compSum += j.getWeight();
                         }
@@ -344,7 +344,7 @@ public class StakeholdersRecommenderService {
         List<PersonSR> toSave = new ArrayList<>();
         for (PersonMinimal person : persons) {
             List<Skill> skills;
-            List<Component> components;
+            List<Skill> components;
             if (personRecs.get(person.getUsername()) != null) {
                 skills = computeSkillsPerson(personRecs.get(person.getUsername()), allSkills, skillFrequency);
                 if (withComponent) components = computeComponentsPerson(personRecs.get(person.getUsername()),allComponents, componentFrequency);
@@ -366,16 +366,20 @@ public class StakeholdersRecommenderService {
         PersonSRRepository.saveAll(toSave);
     }
 
-    private List<Component> computeComponentsPerson(List<String> oldRecs,Map<String, Map<String,Double>> allComponents, Map<String,Integer> componentFrequency) {
-        List<Component> toret = new ArrayList<>();
+    private List<Skill> computeComponentsPerson(List<String> oldRecs,Map<String, Map<String,Double>> allComponents, Map<String,Integer> componentFrequency) {
+        List<Skill> toret = new ArrayList<>();
+        return getSkills(oldRecs, allComponents, componentFrequency, toret);
+
+    }
+
+    private List<Skill> getSkills(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, List<Skill> toret) {
         Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
         for (String key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
-            Component helper = new Component(key, ability);
+            Skill helper = new Skill(key, ability);
             toret.add(helper);
         }
         return toret;
-
     }
 
     private Map<String, SinglePair<Double>> getAppearances(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
@@ -473,13 +477,7 @@ public class StakeholdersRecommenderService {
 
     private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
         List<Skill> toret = new ArrayList<>();
-        Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, recs, skillsFrequency);
-        for (String key : appearances.keySet()) {
-            Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
-            Skill helper = new Skill(key, ability);
-            toret.add(helper);
-        }
-        return toret;
+        return getSkills(oldRecs, recs, skillsFrequency, toret);
     }
 
     private Double calculateWeight(Double requirement, Double appearances) {
