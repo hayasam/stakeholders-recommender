@@ -16,6 +16,9 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
     @ApiModelProperty(notes = "Appropiateness of the recommendation.", example = "0.223", required = true)
     private Double apropiatenessScore;
 
+    public RecommendReturnSchema() {
+    }
+
     public RecommendReturnSchema(RequirementMinimal requirement, PersonMinimal person, Double apropiatenessScore, Double availabilityScore) {
         this.requirement = requirement;
         this.person = person;
