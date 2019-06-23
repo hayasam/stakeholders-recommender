@@ -46,7 +46,7 @@ public class ProjectSRId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof PersonSRId)) return false;
         PersonSRId that = (PersonSRId) o;
-        return Objects.equals(getProjectId(), that.getprojectId()) &&
+        return Objects.equals(getProjectId(), that.getProjectId()) &&
                 Objects.equals(getOrganizationId(), that.getOrganizationId());
     }
 

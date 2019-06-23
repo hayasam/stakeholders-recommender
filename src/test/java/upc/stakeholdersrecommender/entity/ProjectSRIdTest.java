@@ -19,13 +19,13 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PersonSRIdTest {
-    
+public class ProjectSRIdTest {
+
 
     @Test
     public void testGetprojectId() {
         System.out.println("getprojectId");
-        PersonSRId instance = new PersonSRId();
+        ProjectSRId instance = new ProjectSRId();
         instance.setProjectId("1");
         String expResult = "1";
         String result = instance.getProjectId();
@@ -34,12 +34,12 @@ public class PersonSRIdTest {
 
 
     @Test
-    public void testGetPersonId() {
+    public void testGetOrganizationId() {
         System.out.println("getPersonId");
-        PersonSRId instance = new PersonSRId();
-        instance.setPersonId("Res");
+        ProjectSRId instance = new ProjectSRId();
+        instance.setOrganizationId("Res");
         String expResult = "Res";
-        String result = instance.getPersonId();
+        String result = instance.getOrganizationId();
         assertEquals(expResult, result);
     }
 
@@ -48,7 +48,7 @@ public class PersonSRIdTest {
     public void testEquals() {
         System.out.println("equals");
         Object o = null;
-        PersonSRId instance = new PersonSRId();
+        ProjectSRId instance = new ProjectSRId();
         boolean expResult = false;
         boolean result = instance.equals(o);
         assertEquals(expResult, result);
@@ -57,10 +57,10 @@ public class PersonSRIdTest {
     @Test
     public void testHashCode() {
         System.out.println("hashCode");
-        PersonSRId instance = new PersonSRId();
-        int expResult =new PersonSRId().hashCode();
+        ProjectSRId instance = new ProjectSRId();
+        int expResult =new ProjectSRId().hashCode();
         int result = instance.hashCode();
         assertEquals(expResult, result);
     }
-    
+
 }
