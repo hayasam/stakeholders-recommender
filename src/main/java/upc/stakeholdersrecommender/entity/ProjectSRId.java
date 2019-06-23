@@ -24,9 +24,6 @@ public class ProjectSRId implements Serializable {
         this.organizationId=organizationId;
     }
 
-    public String getprojectId() {
-        return projectId;
-    }
 
     public String getProjectId() {
         return projectId;
@@ -49,14 +46,14 @@ public class ProjectSRId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof PersonSRId)) return false;
         PersonSRId that = (PersonSRId) o;
-        return Objects.equals(getprojectId(), that.getprojectId()) &&
+        return Objects.equals(getProjectId(), that.getprojectId()) &&
                 Objects.equals(getOrganizationId(), that.getOrganizationId());
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hash(getprojectId(),getOrganizationId());
+        return Objects.hash(getProjectId(),getOrganizationId());
     }
 
 
