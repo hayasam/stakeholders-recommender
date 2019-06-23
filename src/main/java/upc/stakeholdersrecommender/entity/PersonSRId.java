@@ -28,10 +28,6 @@ public class PersonSRId implements Serializable {
         this.organizationId=organizationId;
     }
 
-    public String getprojectId() {
-        return projectId;
-    }
-
     public String getPersonId() {
         return personId;
     }
@@ -61,7 +57,7 @@ public class PersonSRId implements Serializable {
         if (this == o) return true;
         if (!(o instanceof PersonSRId)) return false;
         PersonSRId that = (PersonSRId) o;
-        return Objects.equals(getprojectId(), that.getprojectId()) &&
+        return Objects.equals(getProjectId(), that.getProjectId()) &&
                 Objects.equals(getPersonId(), that.getPersonId())
                 &&
                 Objects.equals(getOrganizationId(), that.getOrganizationId());
@@ -70,7 +66,7 @@ public class PersonSRId implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getprojectId(), getPersonId(),getOrganizationId());
+        return Objects.hash(getProjectId(), getPersonId(),getOrganizationId());
     }
 
 
