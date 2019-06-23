@@ -50,7 +50,7 @@ public class StakeholdersRecommenderService {
         Requirement requeriment=request.getRequirement();
         requeriment.setDescription(requeriment.getDescription()+" "+requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
-        newReq.setID(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
+        newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
         newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel()));
         List<String> comps=new ArrayList<>();
         if (request.getRequirement().getRequirementParts()!=null) {
@@ -138,7 +138,7 @@ public class StakeholdersRecommenderService {
             Double availability = pers.getAvailability();
             PersonMinimal min=new PersonMinimal();
             min.setUsername(pers.getName());
-            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getID().getRequirementId()),min, appropiateness, availability));
+            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()),min, appropiateness, availability));
         }
         Collections.sort(ret,
                 Comparator.comparingDouble(RecommendReturnSchema::getApropiatenessScore).reversed());
@@ -525,7 +525,7 @@ public class StakeholdersRecommenderService {
             proje.setProjectId(id);
             for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization,id)) {
                 KeywordReturnSchema key = new KeywordReturnSchema();
-                key.setRequirement(req.getID().getRequirementId());
+                key.setRequirement(req.getId().getRequirementId());
                 key.setSkills(req.getSkills());
                 reqs.add(key);
             }

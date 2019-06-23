@@ -44,14 +44,6 @@ public class RequirementSR implements Serializable {
         this.proj=id;
     }
 
-    public RequirementSRId getID() {
-        return id;
-    }
-
-    public void setID(RequirementSRId id) {
-        this.id = id;
-    }
-
     public RequirementSRId getId() {
         return id;
     }
