@@ -54,6 +54,34 @@ public class PersonSRIdTest {
         assertEquals(expResult, result);
     }
 
+
+    @Test
+    public void testEqualsSame() {
+        System.out.println("equals");
+        PersonSRId instance = new PersonSRId();
+        Object o = instance;
+        boolean expResult = true;
+        boolean result = instance.equals(o);
+        assertEquals(expResult, result);
+    }
+
+    @Test
+    public void testEqualsSameAttritubtes() {
+        System.out.println("equals");
+        PersonSRId instance = new PersonSRId();
+        instance.setPersonId("1");
+        instance.setProjectId("1");
+        instance.setOrganizationId("1");
+        Object o = new PersonSRId();
+        ((PersonSRId) o).setPersonId("1");
+        ((PersonSRId) o).setProjectId("1");
+        ((PersonSRId) o).setOrganizationId("1");
+        boolean expResult = true;
+        boolean result = instance.equals(o);
+        assertEquals(expResult, result);
+    }
+
+
     @Test
     public void testHashCode() {
         System.out.println("hashCode");
