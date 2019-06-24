@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 
 package upc.stakeholdersrecommender.domain;
 
@@ -140,6 +136,22 @@ public class RequirementTest {
         instance.setModified(modified);
         assertEquals(null, instance.getModified());
 
+    }
+
+    @Test
+    public void testCreate() {
+        System.out.println("create");
+        Requirement instance = new Requirement("Thing");
+        assertEquals("Thing", instance.getId());
+    }
+
+    @Test
+    public void testSetSkills() {
+        System.out.println("setSkills");
+        Requirement instance = new Requirement();
+        List<Skill> skill=new ArrayList<>();
+        instance.setSkills(skill);
+        assertEquals(skill, instance.getSkills());
     }
     
 }
