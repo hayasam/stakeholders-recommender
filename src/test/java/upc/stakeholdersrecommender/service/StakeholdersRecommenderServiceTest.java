@@ -164,6 +164,44 @@ public class StakeholdersRecommenderServiceTest {
     }
 
     @Test
+    public void testRecommend_rejectTwice() throws Exception {
+        System.out.println("recommend_reject");
+        testAddBatch();
+        instance.recommend_reject("Dummy","230" , "1","UPC");
+        instance.recommend_reject("230","230" , "1","UPC");
+        ObjectMapper mapper = new ObjectMapper();
+        RecommendSchema req;
+        String jsonInString = "{\n" +
+                "  \"project\": {\n" +
+                "    \"id\": \"1\"\n" +
+                "  },\n" +
+                "  \"requirement\": {\n" +
+                "    \"description\": \"This is not really a requirement, but an example\",\n" +
+                "    \"effort\": \"3.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"modified_at\": \"2014-01-13T15:14:17Z\",\n" +
+                "    \"name\": \"This is a title\",\n" +
+                "    \"requirementParts\": [\n" +
+                "      {\n" +
+                "        \"id\": \"3\",\n" +
+                "        \"name\": \"UI\"\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"user\": {\n" +
+                "    \"username\": \"230\"\n" +
+                "  }\n" +
+                "}";
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
+
+        int k = 10;
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true,"UPC");
+        String res = mapper.writeValueAsString(result);
+        assertEquals(res, "[]");
+    }
+
+
+    @Test
     public void testAddBatch() throws Exception {
         System.out.println("addBatch");
         ObjectMapper mapper = new ObjectMapper();

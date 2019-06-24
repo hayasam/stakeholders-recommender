@@ -44,8 +44,8 @@ public class ProjectSRId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PersonSRId)) return false;
-        PersonSRId that = (PersonSRId) o;
+        if (!(o instanceof ProjectSRId)) return false;
+        ProjectSRId that = (ProjectSRId) o;
         return Objects.equals(getProjectId(), that.getProjectId()) &&
                 Objects.equals(getOrganizationId(), that.getOrganizationId());
     }
