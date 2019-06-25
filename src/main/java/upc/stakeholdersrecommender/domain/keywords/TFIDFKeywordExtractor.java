@@ -122,6 +122,7 @@ public class TFIDFKeywordExtractor {
         text = text.replaceAll("(\\{.*?})", " code ");
         text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'[0-9]]", " ");
         text = text.replaceAll("] \\[", "][");
+
         String result = "";
         if (text.contains("[")) {
             String[] p = text.split("]\\[");

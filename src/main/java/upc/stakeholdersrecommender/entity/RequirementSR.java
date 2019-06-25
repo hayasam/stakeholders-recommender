@@ -3,16 +3,15 @@ package upc.stakeholdersrecommender.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import upc.stakeholdersrecommender.domain.Requirement;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "requirementSR")
+@Table(name = "requirementSR",
+        indexes = {@Index(name = "organization_Index_requirement", columnList = "organization")}
+)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RequirementSR implements Serializable {
 
@@ -27,8 +26,6 @@ public class RequirementSR implements Serializable {
     private String organization;
     private String proj;
 
-
-    // De 1 a 0.5, lineal, de entre ahora a final.
     public RequirementSR() {
 
     }
