@@ -25,6 +25,8 @@ public class StakeholdersRecommenderService {
 
     @Value("${skill.dropoff.days}")
     private String dropoffDays;
+    @Value("${person.hours.default}")
+    private Double hoursDefault;
 
 
     @Autowired
@@ -80,14 +82,15 @@ public class StakeholdersRecommenderService {
             Double hours=100.0;
             if (projectSpecific) {
                 Double effort = request.getRequirement().getEffort();
-                if (EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization))!=null) {
-                    HashMap<Double,Double> effMap=EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization)).getEffortMap();
+                Effort e=EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization));
+                if (e!=null) {
+                    HashMap<Double,Double> effMap=e.getEffortMap();
                     if (effMap.containsKey(effort)) {
                         hours = effMap.get(effort);
                     }
                     else {
                         hours=effort;
-                        Effort eff=EffortRepository.getOne(request.getProject().getId());
+                        Effort eff=e;
                         effMap.put(effort,effort);
                         eff.setEffortMap(effMap);
                         EffortRepository.save(eff);
@@ -295,15 +298,19 @@ public class StakeholdersRecommenderService {
                 if (EffortRepository.findById(new ProjectSRId(proj.getId(),organization))!=null) EffortRepository.deleteById(new ProjectSRId(proj.getId(),organization));
                 EffortRepository.save(effortMap);
             }
-            String id = instanciateProject(proj, participants.get(proj.getId()),organization);
+            List<Participant> part=new ArrayList<>();
+            if (participants.containsKey(proj.getId())) part=participants.get(proj.getId());
+            String id = instanciateProject(proj, part,organization);
             Map<String, Double> hourMap = new HashMap<>();
-            for (Participant par : participants.get(proj.getId())) {
+            for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs, withComponent, allComponents, organization);
             instanciateResourceBatch(hourMap, request.getPersons(), recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents,componentFrequency,organization);
         }
-        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + request.getParticipants().size();
+        Integer particips=0;
+        if (request.getParticipants()!=null) particips=request.getParticipants().size();
+        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips ;
     }
 
     private void extractDate(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents) {
@@ -355,10 +362,13 @@ public class StakeholdersRecommenderService {
             }
             Double availability;
             if (withAvailability) {
-                availability = computeAvailability(specifiedReq, personRecs, person, recs, id,part.get(person.getUsername()),organization);
+                Double hours=hoursDefault;
+                if (part.containsKey(person.getUsername()))  hours=part.get(person.getUsername());
+                availability = computeAvailability(specifiedReq, personRecs, person, recs, id,hours,organization);
             } else availability = 1.0;
             PersonSR per = new PersonSR(new PersonSRId(id, person.getUsername(),organization), id, availability, skills,organization);
-            per.setHours(part.get(per.getName()));
+            if (part.containsKey(per.getName())) per.setHours(part.get(per.getName()));
+            else per.setHours(hoursDefault);
             per.setComponents(components);
             per.setAvailability(availability);
             toSave.add(per);
