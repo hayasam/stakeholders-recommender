@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
-    private Double cutoffParameter = 4.5; //This can be set to different values for different selectivity (more or less keywords)
+    private Double cutoffParameter = 5.0; //This can be set to different values for different selectivity (more or less keywords)
     private HashMap<String, Integer> corpusFrequency = new HashMap<>();
 
 
@@ -120,17 +120,9 @@ public class TFIDFKeywordExtractor {
 
     private String clean_text(String text) {
         text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'][1-9]", " ");
+        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'[0-9]]", " ");
         text = text.replaceAll("] \\[", "][");
         String result = "";
-        if (Character.isDigit(text.charAt(0))) {
-            String[] aux5 = text.split(" ");
-            String newText = "";
-            for (int i = 1; i < aux5.length; ++i) {
-                newText = newText.concat(" " + aux5[i]);
-            }
-            text = newText;
-        }
         if (text.contains("[")) {
             String[] p = text.split("]\\[");
             for (String f: p) {
