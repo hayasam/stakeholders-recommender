@@ -423,7 +423,7 @@ public class StakeholdersRecommenderService {
             Double availability;
             if (withAvailability) {
                 Double hours=hoursDefault;
-                if (part.containsKey(person.getPerson()))  hours=part.get(person.getPerson());
+                if (part.containsKey(person.getPerson())&& part.get(person.getPerson())!=null)  hours=part.get(person.getPerson());
                 if (!personRecs.containsKey(person.getPerson())) availability=1.0;
                 else availability = computeAvailability(specifiedReq, personRecs, person, recs, id,hours,organization);
             }
