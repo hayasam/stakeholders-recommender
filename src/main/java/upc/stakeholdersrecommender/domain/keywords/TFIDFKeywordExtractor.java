@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
-    private Double cutoffParameter = 5.0; //This can be set to different values for different selectivity (more or less keywords)
+    private Double cutoffParameter = 0.2; //This can be set to different values for different selectivity (more or less keywords)
     private HashMap<String, Integer> corpusFrequency = new HashMap<>();
 
 

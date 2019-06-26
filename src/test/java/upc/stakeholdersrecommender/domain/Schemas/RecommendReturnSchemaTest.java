@@ -76,7 +76,7 @@ public class RecommendReturnSchemaTest {
         System.out.println("getApropiatenessScore");
         RecommendReturnSchema instance = new RecommendReturnSchema();
         Double expResult = null;
-        Double result = instance.getApropiatenessScore();
+        Double result = instance.getAppropiatenessScore();
         assertEquals(expResult, result);
     }
 
@@ -85,8 +85,8 @@ public class RecommendReturnSchemaTest {
         System.out.println("setApropiatenessScore");
         Double apropiatenessScore = 1.2;
         RecommendReturnSchema instance = new RecommendReturnSchema();
-        instance.setApropiatenessScore(apropiatenessScore);
-        assertTrue(1.2==instance.getApropiatenessScore());
+        instance.setAppropiatenessScore(apropiatenessScore);
+        assertTrue(1.2==instance.getAppropiatenessScore());
     }
 
     @Test
@@ -97,12 +97,12 @@ public class RecommendReturnSchemaTest {
         RequirementMinimal r=new RequirementMinimal("1");
         p.setUsername("wh");
         a.setPerson(p);
-        a.setApropiatenessScore(1.0);
+        a.setAppropiatenessScore(1.0);
         a.setAvailabilityScore(1.0);
         a.setRequirement(r);
         RecommendReturnSchema instance = new RecommendReturnSchema();
         instance.setPerson(p);
-        instance.setApropiatenessScore(1.0);
+        instance.setAppropiatenessScore(1.0);
         instance.setAvailabilityScore(1.0);
         instance.setRequirement(r);
         int expResult = -1;
