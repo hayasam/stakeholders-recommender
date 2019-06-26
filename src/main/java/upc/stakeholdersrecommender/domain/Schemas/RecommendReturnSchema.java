@@ -14,7 +14,7 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
     @ApiModelProperty(notes = "Availability score of the person.", example = "0.5", required = true)
     private Double availabilityScore;
     @ApiModelProperty(notes = "Appropiateness of the recommendation.", example = "0.223", required = true)
-    private Double apropiatenessScore;
+    private Double appropiatenessScore;
 
     public RecommendReturnSchema() {
     }
@@ -23,7 +23,7 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
         this.requirement = requirement;
         this.person = person;
         this.availabilityScore = availabilityScore;
-        this.apropiatenessScore = apropiatenessScore;
+        this.appropiatenessScore = apropiatenessScore;
 
     }
 
@@ -51,23 +51,23 @@ public class RecommendReturnSchema implements Serializable, Comparable<Recommend
         this.availabilityScore = availabilityScore;
     }
 
-    public Double getApropiatenessScore() {
-        return apropiatenessScore;
+    public Double getAppropiatenessScore() {
+        return appropiatenessScore;
     }
 
-    public void setApropiatenessScore(Double apropiatenessScore) {
-        this.apropiatenessScore = apropiatenessScore;
+    public void setAppropiatenessScore(Double apropiatenessScore) {
+        this.appropiatenessScore = apropiatenessScore;
     }
 
 
     @Override
     public int compareTo(RecommendReturnSchema a) {
-        if (this.apropiatenessScore < a.getApropiatenessScore())
+        if (this.appropiatenessScore < a.getAppropiatenessScore())
             return 1;
-        else if (this.apropiatenessScore > a.getApropiatenessScore())
+        else if (this.appropiatenessScore > a.getAppropiatenessScore())
             return -1;
         else {
-            if (this.apropiatenessScore < a.getApropiatenessScore())
+            if (this.appropiatenessScore < a.getAppropiatenessScore())
                 return 1;
             else
                 return -1;
