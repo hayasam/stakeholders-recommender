@@ -327,26 +327,37 @@ public class StakeholdersRecommenderService {
             instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents,componentFrequency,organization);
         }
         persons.removeAll(seenPersons);
-        instanciateLeftovers(persons,projs,organization);
+        instanciateLeftovers(persons,projs, recs, allSkills, personRecs, skillfrequency, withAvailability, withComponent, allComponents,componentFrequency,organization);
         Integer particips=0;
         if (request.getParticipants()!=null) particips=request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips ;
     }
 
-    private void instanciateLeftovers(Set<String> persons,Set<String> oldIds,String organization) {
+    private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
+            , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
         String newId="";
         for (String sr:oldIds) {
             newId=newId+sr;
         }
         List<PersonSR> toSave=new ArrayList<>();
         for (String s:persons) {
-            PersonSR per=new PersonSR();
+                List<Skill> skills;
+                List<Skill> components;
+                if (personRecs.get(s) != null) {
+                    skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency);
+                    if (withComponent) components = computeComponentsPerson(personRecs.get(s),allComponents, componentFrequency);
+                    else components=new ArrayList<>();
+                } else{
+                    skills = new ArrayList<>();
+                    components = new ArrayList<>();
+                }
+                PersonSR per=new PersonSR();
             per.setName(s);
-            per.setSkills(new ArrayList<>());
+            per.setSkills(skills);
             per.setHours(hoursDefault);
             per.setProjectIdQuery(newId);
             per.setOrganization(organization);
-            per.setComponents(new ArrayList<>());
+            per.setComponents(components);
             per.setAvailability(1.0);
             per.setId(new PersonSRId(newId,s,organization));
             toSave.add(per);
