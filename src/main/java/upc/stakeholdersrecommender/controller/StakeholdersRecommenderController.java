@@ -36,10 +36,10 @@ public class StakeholdersRecommenderController {
             " or not. All information in the database is purged every time this method is called. A person's relation to the project is defined with" +
             "PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's" +
             "relation to a requirement in RESPONSIBLES.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not.", example = "false", required=true)
-    @RequestParam Boolean withAvailability,@ApiParam(value = "Whether the recommendation takes into account the requirement's component.", example = "false", required=true)
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not, the field \"availability\" in participant is optional if this is set to false.", example = "false", required=true)
+    @RequestParam Boolean withAvailability,@ApiParam(value = "Whether the recommendation takes into account the requirement's component, this is expressed in requirementParts, this field is not necessary if this is set to false.", example = "false", required=true)
     @RequestParam Boolean withComponent,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)
-    @RequestParam String organization ,@ApiParam(value = "Auto-generate mapping from effort to hours.", example = "true", required=true)
+    @RequestParam String organization ,@ApiParam(value = "Auto-generate mapping from effort to hours, if auto-mapping is used, it isn't necessary to set or compute effort, however, it will lead to a 1 to 1 mapping of effort into hours.", example = "true", required=true)
     @RequestParam Boolean autoMapping,@ApiParam(value = "Return each requirement with its set of skills." ,example = "true", required=true)
     @RequestParam Boolean keywords  ) throws Exception {
         int res = 0;
@@ -68,11 +68,11 @@ public class StakeholdersRecommenderController {
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Given a REQUIREMENT in a PROJECT, asked by a USER, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a list of the best K stakeholders based on the historic data given in the batch_process." +
+            "recommendation and returns a list of the best K stakeholders with an appropiateness above 0 based on the historic data given in the batch_process." +
             "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders given in the batch_process, or only those" +
             " specified in \"PARTICIPANTS\", in the batch_process", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<RecommendReturnSchema>> recommend(@RequestBody RecommendSchema request,
-                                                                 @ApiParam(value = "Returns the top k stakeholders.", example = "10",required=true)@RequestParam Integer k,@ApiParam(value = "Considers stakeholders from all projects or only from one.", required=true,example = "false") @RequestParam Boolean projectSpecific
+                                                                 @ApiParam(value = "Returns the top k stakeholders.", example = "10",required=true)@RequestParam Integer k,@ApiParam(value = "Considers stakeholders from all projects or only from one, if it considers stakeholders from all projects, it takes all stakeholders with enough availability in any project and considers them, if this is used, availabilityScore will always be one.", required=true,example = "false") @RequestParam Boolean projectSpecific
                                                                   ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) throws Exception {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific,organization);
         return new ResponseEntity<>(ret, HttpStatus.CREATED);
