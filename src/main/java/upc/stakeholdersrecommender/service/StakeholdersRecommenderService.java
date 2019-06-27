@@ -53,7 +53,8 @@ public class StakeholdersRecommenderService {
         requeriment.setDescription(requeriment.getDescription()+" "+requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
-        newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel()));
+        Integer size=RequirementSRRepository.findByOrganization(organization).size();
+        newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
         List<String> comps=new ArrayList<>();
         if (request.getRequirement().getRequirementParts()!=null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
