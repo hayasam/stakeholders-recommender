@@ -78,18 +78,18 @@ public class TFIDFKeywordExtractor {
         return ret;
 
     }
-    public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model) throws IOException {
+    public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model, Integer corpusSize) throws IOException {
         List<String> doc=englishAnalyze(clean_text(req.getDescription()));
         Map<String,Integer> wordBag=tf(doc);
         List<String> keywords=new ArrayList<>();
         for (String s:wordBag.keySet()) {
             if (model.containsKey(s)) {
                 model.put(s,model.get(s)+1);
-                if (wordBag.get(s)*idf(model.keySet().size(),model.get(s))>=cutoffParameter) keywords.add(s);
+                if (wordBag.get(s)*idf(corpusSize,model.get(s))>=cutoffParameter) keywords.add(s);
             }
             else {
                 model.put(s,1);
-                if (wordBag.get(s)*idf(model.keySet().size(),model.get(s))>=cutoffParameter) keywords.add(s);
+                if (wordBag.get(s)*idf(corpusSize,model.get(s))>=cutoffParameter) keywords.add(s);
             }
         }
         return keywords;
