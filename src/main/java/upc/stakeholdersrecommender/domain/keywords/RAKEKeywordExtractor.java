@@ -13,6 +13,8 @@ import java.util.*;
 
 public class RAKEKeywordExtractor {
 
+    static Double cutoff=6.0;
+
         static public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
             List<Map<String,Double>> res= new ArrayList<>();
             Rake rake=new Rake();
@@ -24,7 +26,8 @@ public class RAKEKeywordExtractor {
                 Map<String,Double> aux=rake.getKeywordsFromText(text);
                 String sum="";
                 for (String j:aux.keySet()) {
-                    sum=sum+" "+j;
+                    Double val=aux.get(j);
+                    if (val>=cutoff) sum=sum+" "+j;
                 }
                 List<String> result=RAKEanalyze(sum);
                 Map<String,Double> helper=new HashMap<>();
@@ -42,10 +45,10 @@ public class RAKEKeywordExtractor {
                 text = text + " " + k;
             }
             Map<String, Double> aux = rake.getKeywordsFromText(text);
-            List<String> result=new ArrayList<>();
             text="";
             for (String l:aux.keySet()) {
-               text=text+" "+l;
+                Double val=aux.get(l);
+                if (val>=cutoff); text=text+" "+l;
             }
             return RAKEanalyze(text);
         }
