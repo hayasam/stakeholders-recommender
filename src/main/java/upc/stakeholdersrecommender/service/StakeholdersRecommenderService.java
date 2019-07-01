@@ -51,7 +51,7 @@ public class StakeholdersRecommenderService {
         RequirementSR req;
         RequirementSR newReq=new RequirementSR();
         Requirement requeriment=request.getRequirement();
-        requeriment.setDescription(requeriment.getDescription()+" "+requeriment.getName());
+        requeriment.setDescription(requeriment.getDescription()+". "+requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
         Integer size=RequirementSRRepository.findByOrganization(organization).size();
@@ -271,7 +271,7 @@ public class StakeholdersRecommenderService {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
             r.setModified(dtIn);
-            r.setDescription(r.getDescription()+" "+r.getName());
+            r.setDescription(r.getDescription()+". "+r.getName());
             recs.put(r.getId(), r);
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);

@@ -91,4 +91,10 @@ public class RAKEKeywordExtractor {
         return result;
     }
 
+    static String clean_text(String text) {
+        text = text.replaceAll("(\\{.*?})", " code ");
+        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'[0-9]]", " ");
+        return text;
+    }
+
 }
