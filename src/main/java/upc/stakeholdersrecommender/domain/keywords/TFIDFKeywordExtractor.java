@@ -70,14 +70,20 @@ public class TFIDFKeywordExtractor {
         }
         List<Map<String, Double>> res = tfIdf(docs);
         int counter = 0;
+        return getStringMapMap(corpus, res, counter);
+
+    }
+
+
+    static Map<String, Map<String, Double>> getStringMapMap(Collection<Requirement> corpus, List<Map<String, Double>> res, int counter) {
         Map<String, Map<String, Double>> ret = new HashMap<>();
         for (Requirement r : corpus) {
             ret.put(r.getId(), res.get(counter));
             counter++;
         }
         return ret;
-
     }
+
     public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model, Integer corpusSize) throws IOException {
         List<String> doc=englishAnalyze(clean_text(req.getDescription()));
         Map<String,Integer> wordBag=tf(doc);
