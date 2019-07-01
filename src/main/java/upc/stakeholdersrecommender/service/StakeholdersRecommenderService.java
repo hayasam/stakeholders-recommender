@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
@@ -54,7 +55,8 @@ public class StakeholdersRecommenderService {
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
         Integer size=RequirementSRRepository.findByOrganization(organization).size();
-        newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
+        //newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
+        newReq.setSkills(RAKEKeywordExtractor.computeTFIDFSingular(requeriment));
         List<String> comps=new ArrayList<>();
         if (request.getRequirement().getRequirementParts()!=null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
@@ -275,7 +277,8 @@ public class StakeholdersRecommenderService {
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Set<String> persons=getPersons(request);
         Map<String, List<Participant>> participants = getParticipants(request);
-        Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs,organization);
+        //Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs,organization);
+        Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirementRAKE(recs,organization);
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
         Map<String, Map<String, Double>> allComponents = new HashMap<>();
         Map<String, Integer> componentFrequency = new HashMap<>();
@@ -545,6 +548,26 @@ public class StakeholdersRecommenderService {
         computeTimeFactor(recs, keywords, dat);
         return keywords;
     }
+    private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs,String organization) throws IOException {
+        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
+        //Extract map with (Requirement / KeywordValue)
+        Map<String, Map<String, Double>> keywords = RAKEKeywordExtractor.computeTFIDFRake(recs.values());
+        Date dat = new Date();
+
+        //Transform the map from (Requirement / KeywordValue) to (Requirement / SkillFactor)
+
+        //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
+        //since the requirement was last touched
+        HashMap<String,Integer> mod=extractor.getCorpusFrequency();
+        KeywordExtractionModel toSave=new KeywordExtractionModel();
+        toSave.setModel(mod);
+        toSave.setId(organization);
+        KeywordExtractionModelRepository.save(toSave);
+        KeywordExtractionModelRepository.flush();
+        computeTimeFactor(recs, keywords, dat);
+        return keywords;
+    }
+
 
 
     private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
