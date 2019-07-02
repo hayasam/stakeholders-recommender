@@ -54,9 +54,12 @@ public class StakeholdersRecommenderService {
         requeriment.setDescription(requeriment.getDescription()+". "+requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
-        Integer size=RequirementSRRepository.findByOrganization(organization).size();
-        //newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
-        newReq.setSkills(RAKEKeywordExtractor.computeTFIDFSingular(requeriment));
+        Boolean rake=ProjectRepository.findById(new ProjectSRId(request.getProject().getId(),organization)).getRake();
+        if (!rake) {
+            Integer size = RequirementSRRepository.findByOrganization(organization).size();
+            newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
+        }
+        else newReq.setSkills(RAKEKeywordExtractor.computeTFIDFSingular(requeriment));
         List<String> comps=new ArrayList<>();
         if (request.getRequirement().getRequirementParts()!=null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
@@ -277,8 +280,11 @@ public class StakeholdersRecommenderService {
         Map<String, List<String>> personRecs = getPersonRecs(request);
         Set<String> persons=getPersons(request);
         Map<String, List<Participant>> participants = getParticipants(request);
-        //Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirement(recs,organization);
-        Map<String, Map<String, Double>> allSkills = computeAllSkillsRequirementRAKE(recs,organization);
+        Boolean rake=true;
+        Map<String, Map<String, Double>> allSkills;
+        if (request.getRequirements().size()>100) rake=false;
+        if (rake) allSkills = computeAllSkillsRequirementRAKE(recs,organization);
+        else allSkills = computeAllSkillsRequirement(recs,organization);
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
         Map<String, Map<String, Double>> allComponents = new HashMap<>();
         Map<String, Integer> componentFrequency = new HashMap<>();
@@ -319,7 +325,7 @@ public class StakeholdersRecommenderService {
             }
             List<Participant> part=new ArrayList<>();
             if (participants.containsKey(proj.getId())) part=participants.get(proj.getId());
-            String id = instanciateProject(proj, part,organization);
+            String id = instanciateProject(proj, part,organization,rake);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
@@ -516,7 +522,7 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.saveAll(reqs);
     }
 
-    private String instanciateProject(Project proj, List<Participant> participants, String organization) {
+    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake) {
         String id = proj.getId();
         ProjectSR projectSRTrad = new ProjectSR(new ProjectSRId(proj.getId(),organization));
         List<String> parts = new ArrayList<>();
@@ -524,6 +530,7 @@ public class StakeholdersRecommenderService {
             parts.add(par.getPerson());
         }
         projectSRTrad.setParticipants(parts);
+        projectSRTrad.setRake(rake);
         ProjectRepository.save(projectSRTrad);
         return id;
     }
