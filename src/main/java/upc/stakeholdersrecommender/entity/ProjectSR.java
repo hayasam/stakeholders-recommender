@@ -19,6 +19,8 @@ public class ProjectSR implements Serializable {
 
     private String organization;
 
+    private Boolean rake;
+
     public ProjectSR() {
 
     }
@@ -49,5 +51,13 @@ public class ProjectSR implements Serializable {
 
     public void setParticipants(List<String> participants) {
         this.participants = participants;
+    }
+
+    public Boolean getRake() {
+        return rake;
+    }
+
+    public void setRake(Boolean rake) {
+        this.rake = rake;
     }
 }

@@ -27,9 +27,6 @@ public class StakeholdersRecommenderController {
     @Autowired
     EffortCalculator effortCalc;
 
-// Add documentation with when a parameter is necessary, or when it isn't necessary
-// Also change effort from double to integer (not yet)
-// Miercoles 12:00 reunion OpenReq
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation." +
             " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
