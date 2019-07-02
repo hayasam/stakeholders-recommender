@@ -55,7 +55,7 @@ public class StakeholdersRecommenderServiceTest {
         int k = 10;
         List<RecommendReturnSchema> result = instance.recommend(req, k, true,"UPC");
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.5}]");
+        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.16666666666666666}]");
     }
     @Test
     public void testNotProjectSpecific() throws Exception {
@@ -89,7 +89,7 @@ public class StakeholdersRecommenderServiceTest {
         int k = 10;
         List<RecommendReturnSchema> result = instance.recommend(req, k, false,"UPC");
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.5}]");
+        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.16666666666666666}]");
     }
     @Test
     public void testRecommendAvailability() throws Exception {
@@ -123,7 +123,7 @@ public class StakeholdersRecommenderServiceTest {
         int k = 10;
         List<RecommendReturnSchema> result = instance.recommend(req, k, true,"UPC");
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.5}]");
+        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.16666666666666666}]");
     }
 
 

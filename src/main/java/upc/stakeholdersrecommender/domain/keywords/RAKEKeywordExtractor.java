@@ -82,6 +82,10 @@ public class RAKEKeywordExtractor {
 
     static List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<>();
+        return getAnalyzedStrings(text, analyzer, result);
+    }
+
+    static List<String> getAnalyzedStrings(String text, Analyzer analyzer, List<String> result) throws IOException {
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
         tokenStream.reset();
