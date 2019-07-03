@@ -1,5 +1,6 @@
 package upc.stakeholdersrecommender.service;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -345,10 +346,8 @@ public class StakeholdersRecommenderService {
 
     private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
-        String newId="";
-        for (String sr:oldIds) {
-            newId=newId+sr;
-        }
+        String newId= RandomStringUtils.random(10,true,true);
+        while (oldIds.contains(newId)) newId= RandomStringUtils.random(10,true,true);
         List<PersonSR> toSave=new ArrayList<>();
         for (String s:persons) {
                 List<Skill> skills;
