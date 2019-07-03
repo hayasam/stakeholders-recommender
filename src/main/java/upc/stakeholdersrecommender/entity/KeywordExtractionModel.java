@@ -8,6 +8,7 @@ import java.util.Map;
 @Table(name = "keywordModel")
 public class KeywordExtractionModel {
     @Id
+    @Column(length = 300)
     String id;
 
     @ElementCollection

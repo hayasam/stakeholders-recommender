@@ -15,15 +15,15 @@ public class PersonSR implements Serializable {
 
     @EmbeddedId
     private PersonSRId id;
-
+    @Column(length = 300)
     private String projectIdQuery;
 
     private Double availability;
 
     private Double hours;
-
+    @Column(length = 300)
     private String name;
-
+    @Column(length = 300)
     private String organization;
 
     @ElementCollection

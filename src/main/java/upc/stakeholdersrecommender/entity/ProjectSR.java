@@ -16,7 +16,7 @@ public class ProjectSR implements Serializable {
 
     @ElementCollection
     private List<String> participants;
-
+    @Column(length = 300)
     private String organization;
 
     private Boolean rake;
