@@ -8,10 +8,10 @@ import java.util.Objects;
 @Embeddable
 public class RejectedPersonId implements Serializable {
 
-    @Column(name = "personId")
+    @Column(name = "personId",length=300)
     private String personId;
 
-    @Column(name = "organizationId")
+    @Column(name = "organizationId",length=300)
     private String organizationId;
 
 

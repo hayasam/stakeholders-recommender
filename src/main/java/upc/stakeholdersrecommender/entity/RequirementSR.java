@@ -21,9 +21,13 @@ public class RequirementSR implements Serializable {
     List<String> skills;
     @EmbeddedId
     private RequirementSRId id;
+    @Column(length = 300)
     private String projectIdQuery;
+    @Column(length = 300)
     private String modified_at;
+    @Column(length = 300)
     private String organization;
+    @Column(length = 300)
     private String proj;
 
     public RequirementSR() {

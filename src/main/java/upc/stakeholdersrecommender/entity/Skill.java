@@ -1,11 +1,12 @@
 package upc.stakeholdersrecommender.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 @Embeddable
 public class Skill implements Serializable {
-
+    @Column(length = 300)
     private String name;
 
     private Double weight;

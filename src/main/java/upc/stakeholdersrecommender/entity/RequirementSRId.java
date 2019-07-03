@@ -8,12 +8,12 @@ import java.util.Objects;
 @Embeddable
 public class RequirementSRId implements Serializable {
 
-    @Column(name = "projectId")
+    @Column(name = "projectId",length=300)
     private String projectId;
 
-    @Column(name = "requirementId")
+    @Column(name = "requirementId",length=300)
     private String requirementId;
-    @Column(name = "organizationId")
+    @Column(name = "organizationId",length=300)
     private String organizationId;
 
 

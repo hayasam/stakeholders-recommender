@@ -18,7 +18,7 @@ public class RejectedPerson implements Serializable {
     private RejectedPersonId user;
     @ElementCollection
     private Map<String, HashSet<String>> deleted;
-
+    @Column(length = 300)
     private String organization;
 
     public RejectedPerson() {

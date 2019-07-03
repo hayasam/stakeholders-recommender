@@ -555,7 +555,6 @@ public class StakeholdersRecommenderService {
         return keywords;
     }
     private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs,String organization) throws IOException {
-        TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         //Extract map with (Requirement / KeywordValue)
         Map<String, Map<String, Double>> keywords = RAKEKeywordExtractor.computeTFIDFRake(recs.values());
         Date dat = new Date();
@@ -564,12 +563,6 @@ public class StakeholdersRecommenderService {
 
         //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
         //since the requirement was last touched
-        HashMap<String,Integer> mod=extractor.getCorpusFrequency();
-        KeywordExtractionModel toSave=new KeywordExtractionModel();
-        toSave.setModel(mod);
-        toSave.setId(organization);
-        KeywordExtractionModelRepository.save(toSave);
-        KeywordExtractionModelRepository.flush();
         computeTimeFactor(recs, keywords, dat);
         return keywords;
     }
