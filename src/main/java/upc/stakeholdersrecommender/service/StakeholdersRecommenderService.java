@@ -55,9 +55,10 @@ public class StakeholdersRecommenderService {
         requeriment.setDescription(requeriment.getDescription()+". "+requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
-        Boolean rake=ProjectRepository.findById(new ProjectSRId(request.getProject().getId(),organization)).getRake();
+        ProjectSR pro=ProjectRepository.findById(new ProjectSRId(request.getProject().getId(),organization));
+        Boolean rake=pro.getRake();
         if (!rake) {
-            Integer size = RequirementSRRepository.findByOrganization(organization).size();
+            Integer size=pro.getRecSize();
             newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
         }
         else newReq.setSkills(RAKEKeywordExtractor.computeTFIDFSingular(requeriment));
@@ -306,6 +307,7 @@ public class StakeholdersRecommenderService {
         }
         Set<String> projs=new HashSet<>();
         Set<String> seenPersons=new HashSet<>();
+        Integer recSize=request.getRequirements().size();
         for (Project proj : request.getProjects()) {
             projs.add(proj.getId());
             if (autoMapping) {
@@ -326,7 +328,7 @@ public class StakeholdersRecommenderService {
             }
             List<Participant> part=new ArrayList<>();
             if (participants.containsKey(proj.getId())) part=participants.get(proj.getId());
-            String id = instanciateProject(proj, part,organization,rake);
+            String id = instanciateProject(proj, part,organization,rake,recSize);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
@@ -346,8 +348,8 @@ public class StakeholdersRecommenderService {
 
     private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
-        String newId= RandomStringUtils.random(10,true,true);
-        while (oldIds.contains(newId)) newId= RandomStringUtils.random(10,true,true);
+        String newId= RandomStringUtils.random(15,true,true);
+        while (oldIds.contains(newId)) newId= RandomStringUtils.random(15,true,true);
         List<PersonSR> toSave=new ArrayList<>();
         for (String s:persons) {
                 List<Skill> skills;
@@ -521,13 +523,14 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.saveAll(reqs);
     }
 
-    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake) {
+    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake,Integer size) {
         String id = proj.getId();
         ProjectSR projectSRTrad = new ProjectSR(new ProjectSRId(proj.getId(),organization));
         List<String> parts = new ArrayList<>();
         for (Participant par : participants) {
             parts.add(par.getPerson());
         }
+        projectSRTrad.setRecSize(size);
         projectSRTrad.setParticipants(parts);
         projectSRTrad.setRake(rake);
         ProjectRepository.save(projectSRTrad);

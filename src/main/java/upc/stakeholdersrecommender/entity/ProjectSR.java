@@ -19,6 +19,8 @@ public class ProjectSR implements Serializable {
     @Column(length = 300)
     private String organization;
 
+    private Integer recSize;
+
     private Boolean rake;
 
     public ProjectSR() {
@@ -59,5 +61,13 @@ public class ProjectSR implements Serializable {
 
     public void setRake(Boolean rake) {
         this.rake = rake;
+    }
+
+    public Integer getRecSize() {
+        return recSize;
+    }
+
+    public void setRecSize(Integer recSize) {
+        this.recSize = recSize;
     }
 }
