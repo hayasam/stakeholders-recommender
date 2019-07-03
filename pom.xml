@@ -142,11 +142,13 @@
 			<artifactId>joda-time</artifactId>
 			<version>2.10.1</version>
 		</dependency>
-    <dependency>
-        <groupId>com.linguistic</groupId>
-        <artifactId>rake</artifactId>
-        <version>1.0.0</version>
-    </dependency>
+        <dependency>
+            <groupId>com.linguistic</groupId>
+            <artifactId>rake</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/rake/rake.jar</systemPath>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
