@@ -61,7 +61,7 @@ public class StakeholdersRecommenderService {
             Integer size=pro.getRecSize();
             newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
         }
-        else newReq.setSkills(RAKEKeywordExtractor.computeTFIDFSingular(requeriment));
+        else newReq.setSkills(new RAKEKeywordExtractor().computeTFIDFSingular(requeriment));
         List<String> comps=new ArrayList<>();
         if (request.getRequirement().getRequirementParts()!=null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
@@ -559,7 +559,7 @@ public class StakeholdersRecommenderService {
     }
     private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs,String organization) throws IOException {
         //Extract map with (Requirement / KeywordValue)
-        Map<String, Map<String, Double>> keywords = RAKEKeywordExtractor.computeTFIDFRake(recs.values());
+        Map<String, Map<String, Double>> keywords = new RAKEKeywordExtractor().computeTFIDFRake(recs.values());
         Date dat = new Date();
 
         //Transform the map from (Requirement / KeywordValue) to (Requirement / SkillFactor)

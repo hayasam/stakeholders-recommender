@@ -44,7 +44,7 @@ public class TFIDFKeywordExtractor {
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<>();
         text = clean_text(text);
-        return RAKEKeywordExtractor.getAnalyzedStrings(text, analyzer, result);
+        return new RAKEKeywordExtractor().getAnalyzedStrings(text, analyzer, result);
     }
 
     private List<String> englishAnalyze(String text) throws IOException {
