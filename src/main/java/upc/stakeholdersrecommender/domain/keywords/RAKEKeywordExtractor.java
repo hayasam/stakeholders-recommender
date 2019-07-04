@@ -13,9 +13,9 @@ import java.util.*;
 
 public class RAKEKeywordExtractor {
 
-    static Double cutoff=6.0;
+    public Double cutoff=6.0;
 
-        static public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
+         public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
             List<Map<String,Double>> res= new ArrayList<>();
             Rake rake=new Rake();
             for (String s:corpus) {
@@ -38,7 +38,7 @@ public class RAKEKeywordExtractor {
             }
             return res;
         }
-    static public List<String> computeTFIDFSingular(Requirement req) throws IOException {
+     public List<String> computeTFIDFSingular(Requirement req) throws IOException {
         Rake rake = new Rake();
         String text = "";
             for (String k : RAKEanalyzeNoStopword(req.getDescription())) {
@@ -54,16 +54,16 @@ public class RAKEKeywordExtractor {
         }
 
 
-    static public Map<String, Map<String, Double>> computeTFIDFRake(Collection<Requirement> corpus) throws IOException {
+     public Map<String, Map<String, Double>> computeTFIDFRake(Collection<Requirement> corpus) throws IOException {
         List<String> docs = new ArrayList<>();
         for (Requirement r : corpus) {
             docs.add(r.getDescription());
         }
-        List<Map<String, Double>> res = RAKEKeywordExtractor.extractKeywords(docs);
+        List<Map<String, Double>> res = extractKeywords(docs);
         int counter = 0;
         return TFIDFKeywordExtractor.getStringMapMap(corpus, res, counter);
     }
-    static List<String> RAKEanalyze(String text) throws IOException {
+     List<String> RAKEanalyze(String text) throws IOException {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
@@ -71,7 +71,7 @@ public class RAKEKeywordExtractor {
                 .build();
         return analyze(text, analyzer);
     }
-    static List<String> RAKEanalyzeNoStopword(String text) throws IOException {
+     List<String> RAKEanalyzeNoStopword(String text) throws IOException {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
@@ -80,12 +80,12 @@ public class RAKEKeywordExtractor {
         return analyze(text, analyzer);
     }
 
-    static List<String> analyze(String text, Analyzer analyzer) throws IOException {
+     List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<>();
         return getAnalyzedStrings(text, analyzer, result);
     }
 
-    static List<String> getAnalyzedStrings(String text, Analyzer analyzer, List<String> result) throws IOException {
+    public List<String> getAnalyzedStrings(String text, Analyzer analyzer, List<String> result) throws IOException {
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
         tokenStream.reset();
@@ -95,10 +95,6 @@ public class RAKEKeywordExtractor {
         return result;
     }
 
-    static String clean_text(String text) {
-        text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'[0-9]]", " ");
-        return text;
-    }
+
 
 }
