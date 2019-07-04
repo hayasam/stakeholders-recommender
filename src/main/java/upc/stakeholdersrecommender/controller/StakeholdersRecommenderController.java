@@ -29,16 +29,13 @@ public class StakeholdersRecommenderController {
     EffortCalculator effortCalc;
 
     @RequestMapping(value = "batch_process", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Batch process request to upload required data for stakeholder recommendation." +
-            " \n The parameter withAvailability specifies whether a availability is calculated based on the stakeholder's past history" +
-            " or not. All information in the database is purged every time this method is called. A person's relation to the project is defined with" +
-            "PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's" +
-            "relation to a requirement in RESPONSIBLES.", notes = "", response = BatchReturnSchema.class)
-    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "Whether the recommendation take into account the stakeholder's availability or not, the field \"availability\" in participant is optional if this is set to false.", example = "false", required=true)
-    @RequestParam Boolean withAvailability,@ApiParam(value = "Whether the recommendation takes into account the requirement's component, this is expressed in requirementParts, this field is not necessary if this is set to false.", example = "false", required=true)
+    @ApiOperation(value = "This endpoint is used to upload the required data for making stakeholder recommendations. /n The parameter withAvailability species whether availability is calculated based on the stakeholder's past history or not. All information in the database is purged every time this method is called. A person's relation to the project is defined with PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person's relation to a requirement in RESPONSIBLES (i.e., the person is the one in charge of the requirement). 
+", notes = "", response = BatchReturnSchema.class)
+    public ResponseEntity addBatch(@RequestBody BatchSchema batch, @ApiParam(value = "If set to true, the recommendations for the organization making the request will take into account the stakeholder’s availability. If set to false, the field “availability” in participant is optional.", example = "false", required=true)
+    @RequestParam Boolean withAvailability,@ApiParam(value = "If set to true, the recommendations for the organization making the request will take into account the requirement’s component (which is expressed in the requirementParts field of a requirement). If set to false, it is not necessary to state the component.", example = "false", required=true)
     @RequestParam Boolean withComponent,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)
-    @RequestParam String organization ,@ApiParam(value = "Auto-generate mapping from effort to hours, if auto-mapping is used, it isn't necessary to set or compute effort, however, it will lead to a 1 to 1 mapping of effort into hours.", example = "true", required=true)
-    @RequestParam Boolean autoMapping,@ApiParam(value = "Return each requirement with its set of skills." ,example = "true", required=true)
+    @RequestParam String organization ,@ApiParam(value = "If auto-mapping is used (i.e., set to true), it is not necessary to set or compute effort (i.e., to establish the mappint from effort points to hours). The mapping used in auto-mapping is a 1 to 1 mapping of effort to hours.", example = "true", required=true)
+    @RequestParam Boolean autoMapping,@ApiParam(value = "If set to true, the endpoint returns each requirement with its set of keywords." ,example = "true", required=true)
     @RequestParam Boolean keywords  ) throws Exception {
         int res = 0;
         try {
@@ -56,58 +53,51 @@ public class StakeholdersRecommenderController {
 
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Recommendation rejection method: used to state that the user identified by REJECTED must not be assigned to REQUIREMENT. The" +
-            " rejection is performed by USER.", notes = "")
-    public ResponseEntity recommendReject(@ApiParam(value = "Person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Person who rejects.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "From which requirement is the person rejected.", example = "1", required=true) @RequestParam("requirement") String requirement
+    @ApiOperation(value = "This endpoint is used to state that the user identied by REJECTED must not be recommended for REQUIREMENT if USER performs the recommendation for REQUIREMENT.", notes = "")
+    public ResponseEntity recommendReject(@ApiParam(value = "Id of the person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Id of the person who makes the rejection.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "Id of the requirement from which the person REJECTED is rejected.", example = "1", required=true) @RequestParam("requirement") String requirement
             ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) {
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement,organization);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "recommend", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Given a REQUIREMENT in a PROJECT, asked by a USER, the Stakeholder Recommender service performs a " +
-            "recommendation and returns a list of the best K stakeholders with an appropiateness above 0 based on the historic data given in the batch_process." +
-            "\n The parameter projectSpecific specifies if the recommendation takes into account all stakeholders given in the batch_process, or only those" +
-            " specified in \"PARTICIPANTS\", in the batch_process", notes = "", response = RecommendReturnSchema[].class)
+    @ApiOperation(value = "Given a REQUIREMENT in a PROJECT, asked by a USER, the stakeholder recommender service performs a recommendation and returns a list of the best K stakeholders with an appropiateness between 0 and 1(being 1 the best appropriateness) based on the historic data given in the batch_process request.", notes = "", response = RecommendReturnSchema[].class)
     public ResponseEntity<List<RecommendReturnSchema>> recommend(@RequestBody RecommendSchema request,
-                                                                 @ApiParam(value = "Returns the top k stakeholders.", example = "10",required=true)@RequestParam Integer k,@ApiParam(value = "Considers stakeholders from all projects or only from one, if it considers stakeholders from all projects, it takes all stakeholders with enough availability in any project and considers them, if this is used, availabilityScore will always be one.", required=true,example = "false") @RequestParam Boolean projectSpecific
+                                                                 @ApiParam(value = "Maximum number of stakeholders to be returned by the recommender.", example = "10",required=true)@RequestParam Integer k,@ApiParam(value = "If set to true, the recommendation only takes into account as possible set of stakeholders the ones in the project to which the requirement pertains. If set to false, this set of stakeholders will be all the stakeholders received in the batch_process of the organization that is making the request. If set to false, it takes all stakeholders with enough availability in any project and considers them. The availabilityScore of the partcipants of other projects will be always one. ", required=true,example = "false") @RequestParam Boolean projectSpecific
                                                                   ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) throws Exception {
         List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific,organization);
         return new ResponseEntity<>(ret, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "setEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Set the mapping of effort points into hours, the effort points go in a scale from 1 to 5, the effort is specific to a project", notes = "")
-    public ResponseEntity setEffort(@RequestBody SetEffortSchema eff,@ApiParam(value = "Which project this effort is refering to.", example = "1",required=true) @RequestParam String project
+    @ApiOperation(value = "Set the mapping of effort points to hours for an specific project. The effort points go in a scale from 1 to 5.", notes = "")
+    public ResponseEntity setEffort(@RequestBody SetEffortSchema eff,@ApiParam(value = "The project in which the effort mapping should be used.", example = "1",required=true) @RequestParam String project
             ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) throws IOException {
         effortCalc.setEffort(eff, project,organization);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "computeEffort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Generate a mapping of effort points into hours specific to the project specified, based in the historic information given" +
-            ",a list of hours per effort point, based on the time a requirement with those effort points required to be finished. The effort points go" +
-            "in a scale from 1 to 5", notes = "")
-    public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff,@ApiParam(value = "Which project this effort is refering to.", example = "1",required=true) @RequestParam String project
+    @ApiOperation(value = "This endpoint generates a mapping of effort points into hours specific to the project specified, based in the historic information given. Each requirement sohuld contain the effort stated in a scale from 1 to 5, and the hours that have been needed to complete this requirement. Taking this into account, the service computes the average of hours needed per effort point.", notes = "")
+    public ResponseEntity calculateEffort(@RequestBody EffortCalculatorSchema eff,@ApiParam(value = "The project in which the effort mapping will be used in future recommendations.", example = "1",required=true) @RequestParam String project
             ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) throws IOException {
         effortCalc.effortCalc(eff, project,organization);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "undoRejection", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Undo recommendation rejection: used to state that the user identified by REJECTED will again be considered as valid to REQUIREMENT. Undoing the rejection performed" +
-            "by USER.", notes = "")
-    public ResponseEntity undoRejection(@ApiParam(value = "Person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Person who rejected the person.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "From which requirement is the person rejected.", example = "1", required=true) @RequestParam("requirement") String requirement
+    @ApiOperation(value = "This endpoint is used to state that the user identified by REJECTED will again be considered as valid to the REQUIREMENT when the person USER ask for a recommendation over this requirement.", notes = "")
+    public ResponseEntity undoRejection(@ApiParam(value = "Id of the person who was rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Id of the person who made the initial rejection.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "Id of the requirement from which the person REJECTED was rejected by the person USER.", example = "1", required=true) @RequestParam("requirement") String requirement
             ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) {
         stakeholdersRecommenderService.undo_recommend_reject(rejected, user, requirement,organization);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "getPersonSkills", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get skills of the person", notes = "")
-    public ResponseEntity getPersonSkills(@ApiParam(value = "Person identifier.", example = "Not JohnDoe", required=true)@RequestParam("person") String person,
-                                          @ApiParam(value = "Organization identifier.", example = "UPC", required=true)@RequestParam("organization") String organization,
-                                          @ApiParam(value = "Top k skills to return.", example = "10",required=false)@RequestParam(value="k",defaultValue = "-1",required=false) Integer k) {
+    @ApiOperation(value = "Get the set of skills of a person", notes = "")
+    public ResponseEntity getPersonSkills(@ApiParam(value = "Id of the person.", example = "Not JohnDoe", required=true)@RequestParam("person") String person,
+                                          @ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam("organization") String organization,
+                                          @ApiParam(value = "Maximum number of skills to be returned", example = "10",required=false)@RequestParam(value="k",defaultValue = "-1",required=false) Integer k) {
         List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization,k);
         return new ResponseEntity<>(skills,HttpStatus.OK);
     }
