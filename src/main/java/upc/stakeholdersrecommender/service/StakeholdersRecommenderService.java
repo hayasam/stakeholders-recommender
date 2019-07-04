@@ -649,11 +649,21 @@ public class StakeholdersRecommenderService {
         RejectedPersonRepository.save(rej);
     }
 
-    public List<Skill> getPersonSkills(String person, String organization) {
+    public List<Skill> getPersonSkills(String person, String organization,Integer k) {
         List<PersonSR> per = PersonSRRepository.findByNameAndOrganization(person, organization);
         if (per != null && per.size() > 0) {
             PersonSR truePerson = per.get(0);
-            return truePerson.getSkills();
+            List<Skill> skill=truePerson.getSkills();
+            Collections.sort(skill,
+                    Comparator.comparingDouble(Skill::getWeight).reversed());
+            List<Skill> newList=new ArrayList<>();
+            if (k!=-1) {
+                for (int i = 0; i < k; ++i) {
+                    newList.add(skill.get(i));
+                }
+            }
+            else newList=skill;
+            return newList;
         } else return null;
     }
 
