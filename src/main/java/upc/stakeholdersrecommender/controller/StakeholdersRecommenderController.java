@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
+import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
 
@@ -93,4 +94,20 @@ public class StakeholdersRecommenderController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
+    @RequestMapping(value = "undoRejection", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Undo recommendation rejection: used to state that the user identified by REJECTED will again be considered as valid to REQUIREMENT. Undoing the rejection performed" +
+            "by USER.", notes = "")
+    public ResponseEntity undoRejection(@ApiParam(value = "Person who is rejected.", example = "Not JohnDoe", required=true)@RequestParam("rejected") String rejected,@ApiParam(value = "Person who rejected the person.", example = "JohnDoe", required=true) @RequestParam("user") String user,@ApiParam(value = "From which requirement is the person rejected.", example = "1", required=true) @RequestParam("requirement") String requirement
+            ,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)@RequestParam String organization ) {
+        stakeholdersRecommenderService.undo_recommend_reject(rejected, user, requirement,organization);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "getPersonSkills", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Get top k skills of the person", notes = "")
+    public ResponseEntity getPersonSkills(@ApiParam(value = "Person identifier.", example = "Not JohnDoe", required=true)@RequestParam("person") String person,
+                                          @ApiParam(value = "Organization identifier.", example = "UPC", required=true)@RequestParam("organization") String organization) {
+        List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization);
+        return new ResponseEntity<>(skills,HttpStatus.OK);
+    }
 }

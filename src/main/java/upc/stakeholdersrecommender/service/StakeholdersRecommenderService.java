@@ -5,7 +5,10 @@ import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.stakeholdersrecommender.domain.*;
+import upc.stakeholdersrecommender.domain.Participant;
+import upc.stakeholdersrecommender.domain.Project;
+import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Responsible;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
@@ -50,81 +53,81 @@ public class StakeholdersRecommenderService {
         List<RecommendReturnSchema> ret;
         List<PersonSR> persList = new ArrayList<>();
         RequirementSR req;
-        RequirementSR newReq=new RequirementSR();
-        Requirement requeriment=request.getRequirement();
-        requeriment.setDescription(requeriment.getDescription()+". "+requeriment.getName());
+        RequirementSR newReq = new RequirementSR();
+        Requirement requeriment = request.getRequirement();
+        requeriment.setDescription(requeriment.getDescription() + ". " + requeriment.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
-        newReq.setId(new RequirementSRId(request.getProject().getId(),request.getRequirement().getId(),organization));
-        ProjectSR pro=ProjectRepository.findById(new ProjectSRId(request.getProject().getId(),organization));
-        Boolean rake=pro.getRake();
+        newReq.setId(new RequirementSRId(request.getProject().getId(), request.getRequirement().getId(), organization));
+        ProjectSR pro = ProjectRepository.findById(new ProjectSRId(request.getProject().getId(), organization));
+        Boolean rake = pro.getRake();
         if (!rake) {
-            Integer size=pro.getRecSize();
-            newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment,KeywordExtractionModelRepository.getOne(organization).getModel(),size));
-        }
-        else newReq.setSkills(new RAKEKeywordExtractor().computeTFIDFSingular(requeriment));
-        List<String> comps=new ArrayList<>();
-        if (request.getRequirement().getRequirementParts()!=null) {
+            Integer size = pro.getRecSize();
+            newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment, KeywordExtractionModelRepository.getOne(organization).getModel(), size));
+        } else newReq.setSkills(new RAKEKeywordExtractor().computeTFIDFSingular(requeriment));
+        List<String> comps = new ArrayList<>();
+        if (request.getRequirement().getRequirementParts() != null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
                 comps.add(l.getId());
             }
         }
         newReq.setComponent(comps);
         RequirementSRRepository.save(newReq);
-        req=newReq;
-            if (!projectSpecific) {
-                Set<String> uniquePersons=new HashSet<>();
-                for (PersonSR pers : PersonSRRepository.findByOrganization(organization)) {
-                    if (!uniquePersons.contains(pers.getName())) {
-                        if (hasTime(pers, organization)) {
-                            uniquePersons.add(pers.getName());
-                            PersonSR per = new PersonSR();
-                            per.setComponents(pers.getComponents());
-                            per.setAvailability(1.0);
-                            per.setHours(pers.getHours());
-                            per.setSkills(pers.getSkills());
-                            per.setName(pers.getName());
-                            persList.add(per);
-                        }
-                    }
-                }
-            } else {
-                persList.addAll(PersonSRRepository.findByProjectIdQueryAndOrganization(p,organization));
-            }
-            List<PersonSR> clean=removeRejected(persList, request.getUser().getUsername(),organization);
-            Double hours=100.0;
-            if (projectSpecific) {
-                Double effort = request.getRequirement().getEffort();
-                Effort e=EffortRepository.findById(new ProjectSRId(request.getProject().getId(),organization));
-                if (e!=null) {
-                    HashMap<Double,Double> effMap=e.getEffortMap();
-                    if (effMap.containsKey(effort)) {
-                        hours = effMap.get(effort);
-                    }
-                    else {
-                        hours=effort;
-                        Effort eff=e;
-                        effMap.put(effort,effort);
-                        eff.setEffortMap(effMap);
-                        EffortRepository.save(eff);
+        req = newReq;
+        if (!projectSpecific) {
+            Set<String> uniquePersons = new HashSet<>();
+            for (PersonSR pers : PersonSRRepository.findByOrganization(organization)) {
+                if (!uniquePersons.contains(pers.getName())) {
+                    if (hasTime(pers, organization)) {
+                        uniquePersons.add(pers.getName());
+                        PersonSR per = new PersonSR();
+                        per.setComponents(pers.getComponents());
+                        per.setAvailability(1.0);
+                        per.setHours(pers.getHours());
+                        per.setSkills(pers.getSkills());
+                        per.setName(pers.getName());
+                        persList.add(per);
                     }
                 }
             }
-            PersonSR[] bestPeople = computeBestStakeholders(clean, req,hours, k,projectSpecific);
+        } else {
+            persList.addAll(PersonSRRepository.findByProjectIdQueryAndOrganization(p, organization));
+        }
+        List<PersonSR> clean = removeRejected(persList, request.getUser().getUsername(), organization,request.getRequirement().getId());
+        Double hours = 100.0;
+        if (projectSpecific) {
+            Double effort = request.getRequirement().getEffort();
+            Effort e = EffortRepository.findById(new ProjectSRId(request.getProject().getId(), organization));
+            if (e != null) {
+                HashMap<Double, Double> effMap = e.getEffortMap();
+                if (effMap.containsKey(effort)) {
+                    hours = effMap.get(effort);
+                } else {
+                    hours = effort;
+                    Effort eff = e;
+                    effMap.put(effort, effort);
+                    eff.setEffortMap(effMap);
+                    EffortRepository.save(eff);
+                }
+            }
+        }
+        PersonSR[] bestPeople = computeBestStakeholders(clean, req, hours, k, projectSpecific);
         ret = prepareFinal(bestPeople, req);
         return ret;
     }
 
-    private List<PersonSR> removeRejected(List<PersonSR> persList, String user, String organization) {
+    private List<PersonSR> removeRejected(List<PersonSR> persList, String user, String organization, String requirement) {
         List<PersonSR> newList = new ArrayList<>();
-        RejectedPerson rej=RejectedPersonRepository.findByUser(new RejectedPersonId(user,organization));
+        RejectedPerson rej = RejectedPersonRepository.findByUser(new RejectedPersonId(user, organization));
         if (rej != null) {
             for (PersonSR pers : persList) {
                 if (!rej.getDeleted().containsKey(pers.getName())) {
                     newList.add(pers);
                 }
+                else if (!rej.getDeleted().get(pers.getName()).contains(requirement)) {
+                    newList.add(pers);
+                }
             }
-        }
-        else newList=persList;
+        } else newList = persList;
         return newList;
     }
 
@@ -134,16 +137,16 @@ public class StakeholdersRecommenderService {
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, pers, skillTrad);
             Double availability = pers.getAvailability();
-            PersonMinimal min=new PersonMinimal();
+            PersonMinimal min = new PersonMinimal();
             min.setUsername(pers.getName());
-            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()),min, appropiateness, availability));
+            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()), min, appropiateness, availability));
         }
         Collections.sort(ret,
                 Comparator.comparingDouble(RecommendReturnSchema::getAppropiatenessScore).reversed());
         return ret;
     }
 
-    private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, Double hours,int k, Boolean projectSpecific) {
+    private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, Double hours, int k, Boolean projectSpecific) {
         List<Pair<PersonSR, Double>> valuesForSR = new ArrayList<>();
 
         for (PersonSR person : persList) {
@@ -157,7 +160,7 @@ public class StakeholdersRecommenderService {
                     }
                 }
             }
-            if (req.getComponent()!=null) {
+            if (req.getComponent() != null) {
                 for (String s : req.getComponent()) {
                     for (Skill j : person.getComponents()) {
                         if (s.equals(j.getName())) {
@@ -168,31 +171,29 @@ public class StakeholdersRecommenderService {
                 resComp = compSum / req.getComponent().size();
             }
             Double res;
-            if (req.getSkills().size()==0) {
-                res=0.0;
-            }
-            else {
+            if (req.getSkills().size() == 0) {
+                res = 0.0;
+            } else {
                 res = sum / req.getSkills().size();
             }
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, person, skillTrad);
             res = res * 3 + person.getAvailability() + resComp * 10;
-            if (projectSpecific && person.getAvailability()>=hours/person.getHours()&&appropiateness!=0) {
+            if (projectSpecific && person.getAvailability() >= hours / person.getHours() && appropiateness != 0) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
-            }
-            else if (!projectSpecific&&appropiateness!=0) {
+            } else if (!projectSpecific && appropiateness != 0) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
             }
         }
         Collections.sort(valuesForSR,
                 Comparator.comparingDouble(Pair<PersonSR, Double>::getSecond).reversed());
-        if (k>=valuesForSR.size()) {
-            k=valuesForSR.size();
+        if (k >= valuesForSR.size()) {
+            k = valuesForSR.size();
         }
-        PersonSR[] out=new PersonSR[k];
-        for (int i = 0; i < k && i<valuesForSR.size(); ++i) {
+        PersonSR[] out = new PersonSR[k];
+        for (int i = 0; i < k && i < valuesForSR.size(); ++i) {
             out[i] = valuesForSR.get(i).getFirst();
         }
         return out;
@@ -219,9 +220,9 @@ public class StakeholdersRecommenderService {
         return appropiateness;
     }
 
-    private boolean hasTime(PersonSR pers,String organization) {
+    private boolean hasTime(PersonSR pers, String organization) {
         boolean res = false;
-        List<PersonSR> work = PersonSRRepository.findByNameAndOrganization(pers.getId().getPersonId(),organization);
+        List<PersonSR> work = PersonSRRepository.findByNameAndOrganization(pers.getId().getPersonId(), organization);
         for (PersonSR per : work) {
             if (per.getAvailability() > 0) {
                 res = true;
@@ -232,33 +233,36 @@ public class StakeholdersRecommenderService {
     }
 
     private void purge(String organization) {
-        if (ProjectRepository.findByOrganization(organization)!=null)ProjectRepository.deleteByOrganization(organization);
-        if (PersonSRRepository.findByOrganization(organization)!=null)PersonSRRepository.deleteByOrganization(organization);
-        if (RequirementSRRepository.findByOrganization(organization)!=null)RequirementSRRepository.deleteByOrganization(organization);
-        //if (RejectedPersonRepository.findByOrganization(organization)!=null)RejectedPersonRepository.deleteByOrganization(organization);
-        if (KeywordExtractionModelRepository.existsById(organization)) KeywordExtractionModelRepository.deleteById(organization);
+        if (ProjectRepository.findByOrganization(organization) != null)
+            ProjectRepository.deleteByOrganization(organization);
+        if (PersonSRRepository.findByOrganization(organization) != null)
+            PersonSRRepository.deleteByOrganization(organization);
+        if (RequirementSRRepository.findByOrganization(organization) != null)
+            RequirementSRRepository.deleteByOrganization(organization);
+        if (KeywordExtractionModelRepository.existsById(organization))
+            KeywordExtractionModelRepository.deleteById(organization);
 
     }
 
     public void recommend_reject(String rejectedId, String userId, String requirementId, String organization) {
-        if (RejectedPersonRepository.findByUser(new RejectedPersonId(userId,organization))!=null) {
-            RejectedPerson rejected = RejectedPersonRepository.findByUser(new RejectedPersonId(userId,organization));
+        if (RejectedPersonRepository.findByUser(new RejectedPersonId(userId, organization)) != null) {
+            RejectedPerson rejected = RejectedPersonRepository.findByUser(new RejectedPersonId(userId, organization));
             if (rejected.getDeleted().containsKey(rejectedId)) {
-                HashSet<String> aux=rejected.getDeleted().get(rejectedId);
+                HashSet<String> aux = rejected.getDeleted().get(rejectedId);
                 aux.add(requirementId);
-                Map<String,HashSet<String>> auxMap=rejected.getDeleted();
-                auxMap.put(rejectedId,aux);
+                Map<String, HashSet<String>> auxMap = rejected.getDeleted();
+                auxMap.put(rejectedId, aux);
                 rejected.setDeleted(auxMap);
             } else {
-                HashSet<String> aux=new HashSet<>();
+                HashSet<String> aux = new HashSet<>();
                 aux.add(requirementId);
-                Map<String,HashSet<String>> auxMap=rejected.getDeleted();
-                auxMap.put(rejectedId,aux);
+                Map<String, HashSet<String>> auxMap = rejected.getDeleted();
+                auxMap.put(rejectedId, aux);
                 rejected.setDeleted(auxMap);
             }
             RejectedPersonRepository.saveAndFlush(rejected);
         } else {
-            RejectedPerson reject = new RejectedPerson(new RejectedPersonId(userId,organization));
+            RejectedPerson reject = new RejectedPerson(new RejectedPersonId(userId, organization));
             HashMap<String, HashSet<String>> aux = new HashMap<>();
             HashSet<String> auxset = new HashSet<>();
             auxset.add(requirementId);
@@ -269,51 +273,50 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization,Boolean autoMapping) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
         purge(organization);
         Map<String, Requirement> recs = new HashMap<>();
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
             r.setModified(dtIn);
-            r.setDescription(r.getDescription()+". "+r.getName());
+            r.setDescription(r.getDescription() + ". " + r.getName());
             recs.put(r.getId(), r);
         }
         Map<String, List<String>> personRecs = getPersonRecs(request);
-        Set<String> persons=getPersons(request);
+        Set<String> persons = getPersons(request);
         Map<String, List<Participant>> participants = getParticipants(request);
-        Boolean rake=true;
+        Boolean rake = true;
         Map<String, Map<String, Double>> allSkills;
-        if (request.getRequirements().size()>100) rake=false;
-        if (rake) allSkills = computeAllSkillsRequirementRAKE(recs,organization);
-        else allSkills = computeAllSkillsRequirement(recs,organization);
+        if (request.getRequirements().size() > 100) rake = false;
+        if (rake) allSkills = computeAllSkillsRequirementRAKE(recs, organization);
+        else allSkills = computeAllSkillsRequirement(recs, organization);
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
         Map<String, Map<String, Double>> allComponents = new HashMap<>();
         Map<String, Integer> componentFrequency = new HashMap<>();
         if (withComponent) {
             for (Requirement req : request.getRequirements()) {
-                Map<String, Double> component=new HashMap<>();
-                if (req.getRequirementParts()!=null)
-                for (RequirementPart str:req.getRequirementParts()) {
-                    component.put(str.getId(),0.0);
-                    if (componentFrequency.containsKey(str.getId())) {
-                        componentFrequency.put(str.getId(),componentFrequency.get(str.getId())+1);
+                Map<String, Double> component = new HashMap<>();
+                if (req.getRequirementParts() != null)
+                    for (RequirementPart str : req.getRequirementParts()) {
+                        component.put(str.getId(), 0.0);
+                        if (componentFrequency.containsKey(str.getId())) {
+                            componentFrequency.put(str.getId(), componentFrequency.get(str.getId()) + 1);
+                        } else componentFrequency.put(str.getId(), 1);
                     }
-                    else componentFrequency.put(str.getId(),1);
-                }
-                allComponents.put(req.getId(),component);
+                allComponents.put(req.getId(), component);
             }
             extractDate(recs, allComponents);
         }
-        Set<String> projs=new HashSet<>();
-        Set<String> seenPersons=new HashSet<>();
-        Integer recSize=request.getRequirements().size();
+        Set<String> projs = new HashSet<>();
+        Set<String> seenPersons = new HashSet<>();
+        Integer recSize = request.getRequirements().size();
         for (Project proj : request.getProjects()) {
             projs.add(proj.getId());
             if (autoMapping) {
                 Effort effortMap = new Effort();
                 HashMap<Double, Double> eff = new HashMap<>();
-                if (proj.getSpecifiedRequirements()!=null) {
+                if (proj.getSpecifiedRequirements() != null) {
                     for (String r : proj.getSpecifiedRequirements()) {
                         Requirement aux = recs.get(r);
                         if (!eff.containsKey(aux.getEffort())) {
@@ -322,47 +325,49 @@ public class StakeholdersRecommenderService {
                     }
                 }
                 effortMap.setEffortMap(eff);
-                effortMap.setId(new ProjectSRId(proj.getId(),organization));
-                if (EffortRepository.findById(new ProjectSRId(proj.getId(),organization))!=null) EffortRepository.deleteById(new ProjectSRId(proj.getId(),organization));
+                effortMap.setId(new ProjectSRId(proj.getId(), organization));
+                if (EffortRepository.findById(new ProjectSRId(proj.getId(), organization)) != null)
+                    EffortRepository.deleteById(new ProjectSRId(proj.getId(), organization));
                 EffortRepository.save(effortMap);
             }
-            List<Participant> part=new ArrayList<>();
-            if (participants.containsKey(proj.getId())) part=participants.get(proj.getId());
-            String id = instanciateProject(proj, part,organization,rake,recSize);
+            List<Participant> part = new ArrayList<>();
+            if (participants.containsKey(proj.getId())) part = participants.get(proj.getId());
+            String id = instanciateProject(proj, part, organization, rake, recSize);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
             }
-            for (Participant p:part) {
+            for (Participant p : part) {
                 seenPersons.add(p.getPerson());
             }
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs, withComponent, allComponents, organization);
-            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents,componentFrequency,organization);
+            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization);
         }
         persons.removeAll(seenPersons);
-        instanciateLeftovers(persons,projs, recs, allSkills, personRecs, skillfrequency, withAvailability, withComponent, allComponents,componentFrequency,organization);
-        Integer particips=0;
-        if (request.getParticipants()!=null) particips=request.getParticipants().size();
-        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips ;
+        instanciateLeftovers(persons, projs, recs, allSkills, personRecs, skillfrequency, withAvailability, withComponent, allComponents, componentFrequency, organization);
+        Integer particips = 0;
+        if (request.getParticipants() != null) particips = request.getParticipants().size();
+        return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
     }
 
     private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
-        String newId= RandomStringUtils.random(15,true,true);
-        while (oldIds.contains(newId)) newId= RandomStringUtils.random(15,true,true);
-        List<PersonSR> toSave=new ArrayList<>();
-        for (String s:persons) {
-                List<Skill> skills;
-                List<Skill> components;
-                if (personRecs.get(s) != null) {
-                    skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency);
-                    if (withComponent) components = computeComponentsPerson(personRecs.get(s),allComponents, componentFrequency);
-                    else components=new ArrayList<>();
-                } else{
-                    skills = new ArrayList<>();
-                    components = new ArrayList<>();
-                }
-                PersonSR per=new PersonSR();
+        String newId = RandomStringUtils.random(15, true, true);
+        while (oldIds.contains(newId)) newId = RandomStringUtils.random(15, true, true);
+        List<PersonSR> toSave = new ArrayList<>();
+        for (String s : persons) {
+            List<Skill> skills;
+            List<Skill> components;
+            if (personRecs.get(s) != null) {
+                skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency);
+                if (withComponent)
+                    components = computeComponentsPerson(personRecs.get(s), allComponents, componentFrequency);
+                else components = new ArrayList<>();
+            } else {
+                skills = new ArrayList<>();
+                components = new ArrayList<>();
+            }
+            PersonSR per = new PersonSR();
             per.setName(s);
             per.setSkills(skills);
             per.setHours(hoursDefault);
@@ -370,22 +375,22 @@ public class StakeholdersRecommenderService {
             per.setOrganization(organization);
             per.setComponents(components);
             per.setAvailability(1.0);
-            per.setId(new PersonSRId(newId,s,organization));
+            per.setId(new PersonSRId(newId, s, organization));
             toSave.add(per);
         }
         PersonSRRepository.saveAll(toSave);
     }
 
     private Set<String> getPersons(BatchSchema request) {
-        Set<String> s=new HashSet<>();
-        for (PersonMinimal p:request.getPersons()) {
+        Set<String> s = new HashSet<>();
+        for (PersonMinimal p : request.getPersons()) {
             s.add(p.getUsername());
         }
         return s;
     }
 
     private void extractDate(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents) {
-        Date dat=new Date();
+        Date dat = new Date();
         computeTimeFactor(recs, allComponents, dat);
     }
 
@@ -418,29 +423,32 @@ public class StakeholdersRecommenderService {
 
 
     private void instanciateResourceBatch(Map<String, Double> part, List<Participant> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
-    , Map<String,Map<String,Double>> allComponents, Map<String,Integer> componentFrequency, String organization) throws Exception {
+            , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) throws Exception {
         List<PersonSR> toSave = new ArrayList<>();
         for (Participant person : persons) {
             List<Skill> skills;
             List<Skill> components;
             if (personRecs.get(person.getPerson()) != null) {
                 skills = computeSkillsPerson(personRecs.get(person.getPerson()), allSkills, skillFrequency);
-                if (withComponent) components = computeComponentsPerson(personRecs.get(person.getPerson()),allComponents, componentFrequency);
-                else components=new ArrayList<>();
-            } else{
+                if (withComponent)
+                    components = computeComponentsPerson(personRecs.get(person.getPerson()), allComponents, componentFrequency);
+                else components = new ArrayList<>();
+            } else {
                 skills = new ArrayList<>();
                 components = new ArrayList<>();
             }
             Double availability;
             if (withAvailability) {
-                Double hours=hoursDefault;
-                if (part.containsKey(person.getPerson())&& part.get(person.getPerson())!=null)  hours=part.get(person.getPerson());
-                if (!personRecs.containsKey(person.getPerson())) availability=1.0;
-                else availability = computeAvailability(specifiedReq, personRecs, person, recs, id,hours,organization);
-            }
-            else availability = 1.0;
-            PersonSR per = new PersonSR(new PersonSRId(id, person.getPerson(),organization), id, availability, skills,organization);
-            if (part.containsKey(per.getName()) && part.get(per.getName())!=null) per.setHours(part.get(per.getName()));
+                Double hours = hoursDefault;
+                if (part.containsKey(person.getPerson()) && part.get(person.getPerson()) != null)
+                    hours = part.get(person.getPerson());
+                if (!personRecs.containsKey(person.getPerson())) availability = 1.0;
+                else
+                    availability = computeAvailability(specifiedReq, personRecs, person, recs, id, hours, organization);
+            } else availability = 1.0;
+            PersonSR per = new PersonSR(new PersonSRId(id, person.getPerson(), organization), id, availability, skills, organization);
+            if (part.containsKey(per.getName()) && part.get(per.getName()) != null)
+                per.setHours(part.get(per.getName()));
             else per.setHours(hoursDefault);
             per.setComponents(components);
             toSave.add(per);
@@ -448,7 +456,7 @@ public class StakeholdersRecommenderService {
         PersonSRRepository.saveAll(toSave);
     }
 
-    private List<Skill> computeComponentsPerson(List<String> oldRecs,Map<String, Map<String,Double>> allComponents, Map<String,Integer> componentFrequency) {
+    private List<Skill> computeComponentsPerson(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
         List<Skill> toret = new ArrayList<>();
         return getSkills(oldRecs, allComponents, componentFrequency, toret);
 
@@ -483,35 +491,34 @@ public class StakeholdersRecommenderService {
         List<String> requirements = personRecs.get(person.getPerson());
         List<String> intersection = new ArrayList<>(requirements);
         List<String> toRemove = new ArrayList<>(requirements);
-        if (recs!=null) {
+        if (recs != null) {
             toRemove.removeAll(recs);
             intersection.removeAll(toRemove);
-        }
-        else intersection=null;
+        } else intersection = null;
         Double hours = 0.0;
-        if (intersection!=null) {
+        if (intersection != null) {
             for (String s : intersection) {
                 hours += extractAvailability(requirementMap.get(s).getEffort(), project, organization);
             }
         }
-        return calculateAvailability(hours,totalHours);
+        return calculateAvailability(hours, totalHours);
     }
 
     private Double calculateAvailability(Double hours, Double i) {
         return max(0, (1 - (hours / i)));
     }
 
-    private Double extractAvailability(Double s, String project,String organization) throws Exception {
-        if (EffortRepository.findById(new ProjectSRId(project,organization))==null) {
+    private Double extractAvailability(Double s, String project, String organization) throws Exception {
+        if (EffortRepository.findById(new ProjectSRId(project, organization)) == null) {
             throw new Exception();
         }
-        Effort eff = EffortRepository.findById(new ProjectSRId(project,organization));
+        Effort eff = EffortRepository.findById(new ProjectSRId(project, organization));
         return eff.getEffortMap().get(s);
     }
 
-    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs, Boolean withComponent,Map<String,Map<String,Double>> allComponents, String organization) {
+    private void instanciateFeatureBatch(List<String> requirement, String id, Map<String, Map<String, Double>> keywordsForReq, Map<String, Requirement> recs, Boolean withComponent, Map<String, Map<String, Double>> allComponents, String organization) {
         List<RequirementSR> reqs = new ArrayList<>();
-        if (requirement!=null) {
+        if (requirement != null) {
             for (String rec : requirement) {
                 RequirementSR req = new RequirementSR(recs.get(rec), id, organization);
                 ArrayList<String> aux = new ArrayList<>(keywordsForReq.get(rec).keySet());
@@ -523,9 +530,9 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.saveAll(reqs);
     }
 
-    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake,Integer size) {
+    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake, Integer size) {
         String id = proj.getId();
-        ProjectSR projectSRTrad = new ProjectSR(new ProjectSRId(proj.getId(),organization));
+        ProjectSR projectSRTrad = new ProjectSR(new ProjectSRId(proj.getId(), organization));
         List<String> parts = new ArrayList<>();
         for (Participant par : participants) {
             parts.add(par.getPerson());
@@ -538,7 +545,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private Map<String, Map<String, Double>> computeAllSkillsRequirement(Map<String, Requirement> recs,String organization) throws IOException {
+    private Map<String, Map<String, Double>> computeAllSkillsRequirement(Map<String, Requirement> recs, String organization) throws IOException {
         TFIDFKeywordExtractor extractor = new TFIDFKeywordExtractor();
         //Extract map with (Requirement / KeywordValue)
         Map<String, Map<String, Double>> keywords = extractor.computeTFIDF(recs.values());
@@ -548,8 +555,8 @@ public class StakeholdersRecommenderService {
 
         //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
         //since the requirement was last touched
-        HashMap<String,Integer> mod=extractor.getCorpusFrequency();
-        KeywordExtractionModel toSave=new KeywordExtractionModel();
+        HashMap<String, Integer> mod = extractor.getCorpusFrequency();
+        KeywordExtractionModel toSave = new KeywordExtractionModel();
         toSave.setModel(mod);
         toSave.setId(organization);
         KeywordExtractionModelRepository.save(toSave);
@@ -557,7 +564,8 @@ public class StakeholdersRecommenderService {
         computeTimeFactor(recs, keywords, dat);
         return keywords;
     }
-    private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs,String organization) throws IOException {
+
+    private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs, String organization) throws IOException {
         //Extract map with (Requirement / KeywordValue)
         Map<String, Map<String, Double>> keywords = new RAKEKeywordExtractor().computeTFIDFRake(recs.values());
         Date dat = new Date();
@@ -569,7 +577,6 @@ public class StakeholdersRecommenderService {
         computeTimeFactor(recs, keywords, dat);
         return keywords;
     }
-
 
 
     private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
@@ -613,14 +620,14 @@ public class StakeholdersRecommenderService {
         return participants;
     }
 
-    public List<ProjectKeywordSchema> extractKeywords(String organization,BatchSchema batch) {
-        List<ProjectKeywordSchema> res=new ArrayList<>();
-        for (Project j:batch.getProjects()) {
-            ProjectKeywordSchema proje=new ProjectKeywordSchema();
-            List<KeywordReturnSchema> reqs=new ArrayList<>();
-            String id=j.getId();
+    public List<ProjectKeywordSchema> extractKeywords(String organization, BatchSchema batch) {
+        List<ProjectKeywordSchema> res = new ArrayList<>();
+        for (Project j : batch.getProjects()) {
+            ProjectKeywordSchema proje = new ProjectKeywordSchema();
+            List<KeywordReturnSchema> reqs = new ArrayList<>();
+            String id = j.getId();
             proje.setProjectId(id);
-            for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization,id)) {
+            for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization, id)) {
                 KeywordReturnSchema key = new KeywordReturnSchema();
                 key.setRequirement(req.getId().getRequirementId());
                 key.setSkills(req.getSkills());
@@ -630,6 +637,24 @@ public class StakeholdersRecommenderService {
             res.add(proje);
         }
         return res;
+    }
+
+    public void undo_recommend_reject(String rejected, String user, String requirement, String organization) {
+        RejectedPerson rej = RejectedPersonRepository.findByUser(new RejectedPersonId(user, organization));
+        Map<String, HashSet<String>> deleted = rej.getDeleted();
+        HashSet set = deleted.get(rejected);
+        set.remove(requirement);
+        deleted.put(rejected, set);
+        rej.setDeleted(deleted);
+        RejectedPersonRepository.save(rej);
+    }
+
+    public List<Skill> getPersonSkills(String person, String organization) {
+        List<PersonSR> per = PersonSRRepository.findByNameAndOrganization(person, organization);
+        if (per != null && per.size() > 0) {
+            PersonSR truePerson = per.get(0);
+            return truePerson.getSkills();
+        } else return null;
     }
 
     private class SinglePair<T> {
