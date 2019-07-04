@@ -104,10 +104,11 @@ public class StakeholdersRecommenderController {
     }
 
     @RequestMapping(value = "getPersonSkills", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get top k skills of the person", notes = "")
+    @ApiOperation(value = "Get skills of the person", notes = "")
     public ResponseEntity getPersonSkills(@ApiParam(value = "Person identifier.", example = "Not JohnDoe", required=true)@RequestParam("person") String person,
-                                          @ApiParam(value = "Organization identifier.", example = "UPC", required=true)@RequestParam("organization") String organization) {
-        List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization);
+                                          @ApiParam(value = "Organization identifier.", example = "UPC", required=true)@RequestParam("organization") String organization,
+                                          @ApiParam(value = "Top k skills to return.", example = "10",required=false)@RequestParam(value="k",defaultValue = "-1",required=false) Integer k) {
+        List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization,k);
         return new ResponseEntity<>(skills,HttpStatus.OK);
     }
 }
