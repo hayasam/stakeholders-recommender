@@ -5,10 +5,7 @@ import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import upc.stakeholdersrecommender.domain.Participant;
-import upc.stakeholdersrecommender.domain.Project;
-import upc.stakeholdersrecommender.domain.Requirement;
-import upc.stakeholdersrecommender.domain.Responsible;
+import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
@@ -275,6 +272,7 @@ public class StakeholdersRecommenderService {
 
     public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
         purge(organization);
+        verify(request);
         Map<String, Requirement> recs = new HashMap<>();
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -306,7 +304,7 @@ public class StakeholdersRecommenderService {
                     }
                 allComponents.put(req.getId(), component);
             }
-            extractDate(recs, allComponents);
+            allComponents=extractDate(recs, allComponents);
         }
         Set<String> projs = new HashSet<>();
         Set<String> seenPersons = new HashSet<>();
@@ -350,6 +348,41 @@ public class StakeholdersRecommenderService {
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
     }
 
+    private void verify(BatchSchema request) throws Exception {
+        Set<String> rec=new HashSet<>();
+        for (Requirement r:request.getRequirements()) {
+            if (r.getId().length()>255) throw new Exception("Requirement id exceeds character size of 255");
+            if (rec.contains(r.getId())) throw new Exception("Requirement id "+ r.getId()+" is repeated");
+            rec.add(r.getId());
+        }
+        Set<String> proj=new HashSet<>();
+        for (Project p:request.getProjects())  {
+            if (p.getId().length()>255) throw new Exception("Project id exceeds character size of 255");
+            if (proj.contains(p.getId())) throw new Exception("Project id "+ p.getId()+" is repeated");
+            for (String a:p.getSpecifiedRequirements())  if (!rec.contains(a)) throw new Exception("Specified requirement "+a+" doesn't exist");
+            proj.add(p.getId());
+        }
+        Set<String> person=new HashSet<>();
+        for (PersonMinimal p:request.getPersons()) {
+            if (p.getUsername().length()>255) throw new Exception("Requirement id exceeds character size of 255");
+            if (person.contains(p.getUsername())) throw new Exception("Person id "+ p.getUsername()+" is repeated");
+            person.add(p.getUsername());
+        }
+        for (Responsible r:request.getResponsibles()) {
+            if (!rec.contains(r.getRequirement())) throw new Exception("Person assigned to non-existant requirement "+r.getRequirement());
+            if (!person.contains(r.getPerson())) throw new Exception("Requirement assigned to non-existant person "+r.getPerson());
+        }
+        if (request.getParticipants()!=null) {
+            for (Participant p : request.getParticipants()) {
+                if (!person.contains(p.getPerson()))
+                    throw new Exception("Project assigned to non-existant person " + p.getPerson());
+                if (!proj.contains(p.getProject()))
+                    throw new Exception("Person assigned to non-existant project " + p.getProject());
+                if (p.getAvailability() < 0) throw new Exception("Availability must be in a range from 1.0 to 0.0");
+            }
+        }
+    }
+
     private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
         String newId = RandomStringUtils.random(15, true, true);
@@ -389,22 +422,25 @@ public class StakeholdersRecommenderService {
         return s;
     }
 
-    private void extractDate(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents) {
+    private Map<String, Map<String, Double>> extractDate(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents) {
         Date dat = new Date();
-        computeTimeFactor(recs, allComponents, dat);
+        return computeTimeFactor(recs, allComponents, dat);
     }
 
-    private void computeTimeFactor(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents, Date dat) {
+    private Map<String, Map<String, Double>> computeTimeFactor(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents, Date dat) {
+        Map<String, Map<String, Double>> scaledKeywords=new HashMap<>();
         for (String s : allComponents.keySet()) {
             Requirement req = recs.get(s);
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
             long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             Map<String, Double> aux = allComponents.get(s);
+            Map<String,Double> helper=new HashMap<>();
             for (String j : aux.keySet()) {
-                aux.put(j, 1.0 - min(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays))));
+                helper.put(j, min(1.0,1.0 - min(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays)))));
             }
-            allComponents.put(s, aux);
+            scaledKeywords.put(s, helper);
         }
+        return scaledKeywords;
     }
 
     private Map<String, Integer> getSkillFrequency(Map<String, Map<String, Double>> allSkills) {
@@ -561,21 +597,19 @@ public class StakeholdersRecommenderService {
         toSave.setId(organization);
         KeywordExtractionModelRepository.save(toSave);
         KeywordExtractionModelRepository.flush();
-        computeTimeFactor(recs, keywords, dat);
-        return keywords;
+        return computeTimeFactor(recs, keywords, dat);
     }
 
     private Map<String, Map<String, Double>> computeAllSkillsRequirementRAKE(Map<String, Requirement> recs, String organization) throws IOException {
         //Extract map with (Requirement / KeywordValue)
-        Map<String, Map<String, Double>> keywords = new RAKEKeywordExtractor().computeTFIDFRake(recs.values());
+        Map<String, Map<String, Double>> keywords = new RAKEKeywordExtractor().computeRake(recs.values());
         Date dat = new Date();
 
         //Transform the map from (Requirement / KeywordValue) to (Requirement / SkillFactor)
 
         //Skill factor is a linear function, dropping off lineally up to 0.5, based on the days
         //since the requirement was last touched
-        computeTimeFactor(recs, keywords, dat);
-        return keywords;
+        return computeTimeFactor(recs, keywords, dat);
     }
 
 
