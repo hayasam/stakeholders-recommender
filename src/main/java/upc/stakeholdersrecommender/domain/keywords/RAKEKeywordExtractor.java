@@ -54,7 +54,7 @@ public class RAKEKeywordExtractor {
         }
 
 
-     public Map<String, Map<String, Double>> computeTFIDFRake(Collection<Requirement> corpus) throws IOException {
+     public Map<String, Map<String, Double>> computeRake(Collection<Requirement> corpus) throws IOException {
         List<String> docs = new ArrayList<>();
         for (Requirement r : corpus) {
             docs.add(r.getDescription());

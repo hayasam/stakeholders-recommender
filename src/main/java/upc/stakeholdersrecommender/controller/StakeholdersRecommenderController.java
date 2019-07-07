@@ -40,8 +40,8 @@ public class StakeholdersRecommenderController {
         int res = 0;
         try {
             res = stakeholdersRecommenderService.addBatch(batch, withAvailability,withComponent,organization,autoMapping);
-        } catch (IOException e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (!keywords)
         return new ResponseEntity<>(new BatchReturnSchema(res), HttpStatus.CREATED);
