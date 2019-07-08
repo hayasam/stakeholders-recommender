@@ -281,7 +281,7 @@ public class StakeholdersRecommenderService {
             r.setDescription(r.getDescription() + ". " + r.getName());
             recs.put(r.getId(), r);
         }
-        Map<String, List<String>> personRecs = getPersonRecs(request);
+        Map<String, Set<String>> personRecs = getPersonRecs(request);
         Set<String> persons = getPersons(request);
         Map<String, List<Participant>> participants = getParticipants(request);
         Boolean rake = true;
@@ -342,7 +342,7 @@ public class StakeholdersRecommenderService {
             instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization);
         }
         persons.removeAll(seenPersons);
-        instanciateLeftovers(persons, projs, recs, allSkills, personRecs, skillfrequency, withAvailability, withComponent, allComponents, componentFrequency, organization);
+        instanciateLeftovers(persons, projs, allSkills, personRecs, skillfrequency, withComponent, allComponents, componentFrequency, organization);
         Integer particips = 0;
         if (request.getParticipants() != null) particips = request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
@@ -369,21 +369,21 @@ public class StakeholdersRecommenderService {
             person.add(p.getUsername());
         }
         for (Responsible r:request.getResponsibles()) {
-            if (!rec.contains(r.getRequirement())) throw new Exception("Person assigned to non-existant requirement "+r.getRequirement());
-            if (!person.contains(r.getPerson())) throw new Exception("Requirement assigned to non-existant person "+r.getPerson());
+            if (!rec.contains(r.getRequirement())) throw new Exception("Person assigned to non-existent requirement "+r.getRequirement());
+            if (!person.contains(r.getPerson())) throw new Exception("Requirement assigned to non-existent person "+r.getPerson());
         }
         if (request.getParticipants()!=null) {
             for (Participant p : request.getParticipants()) {
                 if (!person.contains(p.getPerson()))
-                    throw new Exception("Project assigned to non-existant person " + p.getPerson());
+                    throw new Exception("Project assigned to non-existent person " + p.getPerson());
                 if (!proj.contains(p.getProject()))
-                    throw new Exception("Person assigned to non-existant project " + p.getProject());
-                if (p.getAvailability() < 0) throw new Exception("Availability must be in a range from 1.0 to 0.0");
+                    throw new Exception("Person assigned to non-existent project " + p.getProject());
+                if (p.getAvailability()!=null && p.getAvailability() < 0) throw new Exception("Availability must be in a range from 1.0 to 0.0");
             }
         }
     }
 
-    private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withAvailability, Boolean withComponent
+    private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Map<String, Double>> allSkills, Map<String, Set<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) {
         String newId = RandomStringUtils.random(15, true, true);
         while (oldIds.contains(newId)) newId = RandomStringUtils.random(15, true, true);
@@ -458,7 +458,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private void instanciateResourceBatch(Map<String, Double> part, List<Participant> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, List<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
+    private void instanciateResourceBatch(Map<String, Double> part, List<Participant> persons, Map<String, Requirement> recs, Map<String, Map<String, Double>> allSkills, Map<String, Set<String>> personRecs, Map<String, Integer> skillFrequency, List<String> specifiedReq, String id, Boolean withAvailability, Boolean withComponent
             , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization) throws Exception {
         List<PersonSR> toSave = new ArrayList<>();
         for (Participant person : persons) {
@@ -492,13 +492,14 @@ public class StakeholdersRecommenderService {
         PersonSRRepository.saveAll(toSave);
     }
 
-    private List<Skill> computeComponentsPerson(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
-        List<Skill> toret = new ArrayList<>();
-        return getSkills(oldRecs, allComponents, componentFrequency, toret);
+    private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
+        System.out.println(oldRecs);
+        return getSkills(oldRecs, allComponents, componentFrequency);
 
     }
 
-    private List<Skill> getSkills(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, List<Skill> toret) {
+    private List<Skill> getSkills(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
+        List<Skill> toret=new ArrayList<>();
         Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
         for (String key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
@@ -508,23 +509,25 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private Map<String, SinglePair<Double>> getAppearances(List<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
+    private Map<String, SinglePair<Double>> getAppearances(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
         Map<String, SinglePair<Double>> appearances = new HashMap<>();
         for (String s : oldRecs) {
             Map<String, Double> help = allComponents.get(s);
             for (String sk : help.keySet()) {
                 if (appearances.containsKey(sk)) {
-                    appearances.put(sk, new SinglePair<>(appearances.get(sk).p1 + help.get(sk), appearances.get(sk).p2));
+                    SinglePair<Double> aux=appearances.get(sk);
+                    Double auxi=aux.p1+help.get(sk);
+                    appearances.put(sk, new SinglePair<>(auxi, aux.p2));
                 } else {
                     appearances.put(sk, new SinglePair<>(help.get(sk), (double) componentFrequency.get(sk)));
                 }
             }
-        }
+            }
         return appearances;
     }
 
-    private Double computeAvailability(List<String> recs, Map<String, List<String>> personRecs, Participant person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
-        List<String> requirements = personRecs.get(person.getPerson());
+    private Double computeAvailability(List<String> recs, Map<String, Set<String>> personRecs, Participant person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
+        Set<String> requirements = personRecs.get(person.getPerson());
         List<String> intersection = new ArrayList<>(requirements);
         List<String> toRemove = new ArrayList<>(requirements);
         if (recs != null) {
@@ -613,24 +616,23 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private List<Skill> computeSkillsPerson(List<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
-        List<Skill> toret = new ArrayList<>();
-        return getSkills(oldRecs, recs, skillsFrequency, toret);
+    private List<Skill> computeSkillsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency) {
+        return getSkills(oldRecs, recs, skillsFrequency);
     }
 
-    private Double calculateWeight(Double requirement, Double appearances) {
-        return appearances / requirement;
+    private Double calculateWeight(Double appearances, Double requirement) {
+        return requirement / appearances;
     }
 
-    private Map<String, List<String>> getPersonRecs(BatchSchema request) {
-        Map<String, List<String>> personRecs = new HashMap<>();
+    private Map<String, Set<String>> getPersonRecs(BatchSchema request) {
+        Map<String, Set<String>> personRecs = new HashMap<>();
         for (Responsible resp : request.getResponsibles()) {
             if (personRecs.containsKey(resp.getPerson())) {
-                List<String> aux = personRecs.get(resp.getPerson());
+                Set<String> aux = personRecs.get(resp.getPerson());
                 aux.add(resp.getRequirement());
                 personRecs.put(resp.getPerson(), aux);
             } else {
-                List<String> aux = new ArrayList<>();
+                Set<String> aux = new HashSet<>();
                 aux.add(resp.getRequirement());
                 personRecs.put(resp.getPerson(), aux);
             }
