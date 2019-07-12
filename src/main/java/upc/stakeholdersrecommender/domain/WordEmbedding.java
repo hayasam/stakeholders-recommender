@@ -19,7 +19,7 @@ public class WordEmbedding {
     public Double computeSimilarity(String a, String b) throws IOException {
     if (model==null) {
         Path p = Paths.get("GloVe_model/glove.6B.50d.txt");
-        String h = Files.readString(p, StandardCharsets.UTF_8);
+        String h =new String (Files.readAllBytes(p));
         loadModel(h);
     }
     Double[] help1=null,help2=null;
