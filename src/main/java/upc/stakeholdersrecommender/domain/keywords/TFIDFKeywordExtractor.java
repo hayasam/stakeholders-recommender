@@ -1,21 +1,16 @@
 package upc.stakeholdersrecommender.domain.keywords;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import upc.stakeholdersrecommender.domain.Requirement;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 
-import static java.lang.StrictMath.sqrt;
-import static org.apache.commons.lang3.math.NumberUtils.isParsable;
 
 public class TFIDFKeywordExtractor {
 
-    private Double cutoffParameter = 1.0; //This can be set to different values for different selectivity (more or less keywords)
+    private Double cutoffParameter = 4.0; //This can be set to different values for different selectivity (more or less keywords)
     private HashMap<String, Integer> corpusFrequency = new HashMap<>();
 
 
@@ -52,7 +47,6 @@ public class TFIDFKeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
-                .addTokenFilter("porterstem")
                 .build();
         return analyze(text, analyzer);
     }
