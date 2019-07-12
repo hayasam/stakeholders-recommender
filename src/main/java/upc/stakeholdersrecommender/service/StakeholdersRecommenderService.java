@@ -43,6 +43,9 @@ public class StakeholdersRecommenderService {
     private EffortRepository EffortRepository;
     @Autowired
     private KeywordExtractionModelRepository KeywordExtractionModelRepository;
+    @Autowired
+    private WordEmbedding WordEmbedding;
+
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
@@ -128,7 +131,7 @@ public class StakeholdersRecommenderService {
         return newList;
     }
 
-    private List<RecommendReturnSchema> prepareFinal(PersonSR[] people, RequirementSR req) {
+    private List<RecommendReturnSchema> prepareFinal(PersonSR[] people, RequirementSR req) throws IOException {
         List<RecommendReturnSchema> ret = new ArrayList<>();
         for (PersonSR pers : people) {
             Map<String, Skill> skillTrad = new HashMap<>();
@@ -143,7 +146,7 @@ public class StakeholdersRecommenderService {
         return ret;
     }
 
-    private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, Double hours, int k, Boolean projectSpecific) {
+    private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, Double hours, int k, Boolean projectSpecific) throws IOException {
         List<Pair<PersonSR, Double>> valuesForSR = new ArrayList<>();
 
         for (PersonSR person : persList) {
@@ -196,18 +199,26 @@ public class StakeholdersRecommenderService {
         return out;
     }
 
-    private Double getAppropiateness(RequirementSR req, PersonSR person, Map<String, Skill> skillTrad) {
+    private Double getAppropiateness(RequirementSR req, PersonSR person, Map<String, Skill> skillTrad) throws IOException {
         List<String> reqSkills = req.getSkills();
         for (Skill sk : person.getSkills()) {
             skillTrad.put(sk.getName(), sk);
         }
         Double total = 0.0;
-        for (String skill : skillTrad.keySet()) {
-            for (String done : reqSkills) {
+        for (String done : reqSkills) {
+            Double weightToAdd=0.0;
+            for (String skill : skillTrad.keySet()) {
                 if (skill.equals(done)) {
+                    weightToAdd=10.0;
                     total = total + skillTrad.get(skill).getWeight();
+                    break;
+                }
+                else {
+                    Double val = WordEmbedding.computeSimilarity(skill, done);
+                    if (val>weightToAdd) weightToAdd=val;
                 }
             }
+            if (weightToAdd!=10.0) total=total+weightToAdd;
         }
         Double amount = (double) req.getSkills().size();
         Double appropiateness;
@@ -493,7 +504,6 @@ public class StakeholdersRecommenderService {
     }
 
     private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
-        System.out.println(oldRecs);
         return getSkills(oldRecs, allComponents, componentFrequency);
 
     }
