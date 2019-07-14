@@ -98,7 +98,7 @@ public class StakeholdersRecommenderService {
             Double effort = request.getRequirement().getEffort();
             Effort e = EffortRepository.findById(new ProjectSRId(request.getProject().getId(), organization));
             if (e != null) {
-                HashMap<Double, Double> effMap = e.getEffortMap();
+                Map<Double, Double> effMap = e.getEffortMap();
                 if (effMap.containsKey(effort)) {
                     hours = effMap.get(effort);
                 } else {

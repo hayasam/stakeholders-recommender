@@ -12,7 +12,8 @@ public class Effort implements Serializable {
     @EmbeddedId
     private ProjectSRId id;
 
-    private HashMap<Double,Double> effortMap;
+    @ElementCollection
+    private Map<Double,Double> effortMap;
 
     public ProjectSRId getId() {
         return id;
@@ -22,11 +23,11 @@ public class Effort implements Serializable {
         this.id = id;
     }
 
-    public HashMap<Double, Double> getEffortMap() {
+    public Map<Double, Double> getEffortMap() {
         return effortMap;
     }
 
-    public void setEffortMap(HashMap<Double, Double> effortMap) {
+    public void setEffortMap(Map<Double, Double> effortMap) {
         this.effortMap = effortMap;
     }
 }
