@@ -5,6 +5,7 @@ import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
@@ -712,6 +713,7 @@ public class StakeholdersRecommenderService {
             return newList;
         } else return null;
     }
+
 
     private class SinglePair<T> {
         T p1, p2;
