@@ -101,4 +101,5 @@ public class StakeholdersRecommenderController {
         List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization,k);
         return new ResponseEntity<>(skills,HttpStatus.OK);
     }
+
 }
