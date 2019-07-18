@@ -1,4 +1,4 @@
-package upc.stakeholdersrecommender.domain.ri_logging;
+package upc.stakeholdersrecommender.domain.rilogging;
 import java.util.*;
 
 public class LogArray {

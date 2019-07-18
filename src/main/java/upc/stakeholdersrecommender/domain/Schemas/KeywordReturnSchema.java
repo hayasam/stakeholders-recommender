@@ -1,8 +1,9 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-import java.util.List;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 @ApiModel(description = "Class representing a requirement with its keywords.")
 public class KeywordReturnSchema {
