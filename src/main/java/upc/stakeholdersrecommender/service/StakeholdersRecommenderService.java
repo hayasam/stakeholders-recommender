@@ -4,12 +4,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
+import upc.stakeholdersrecommender.domain.ri_logging.LogArray;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
@@ -285,6 +287,7 @@ public class StakeholdersRecommenderService {
     public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
         purge(organization);
         verify(request);
+        getUserLogging();
         Map<String, Requirement> recs = new HashMap<>();
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -359,6 +362,7 @@ public class StakeholdersRecommenderService {
         if (request.getParticipants() != null) particips = request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
     }
+
 
     private void verify(BatchSchema request) throws Exception {
         Set<String> rec=new HashSet<>();
@@ -723,6 +727,14 @@ public class StakeholdersRecommenderService {
             this.p2 = p2;
         }
 
+    }
+
+    private void getUserLogging() {
+        RestTemplate temp=new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
     }
 
 
