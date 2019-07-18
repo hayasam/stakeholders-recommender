@@ -1,9 +1,11 @@
 package upc.stakeholdersrecommender.entity;
 
 
-import javax.persistence.*;
+import javax.persistence.ElementCollection;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 @Entity

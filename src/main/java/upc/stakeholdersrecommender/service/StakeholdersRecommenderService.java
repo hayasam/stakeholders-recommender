@@ -11,7 +11,7 @@ import upc.stakeholdersrecommender.domain.*;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
-import upc.stakeholdersrecommender.domain.ri_logging.LogArray;
+
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
@@ -48,7 +48,6 @@ public class StakeholdersRecommenderService {
     private KeywordExtractionModelRepository KeywordExtractionModelRepository;
     @Autowired
     private WordEmbedding WordEmbedding;
-
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
@@ -95,7 +94,7 @@ public class StakeholdersRecommenderService {
         } else {
             persList.addAll(PersonSRRepository.findByProjectIdQueryAndOrganization(p, organization));
         }
-        List<PersonSR> clean = removeRejected(persList, request.getUser().getUsername(), organization,request.getRequirement().getId());
+        List<PersonSR> clean = removeRejected(persList, request.getUser().getUsername(), organization, request.getRequirement().getId());
         Double hours = 100.0;
         if (projectSpecific) {
             Double effort = request.getRequirement().getEffort();
@@ -125,8 +124,7 @@ public class StakeholdersRecommenderService {
             for (PersonSR pers : persList) {
                 if (!rej.getDeleted().containsKey(pers.getName())) {
                     newList.add(pers);
-                }
-                else if (!rej.getDeleted().get(pers.getName()).contains(requirement)) {
+                } else if (!rej.getDeleted().get(pers.getName()).contains(requirement)) {
                     newList.add(pers);
                 }
             }
@@ -209,19 +207,18 @@ public class StakeholdersRecommenderService {
         }
         Double total = 0.0;
         for (String done : reqSkills) {
-            Double weightToAdd=0.0;
+            Double weightToAdd = 0.0;
             for (String skill : skillTrad.keySet()) {
                 if (skill.equals(done)) {
-                    weightToAdd=10.0;
+                    weightToAdd = 10.0;
                     total = total + skillTrad.get(skill).getWeight();
                     break;
-                }
-                else {
+                } else {
                     Double val = WordEmbedding.computeSimilarity(skill, done);
-                    if (val>weightToAdd) weightToAdd=val;
+                    if (val > weightToAdd) weightToAdd = val;
                 }
             }
-            if (weightToAdd!=10.0) total=total+weightToAdd;
+            if (weightToAdd != 10.0) total = total + weightToAdd;
         }
         Double amount = (double) req.getSkills().size();
         Double appropiateness;
@@ -287,7 +284,7 @@ public class StakeholdersRecommenderService {
     public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
         purge(organization);
         verify(request);
-        getUserLogging();
+        //getUserLogging();
         Map<String, Requirement> recs = new HashMap<>();
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -319,7 +316,7 @@ public class StakeholdersRecommenderService {
                     }
                 allComponents.put(req.getId(), component);
             }
-            allComponents=extractDate(recs, allComponents);
+            allComponents = extractDate(recs, allComponents);
         }
         Set<String> projs = new HashSet<>();
         Set<String> seenPersons = new HashSet<>();
@@ -365,36 +362,40 @@ public class StakeholdersRecommenderService {
 
 
     private void verify(BatchSchema request) throws Exception {
-        Set<String> rec=new HashSet<>();
-        for (Requirement r:request.getRequirements()) {
-            if (r.getId().length()>255) throw new Exception("Requirement id exceeds character size of 255");
-            if (rec.contains(r.getId())) throw new Exception("Requirement id "+ r.getId()+" is repeated");
+        Set<String> rec = new HashSet<>();
+        for (Requirement r : request.getRequirements()) {
+            if (r.getId().length() > 255) throw new Exception("Requirement id exceeds character size of 255");
+            if (rec.contains(r.getId())) throw new Exception("Requirement id " + r.getId() + " is repeated");
             rec.add(r.getId());
         }
-        Set<String> proj=new HashSet<>();
-        for (Project p:request.getProjects())  {
-            if (p.getId().length()>255) throw new Exception("Project id exceeds character size of 255");
-            if (proj.contains(p.getId())) throw new Exception("Project id "+ p.getId()+" is repeated");
-            for (String a:p.getSpecifiedRequirements())  if (!rec.contains(a)) throw new Exception("Specified requirement "+a+" doesn't exist");
+        Set<String> proj = new HashSet<>();
+        for (Project p : request.getProjects()) {
+            if (p.getId().length() > 255) throw new Exception("Project id exceeds character size of 255");
+            if (proj.contains(p.getId())) throw new Exception("Project id " + p.getId() + " is repeated");
+            for (String a : p.getSpecifiedRequirements())
+                if (!rec.contains(a)) throw new Exception("Specified requirement " + a + " doesn't exist");
             proj.add(p.getId());
         }
-        Set<String> person=new HashSet<>();
-        for (PersonMinimal p:request.getPersons()) {
-            if (p.getUsername().length()>255) throw new Exception("Requirement id exceeds character size of 255");
-            if (person.contains(p.getUsername())) throw new Exception("Person id "+ p.getUsername()+" is repeated");
+        Set<String> person = new HashSet<>();
+        for (PersonMinimal p : request.getPersons()) {
+            if (p.getUsername().length() > 255) throw new Exception("Requirement id exceeds character size of 255");
+            if (person.contains(p.getUsername())) throw new Exception("Person id " + p.getUsername() + " is repeated");
             person.add(p.getUsername());
         }
-        for (Responsible r:request.getResponsibles()) {
-            if (!rec.contains(r.getRequirement())) throw new Exception("Person assigned to non-existent requirement "+r.getRequirement());
-            if (!person.contains(r.getPerson())) throw new Exception("Requirement assigned to non-existent person "+r.getPerson());
+        for (Responsible r : request.getResponsibles()) {
+            if (!rec.contains(r.getRequirement()))
+                throw new Exception("Person assigned to non-existent requirement " + r.getRequirement());
+            if (!person.contains(r.getPerson()))
+                throw new Exception("Requirement assigned to non-existent person " + r.getPerson());
         }
-        if (request.getParticipants()!=null) {
+        if (request.getParticipants() != null) {
             for (Participant p : request.getParticipants()) {
                 if (!person.contains(p.getPerson()))
                     throw new Exception("Project assigned to non-existent person " + p.getPerson());
                 if (!proj.contains(p.getProject()))
                     throw new Exception("Person assigned to non-existent project " + p.getProject());
-                if (p.getAvailability()!=null && p.getAvailability() < 0) throw new Exception("Availability must be in a range from 1.0 to 0.0");
+                if (p.getAvailability() != null && p.getAvailability() < 0)
+                    throw new Exception("Availability must be in a range from 1.0 to 0.0");
             }
         }
     }
@@ -444,15 +445,15 @@ public class StakeholdersRecommenderService {
     }
 
     private Map<String, Map<String, Double>> computeTimeFactor(Map<String, Requirement> recs, Map<String, Map<String, Double>> allComponents, Date dat) {
-        Map<String, Map<String, Double>> scaledKeywords=new HashMap<>();
+        Map<String, Map<String, Double>> scaledKeywords = new HashMap<>();
         for (String s : allComponents.keySet()) {
             Requirement req = recs.get(s);
             long diffInMillies = Math.abs(dat.getTime() - req.getModified().getTime());
             long diffDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             Map<String, Double> aux = allComponents.get(s);
-            Map<String,Double> helper=new HashMap<>();
+            Map<String, Double> helper = new HashMap<>();
             for (String j : aux.keySet()) {
-                helper.put(j, min(1.0,1.0 - min(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays)))));
+                helper.put(j, min(1.0, 1.0 - min(0.5, diffDays * (0.5 / Double.parseDouble(dropoffDays)))));
             }
             scaledKeywords.put(s, helper);
         }
@@ -514,7 +515,7 @@ public class StakeholdersRecommenderService {
     }
 
     private List<Skill> getSkills(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency) {
-        List<Skill> toret=new ArrayList<>();
+        List<Skill> toret = new ArrayList<>();
         Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
         for (String key : appearances.keySet()) {
             Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
@@ -530,14 +531,14 @@ public class StakeholdersRecommenderService {
             Map<String, Double> help = allComponents.get(s);
             for (String sk : help.keySet()) {
                 if (appearances.containsKey(sk)) {
-                    SinglePair<Double> aux=appearances.get(sk);
-                    Double auxi=aux.p1+help.get(sk);
+                    SinglePair<Double> aux = appearances.get(sk);
+                    Double auxi = aux.p1 + help.get(sk);
                     appearances.put(sk, new SinglePair<>(auxi, aux.p2));
                 } else {
                     appearances.put(sk, new SinglePair<>(help.get(sk), (double) componentFrequency.get(sk)));
                 }
             }
-            }
+        }
         return appearances;
     }
 
@@ -700,24 +701,22 @@ public class StakeholdersRecommenderService {
         RejectedPersonRepository.save(rej);
     }
 
-    public List<Skill> getPersonSkills(String person, String organization,Integer k) {
+    public List<Skill> getPersonSkills(String person, String organization, Integer k) {
         List<PersonSR> per = PersonSRRepository.findByNameAndOrganization(person, organization);
         if (per != null && per.size() > 0) {
             PersonSR truePerson = per.get(0);
-            List<Skill> skill=truePerson.getSkills();
+            List<Skill> skill = truePerson.getSkills();
             Collections.sort(skill,
                     Comparator.comparingDouble(Skill::getWeight).reversed());
-            List<Skill> newList=new ArrayList<>();
-            if (k!=-1) {
+            List<Skill> newList = new ArrayList<>();
+            if (k != -1) {
                 for (int i = 0; i < k; ++i) {
                     newList.add(skill.get(i));
                 }
-            }
-            else newList=skill;
+            } else newList = skill;
             return newList;
         } else return null;
     }
-
 
     private class SinglePair<T> {
         T p1, p2;
@@ -728,7 +727,7 @@ public class StakeholdersRecommenderService {
         }
 
     }
-
+/*
     private void getUserLogging() {
         RestTemplate temp=new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -736,6 +735,6 @@ public class StakeholdersRecommenderService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
     }
-
+*/
 
 }

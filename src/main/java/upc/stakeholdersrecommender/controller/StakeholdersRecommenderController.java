@@ -12,11 +12,7 @@ import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
-
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.List;
 
 
@@ -103,13 +99,6 @@ public class StakeholdersRecommenderController {
                                           @ApiParam(value = "Maximum number of skills to be returned", example = "10",required=false)@RequestParam(value="k",defaultValue = "-1",required=false) Integer k) {
         List<Skill> skills=stakeholdersRecommenderService.getPersonSkills(person,organization,k);
         return new ResponseEntity<>(skills,HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "cert", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Load cert", notes = "")
-    public ResponseEntity loadCert() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        new CertSetter().loadCert();
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
