@@ -12,6 +12,7 @@ import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
 
+import upc.stakeholdersrecommender.domain.rilogging.LogArray;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
@@ -727,14 +728,16 @@ public class StakeholdersRecommenderService {
         }
 
     }
-/*
+
     private void getUserLogging() {
         RestTemplate temp=new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
+        LogArray log=res.getBody();
+        log.log();
     }
-*/
+
 
 }
