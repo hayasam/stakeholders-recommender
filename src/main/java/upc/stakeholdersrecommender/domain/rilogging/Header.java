@@ -1,13 +1,13 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
 public class Header {
-    String thing;
+    private String Sessionid;
 
-    public String getThing() {
-        return thing;
+    public String getSessionid() {
+        return Sessionid;
     }
 
-    public void setThing(String thing) {
-        this.thing = thing;
+    public void setSessionid(String sessionid) {
+        Sessionid = sessionid;
     }
 }
