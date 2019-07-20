@@ -1,13 +1,18 @@
 package upc.stakeholdersrecommender.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oneandone.compositejks.SslContextUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.*;
+import upc.stakeholdersrecommender.domain.Preprocess.PreprocessService;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
@@ -18,6 +23,7 @@ import upc.stakeholdersrecommender.repository.*;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +55,8 @@ public class StakeholdersRecommenderService {
     private KeywordExtractionModelRepository KeywordExtractionModelRepository;
     @Autowired
     private WordEmbedding WordEmbedding;
+    @Autowired
+    private PreprocessService Preprocess;
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
@@ -285,8 +293,9 @@ public class StakeholdersRecommenderService {
     public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
         purge(organization);
         verify(request);
-        //getUserLogging();
+        getUserLogging();
         Map<String, Requirement> recs = new HashMap<>();
+        //List<Requirement> preprocessed=Preprocess.preprocess(request.getRequirements());
         for (Requirement r : request.getRequirements()) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
@@ -729,7 +738,8 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private void getUserLogging() {
+    private void getUserLogging() throws GeneralSecurityException, IOException {
+        SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
         RestTemplate temp=new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
