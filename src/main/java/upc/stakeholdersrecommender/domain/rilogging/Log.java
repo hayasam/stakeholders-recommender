@@ -1,9 +1,13 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Log {
     private Body body;
     private Header header;
     private String event_type;
+
+    public Log(){}
 
     public Body getBody() {
         return body;
