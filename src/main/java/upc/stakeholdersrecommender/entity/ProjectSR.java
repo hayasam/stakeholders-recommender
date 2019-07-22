@@ -23,6 +23,8 @@ public class ProjectSR implements Serializable {
 
     private Boolean rake;
 
+    private Boolean bugzilla;
+
     public ProjectSR() {
 
     }
@@ -69,5 +71,13 @@ public class ProjectSR implements Serializable {
 
     public void setRecSize(Integer recSize) {
         this.recSize = recSize;
+    }
+
+    public Boolean getBugzilla() {
+        return bugzilla;
+    }
+
+    public void setBugzilla(Boolean bugzilla) {
+        this.bugzilla = bugzilla;
     }
 }
