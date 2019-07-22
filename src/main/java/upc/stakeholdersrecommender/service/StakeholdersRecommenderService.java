@@ -65,16 +65,22 @@ public class StakeholdersRecommenderService {
         List<PersonSR> persList = new ArrayList<>();
         RequirementSR req;
         RequirementSR newReq = new RequirementSR();
-        Requirement requeriment = request.getRequirement();
-        requeriment.setDescription(requeriment.getDescription() + ". " + requeriment.getName());
+        Requirement requirement = request.getRequirement();
+        requirement.setDescription(requirement.getDescription() + ". " + requirement.getName());
         newReq.setProjectIdQuery(request.getProject().getId());
         newReq.setId(new RequirementSRId(request.getProject().getId(), request.getRequirement().getId(), organization));
         ProjectSR pro = ProjectRepository.findById(new ProjectSRId(request.getProject().getId(), organization));
         Boolean rake = pro.getRake();
-        if (!rake) {
-            Integer size = pro.getRecSize();
-            newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requeriment, KeywordExtractionModelRepository.getOne(organization).getModel(), size));
-        } else newReq.setSkills(new RAKEKeywordExtractor().computeTFIDFSingular(requeriment));
+        Boolean bugzilla = pro.getBugzilla();
+        if (bugzilla) {
+            newReq.setSkills(Preprocess.preprocessSingular(requirement));
+        }
+        else {
+            if (!rake) {
+                Integer size = pro.getRecSize();
+                newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requirement, KeywordExtractionModelRepository.getOne(organization).getModel(), size));
+            } else newReq.setSkills(new RAKEKeywordExtractor().computeTFIDFSingular(requirement));
+        }
         List<String> comps = new ArrayList<>();
         if (request.getRequirement().getRequirementParts() != null) {
             for (RequirementPart l : request.getRequirement().getRequirementParts()) {
@@ -290,13 +296,18 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing) throws Exception {
         purge(organization);
         verify(request);
         getUserLogging();
         Map<String, Requirement> recs = new HashMap<>();
-        //List<Requirement> preprocessed=Preprocess.preprocess(request.getRequirements());
-        for (Requirement r : request.getRequirements()) {
+        List<Requirement> requeriments;
+        if (bugzillaPreprocessing) {
+            requeriments = Preprocess.preprocess(request.getRequirements());
+        } else {
+            requeriments = request.getRequirements();
+        }
+        for (Requirement r : requeriments) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
             r.setModified(dtIn);
@@ -308,9 +319,14 @@ public class StakeholdersRecommenderService {
         Map<String, List<Participant>> participants = getParticipants(request);
         Boolean rake = true;
         Map<String, Map<String, Double>> allSkills;
-        if (request.getRequirements().size() > 100) rake = false;
-        if (rake) allSkills = computeAllSkillsRequirementRAKE(recs, organization);
-        else allSkills = computeAllSkillsRequirement(recs, organization);
+        if (!bugzillaPreprocessing) {
+            if (requeriments.size() > 100) rake = false;
+            if (rake) allSkills = computeAllSkillsRequirementRAKE(recs, organization);
+            else allSkills = computeAllSkillsRequirement(recs, organization);
+        }
+        else {
+            allSkills = computeAllSkillsNoMethod(recs, organization);
+        }
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
         Map<String, Map<String, Double>> allComponents = new HashMap<>();
         Map<String, Integer> componentFrequency = new HashMap<>();
@@ -352,7 +368,7 @@ public class StakeholdersRecommenderService {
             }
             List<Participant> part = new ArrayList<>();
             if (participants.containsKey(proj.getId())) part = participants.get(proj.getId());
-            String id = instanciateProject(proj, part, organization, rake, recSize);
+            String id = instanciateProject(proj, part, organization, rake, recSize,bugzillaPreprocessing);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
@@ -368,6 +384,23 @@ public class StakeholdersRecommenderService {
         Integer particips = 0;
         if (request.getParticipants() != null) particips = request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
+    }
+
+    private Map<String, Map<String, Double>> computeAllSkillsNoMethod(Map<String, Requirement> recs, String organization) {
+        Map<String, Map<String, Double>> ret=new HashMap<>();
+        for (String s:recs.keySet()) {
+            Requirement r=recs.get(s);
+            Set<String> helper=new HashSet<>();
+            for (String h:r.getDescription().split(" ")) {
+                helper.add(h);
+            }
+            Map<String,Double> aux=new HashMap<>();
+            for (String j:helper) {
+                aux.put(j,0.0);
+            }
+            ret.put(s,aux);
+        }
+        return ret;
     }
 
 
@@ -595,13 +628,14 @@ public class StakeholdersRecommenderService {
         RequirementSRRepository.saveAll(reqs);
     }
 
-    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake, Integer size) {
+    private String instanciateProject(Project proj, List<Participant> participants, String organization, Boolean rake, Integer size, Boolean bugzilla) {
         String id = proj.getId();
         ProjectSR projectSRTrad = new ProjectSR(new ProjectSRId(proj.getId(), organization));
         List<String> parts = new ArrayList<>();
         for (Participant par : participants) {
             parts.add(par.getPerson());
         }
+        projectSRTrad.setBugzilla(bugzilla);
         projectSRTrad.setRecSize(size);
         projectSRTrad.setParticipants(parts);
         projectSRTrad.setRake(rake);

@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Requirement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PreprocessService {
@@ -28,7 +25,7 @@ public class PreprocessService {
         }
         toSend.setRequirements(aux);
         RestTemplate temp=new RestTemplate();
-        RequirementPreprocessedList res= temp.postForObject("ur",toSend,RequirementPreprocessedList.class);
+        RequirementPreprocessedList res= temp.postForObject("http://217.172.12.199/requirements?stemmer=false",toSend,RequirementPreprocessedList.class);
         List<Requirement> result=new ArrayList<>();
         for (RequirementPreprocessed r:res.getRequirements()) {
             Requirement re=reqMap.get(r.getId());
@@ -40,4 +37,23 @@ public class PreprocessService {
     }
 
 
+    public List<String> preprocessSingular(Requirement requirement) {
+        RequirementPreprocessList toSend=new RequirementPreprocessList();
+        List<RequirementPreprocess> aux=new ArrayList<>();
+        RequirementPreprocess req=new RequirementPreprocess();
+        req.setId(requirement.getId());
+        req.setDescription(requirement.getDescription());
+        req.setTitle(requirement.getName());
+        aux.add(req);
+        toSend.setRequirements(aux);
+        RestTemplate temp=new RestTemplate();
+        RequirementPreprocessedList res= temp.postForObject("http://217.172.12.199/requirements?stemmer=false",toSend,RequirementPreprocessedList.class);
+        List<String> result=new ArrayList<>();
+        List<RequirementPreprocessed> re=res.getRequirements();
+        RequirementPreprocessed processed=re.get(0);
+        for (String j:processed.getDescription().split(" ")) {
+            result.add(j);
+        }
+        return result;
+    }
 }
