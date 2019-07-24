@@ -20,6 +20,7 @@ public class Body {
     private String timestamp;
     private String innerText;
     private String projectId;
+    private Integer unixTime;
 
     public Body(){}
 
@@ -85,6 +86,14 @@ public class Body {
 
     public void setInnerText(String innerText) {
         this.innerText = innerText;
+    }
+
+    public Integer getUnixTime() {
+        return unixTime;
+    }
+
+    public void setUnixTime(Integer unixTime) {
+        this.unixTime = unixTime;
     }
 
     static class StupidValueDeserializer extends JsonDeserializer<String> {

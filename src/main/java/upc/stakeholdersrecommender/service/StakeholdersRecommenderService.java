@@ -299,7 +299,7 @@ public class StakeholdersRecommenderService {
     public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing) throws Exception {
         purge(organization);
         verify(request);
-        getUserLogging();
+        //getUserLogging();
         Map<String, Requirement> recs = new HashMap<>();
         List<Requirement> requeriments;
         if (bugzillaPreprocessing) {
@@ -780,7 +780,7 @@ public class StakeholdersRecommenderService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
         LogArray log=res.getBody();
-        log.log();
+        //log.log();
     }
 
 

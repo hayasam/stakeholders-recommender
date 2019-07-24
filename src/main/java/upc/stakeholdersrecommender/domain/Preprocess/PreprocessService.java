@@ -47,7 +47,7 @@ public class PreprocessService {
         aux.add(req);
         toSend.setRequirements(aux);
         RestTemplate temp=new RestTemplate();
-        RequirementPreprocessedList res= temp.postForObject("http://217.172.12.199/requirements?stemmer=false",toSend,RequirementPreprocessedList.class);
+        RequirementPreprocessedList res= temp.postForObject("http://217.172.12.199:9406/requirements?stemmer=false",toSend,RequirementPreprocessedList.class);
         List<String> result=new ArrayList<>();
         List<RequirementPreprocessed> re=res.getRequirements();
         RequirementPreprocessed processed=re.get(0);
