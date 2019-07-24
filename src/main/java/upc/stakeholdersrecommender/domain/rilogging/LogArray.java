@@ -32,6 +32,12 @@ public class LogArray {
                 logged.put(l.getBody().getUsername(),list);
             }
         }
+        for (String s:logged.keySet()) {
+            List<Log> toOrder=logged.get(s);
+            Collections.sort(toOrder,
+                    Comparator.comparingInt(Log::getUnixTime));
+            logged.put(s,toOrder);
+        }
         ObjectMapper mapper = new ObjectMapper();
         for (List<Log> l:logged.values()) {
             String res = mapper.writeValueAsString(l);

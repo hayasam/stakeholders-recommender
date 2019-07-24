@@ -25,6 +25,12 @@ public class Log {
         this.header = header;
     }
 
+    public Integer getUnixTime() {
+        if (body!=null && body.getUnixTime()!=null)
+        return body.getUnixTime();
+        else return 0;
+    }
+
     public String getEvent_type() {
         return event_type;
     }
