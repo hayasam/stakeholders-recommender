@@ -38,4 +38,21 @@ public class Log {
     public void setEvent_type(String event_type) {
         this.event_type = event_type;
     }
+
+    public String getName() {
+        return "";
+    }
+
+    public String getDescription() {
+        return "";
+    }
+
+    public boolean isDescription() {
+        return false;
+    }
+
+
+    public boolean isName() {
+        return false;
+    }
 }
