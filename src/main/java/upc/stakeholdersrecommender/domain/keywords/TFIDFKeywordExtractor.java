@@ -88,6 +88,28 @@ public class TFIDFKeywordExtractor {
         }
         return keywords;
     }
+    public Map<String, Map<String, Double>> computeTFIDFExtra(Map<String, Integer> model, Integer size, Map<String, Requirement> trueRecs) throws IOException {
+        Map<String,Map<String,Double>> result=new HashMap<>();
+        for (String l:trueRecs.keySet()) {
+            Requirement req=trueRecs.get(l);
+            List<String> doc = englishAnalyze(clean_text(req.getDescription()));
+            Map<String, Integer> wordBag = tf(doc);
+            Map<String,Double> keywords = new HashMap<>();
+            for (String s : wordBag.keySet()) {
+                if (model.containsKey(s)) {
+                    model.put(s, model.get(s) + 1);
+                    if (wordBag.get(s) * idf(size, model.get(s)) >= cutoffParameter) keywords.put(s,0.0);
+                } else {
+                    model.put(s, 1);
+                    if (wordBag.get(s) * idf(size, model.get(s)) >= cutoffParameter) keywords.put(s,0.0);
+                }
+            }
+            result.put(l,keywords);
+        }
+        return result;
+
+    }
+
 
 
     private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
@@ -170,6 +192,7 @@ public class TFIDFKeywordExtractor {
     public void setCutoffParameter(Double cutoffParameter) {
         this.cutoffParameter = cutoffParameter;
     }
+
 
 
 }
