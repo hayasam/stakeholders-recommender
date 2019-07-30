@@ -20,7 +20,8 @@ public class PreprocessService {
             RequirementPreprocess req=new RequirementPreprocess();
             req.setId(r.getId());
             req.setDescription(r.getDescription());
-            req.setTitle(r.getName());
+            if (r.getName()!=null) req.setTitle(r.getName());
+            else req.setTitle("");
             aux.add(req);
         }
         toSend.setRequirements(aux);
@@ -43,7 +44,8 @@ public class PreprocessService {
         RequirementPreprocess req=new RequirementPreprocess();
         req.setId(requirement.getId());
         req.setDescription(requirement.getDescription());
-        req.setTitle(requirement.getName());
+        if (r.getName()!=null) req.setTitle(r.getName());
+        else req.setTitle("");
         aux.add(req);
         toSend.setRequirements(aux);
         RestTemplate temp=new RestTemplate();
