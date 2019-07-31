@@ -44,7 +44,7 @@ public class PreprocessService {
         RequirementPreprocess req=new RequirementPreprocess();
         req.setId(requirement.getId());
         req.setDescription(requirement.getDescription());
-        if (r.getName()!=null) req.setTitle(r.getName());
+        if (requirement.getName()!=null) req.setTitle(requirement.getName());
         else req.setTitle("");
         aux.add(req);
         toSend.setRequirements(aux);
