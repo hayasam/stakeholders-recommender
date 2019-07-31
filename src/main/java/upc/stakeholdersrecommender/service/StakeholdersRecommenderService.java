@@ -1,5 +1,6 @@
 package upc.stakeholdersrecommender.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneandone.compositejks.SslContextUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.math3.util.Pair;
@@ -304,6 +305,8 @@ public class StakeholdersRecommenderService {
         } else {
             requeriments = request.getRequirements();
         }
+        ObjectMapper obj=new ObjectMapper();
+        System.out.println(obj.writeValueAsString(requeriments));
         for (Requirement r : requeriments) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
