@@ -294,7 +294,7 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing, Boolean logging) throws Exception {
         purge(organization);
         verify(request);
         Map<String, Requirement> recs = new HashMap<>();
@@ -345,10 +345,12 @@ public class StakeholdersRecommenderService {
         Set<String> seenPersons = new HashSet<>();
         Integer recSize = request.getRequirements().size();
 
-
-        Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair=getUserLogging(bugzillaPreprocessing,rake,organization,recSize);
-        Map<String, Integer> loggingFrequency = getSkillFrequency(pair.getFirst());
-
+        Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair=null;
+        Map<String, Integer> loggingFrequency=null;
+        if (logging) {
+            pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize);
+            loggingFrequency = getSkillFrequency(pair.getFirst());
+        }
 
 
         for (Project proj : request.getProjects()) {
@@ -629,9 +631,11 @@ public class StakeholdersRecommenderService {
         Double edit=-1.0;
         if (editValue!=0) {
             edit=appearances.get(key).p1/appearances.get(key).p2;
+            edit=edit-0.2*max(0,(300-editValue/300));
         }
         if (viewValue!=0) {
             view=appearances.get(key).p1/appearances.get(key).p2;
+            view=view-0.2*max(0,(300-viewValue/300));
         }
         Double retValue=0.0;
         if (view!=-1.0) {
@@ -885,6 +889,12 @@ public class StakeholdersRecommenderService {
                     List<Log> auxList=reqId.get(l.getBody().getRequirementId());
                     auxList.add(l);
                     reqId.put(l.getBody().getRequirementId(),auxList);
+                }
+                else {
+                    List<Log> auxList=new ArrayList<>();
+                    auxList.add(l);
+                    reqId.put(l.getBody().getRequirementId(),auxList);
+
                 }
             }
             Map<String, Pair<Integer,Integer>> times=extractTimeInRequirement(toOrder);

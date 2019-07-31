@@ -13,7 +13,7 @@ import java.util.*;
 
 public class RAKEKeywordExtractor {
 
-    public Double cutoff=6.0;
+    private Double cutoff=6.0;
 
          public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
             List<Map<String,Double>> res= new ArrayList<>();
