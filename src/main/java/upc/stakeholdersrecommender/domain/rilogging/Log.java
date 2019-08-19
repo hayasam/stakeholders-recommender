@@ -26,9 +26,7 @@ public class Log {
     }
 
     public Integer getUnixTime() {
-        if (body!=null && body.getUnixTime()!=null)
         return body.getUnixTime();
-        else return 0;
     }
 
     public String getEvent_type() {
@@ -39,20 +37,24 @@ public class Log {
         this.event_type = event_type;
     }
 
-    public String getName() {
-        return "";
-    }
 
-    public String getDescription() {
-        return "";
+    public String getDescriptionOrName() {
+        String toRet="";
+        if (body.getInnerText()!=null&& !body.getInnerText().equals("")) {
+            toRet=body.getInnerText();
+        }
+        else if (body.getValue()!=null&& !body.getValue().equals("")) {
+            toRet=body.getValue();
+        }
+        return toRet;
     }
 
     public boolean isDescription() {
-        return false;
+        return body.getSrcElementclassName().equals("note-placeholder")||body.getSrcElementclassName().equals("note-editable or-description-active");
     }
 
 
     public boolean isName() {
-        return false;
+        return body.getSrcElementclassName().equals("or-requirement-title form-control");
     }
 }

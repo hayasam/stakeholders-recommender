@@ -16,6 +16,7 @@
 *.iml
 *.ipr
 
+
 ### NetBeans ###
 /nbproject/private/
 /build/
@@ -24,10 +25,5 @@
 /nbdist/
 /.nb-gradle/
 
-data
-CosasSimilarity.zip
-Output.xlsx
-OutputWithSIF.xlsx
-CosasSimilarity
-stanford-corenlp-full-2018-10-05
-/glove.6B.50d
+test
+classes

@@ -54,6 +54,7 @@ public class PreprocessService {
         List<RequirementPreprocessed> re=res.getRequirements();
         RequirementPreprocessed processed=re.get(0);
         for (String j:processed.getDescription().split(" ")) {
+            if (!j.equals(""))
             result.add(j);
         }
         return result;
