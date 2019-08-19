@@ -50,5 +50,5 @@ public class ProjectKeywordSchemaTest {
         instance.setProjectId(projectId);
         assertEquals(projectId, instance.getProjectId());
     }
-    
+
 }

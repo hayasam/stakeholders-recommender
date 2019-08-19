@@ -1,27 +1,27 @@
-
-
 package upc.stakeholdersrecommender.entity;
 
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ProjectSRTest {
-    
+
     @Test
     public void testGetId() {
         System.out.println("getId");
         ProjectSR instance = new ProjectSR();
-        instance.setId(new ProjectSRId("one","two"));
-        ProjectSRId expResult = new ProjectSRId("one","two");
+        instance.setId(new ProjectSRId("one", "two"));
+        ProjectSRId expResult = new ProjectSRId("one", "two");
         ProjectSRId result = instance.getId();
-        assertTrue(expResult.getOrganizationId().equals(result.getOrganizationId())&&
+        assertTrue(expResult.getOrganizationId().equals(result.getOrganizationId()) &&
                 expResult.getProjectId().equals(result.getProjectId()));
     }
 
@@ -29,10 +29,10 @@ public class ProjectSRTest {
     public void testSetId() {
         System.out.println("setId");
         ProjectSR instance = new ProjectSR();
-        instance.setId(new ProjectSRId("one","two"));
-        ProjectSRId expResult = new ProjectSRId("one","two");
+        instance.setId(new ProjectSRId("one", "two"));
+        ProjectSRId expResult = new ProjectSRId("one", "two");
         ProjectSRId result = instance.getId();
-        assertTrue(expResult.getOrganizationId().equals(result.getOrganizationId())&&
+        assertTrue(expResult.getOrganizationId().equals(result.getOrganizationId()) &&
                 expResult.getProjectId().equals(result.getProjectId()));
     }
 
@@ -52,7 +52,7 @@ public class ProjectSRTest {
         List<String> participants = null;
         ProjectSR instance = new ProjectSR();
         instance.setParticipants(participants);
-        assertEquals(null,instance.getParticipants());
+        assertEquals(null, instance.getParticipants());
     }
-    
+
 }

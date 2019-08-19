@@ -11,7 +11,7 @@ public class RequirementMinimal {
 
 
     public RequirementMinimal(String name) {
-        this.id=name;
+        this.id = name;
     }
 
 

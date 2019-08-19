@@ -1,5 +1,3 @@
-
-
 package upc.stakeholdersrecommender.domain;
 
 import org.junit.Test;
@@ -7,12 +5,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonTest {
-    
 
 
     @Test
@@ -48,7 +46,7 @@ public class PersonTest {
         Double availability = 1.0;
         Person instance = new Person();
         instance.setAvailability(availability);
-        assertTrue(1.0==instance.getAvailability());
+        assertTrue(1.0 == instance.getAvailability());
     }
-    
+
 }

@@ -11,13 +11,14 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest
 public class HeaderTest {
     @Test
-    public void HeaderTest(){
-        Header hed=new Header();
-        assertTrue(hed!=null);
+    public void HeaderTest() {
+        Header hed = new Header();
+        assertTrue(hed != null);
     }
+
     @Test
     public void getSessionIdTest() {
-        Header hed=new Header();
+        Header hed = new Header();
         hed.setSessionid("id");
         assertTrue(hed.getSessionid().equals("id"));
     }

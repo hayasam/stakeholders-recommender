@@ -11,9 +11,10 @@ import javax.persistence.QueryHint;
 
 @Repository
 public interface EffortRepository extends JpaRepository<Effort, String> {
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     Effort findById(ProjectSRId id);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     @Transactional
     void deleteById(ProjectSRId id);
 

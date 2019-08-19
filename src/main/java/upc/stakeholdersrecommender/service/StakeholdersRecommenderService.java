@@ -76,8 +76,7 @@ public class StakeholdersRecommenderService {
         Boolean bugzilla = pro.getBugzilla();
         if (bugzilla) {
             newReq.setSkills(Preprocess.preprocessSingular(requirement));
-        }
-        else {
+        } else {
             if (!rake) {
                 Integer size = pro.getRecSize();
                 newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requirement, KeywordExtractionModelRepository.getOne(organization).getModel(), size));
@@ -324,8 +323,7 @@ public class StakeholdersRecommenderService {
             if (requeriments.size() > 100) rake = false;
             if (rake) allSkills = computeAllSkillsRequirementRAKE(recs, organization);
             else allSkills = computeAllSkillsRequirement(recs, organization);
-        }
-        else {
+        } else {
             allSkills = computeAllSkillsNoMethod(recs);
         }
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
@@ -349,8 +347,8 @@ public class StakeholdersRecommenderService {
         Set<String> seenPersons = new HashSet<>();
         Integer recSize = request.getRequirements().size();
 
-        Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair=null;
-        Map<String, Integer> loggingFrequency=null;
+        Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair = null;
+        Map<String, Integer> loggingFrequency = null;
 
         if (logging) {
             pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize);
@@ -379,7 +377,7 @@ public class StakeholdersRecommenderService {
             }
             List<Participant> part = new ArrayList<>();
             if (participants.containsKey(proj.getId())) part = participants.get(proj.getId());
-            String id = instanciateProject(proj, part, organization, rake, recSize,bugzillaPreprocessing);
+            String id = instanciateProject(proj, part, organization, rake, recSize, bugzillaPreprocessing);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
@@ -388,29 +386,29 @@ public class StakeholdersRecommenderService {
                 seenPersons.add(p.getPerson());
             }
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs, withComponent, allComponents, organization);
-            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization,pair,loggingFrequency);
+            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization, pair, loggingFrequency);
         }
         persons.removeAll(seenPersons);
-        instanciateLeftovers(persons, projs, allSkills, personRecs, skillfrequency, withComponent, allComponents, componentFrequency, organization,pair,loggingFrequency);
+        instanciateLeftovers(persons, projs, allSkills, personRecs, skillfrequency, withComponent, allComponents, componentFrequency, organization, pair, loggingFrequency);
         Integer particips = 0;
         if (request.getParticipants() != null) particips = request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
     }
 
     private Map<String, Map<String, Double>> computeAllSkillsNoMethod(Map<String, Requirement> recs) {
-        Map<String, Map<String, Double>> ret=new HashMap<>();
-        for (String s:recs.keySet()) {
-            Requirement r=recs.get(s);
-            Set<String> helper=new HashSet<>();
-            for (String h:r.getDescription().split(" ")) {
+        Map<String, Map<String, Double>> ret = new HashMap<>();
+        for (String s : recs.keySet()) {
+            Requirement r = recs.get(s);
+            Set<String> helper = new HashSet<>();
+            for (String h : r.getDescription().split(" ")) {
                 if (!h.equals(""))
-                helper.add(h);
+                    helper.add(h);
             }
-            Map<String,Double> aux=new HashMap<>();
-            for (String j:helper) {
-                aux.put(j,0.0);
+            Map<String, Double> aux = new HashMap<>();
+            for (String j : helper) {
+                aux.put(j, 0.0);
             }
-            ret.put(s,aux);
+            ret.put(s, aux);
         }
         return ret;
     }
@@ -464,9 +462,9 @@ public class StakeholdersRecommenderService {
             List<Skill> skills;
             List<Skill> components;
             if (personRecs.get(s) != null) {
-                skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency, pair,s,loggingFrequency);
+                skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency, pair, s, loggingFrequency);
                 if (withComponent)
-                    components = computeComponentsPerson(personRecs.get(s), allComponents, componentFrequency,s);
+                    components = computeComponentsPerson(personRecs.get(s), allComponents, componentFrequency, s);
                 else components = new ArrayList<>();
             } else {
                 skills = new ArrayList<>();
@@ -537,9 +535,9 @@ public class StakeholdersRecommenderService {
             List<Skill> skills;
             List<Skill> components;
             if (personRecs.get(person.getPerson()) != null) {
-                skills = computeSkillsPerson(personRecs.get(person.getPerson()), allSkills, skillFrequency,pair, person.getPerson(), loggingFrequency);
+                skills = computeSkillsPerson(personRecs.get(person.getPerson()), allSkills, skillFrequency, pair, person.getPerson(), loggingFrequency);
                 if (withComponent)
-                    components = computeComponentsPerson(personRecs.get(person.getPerson()), allComponents, componentFrequency,person.getPerson());
+                    components = computeComponentsPerson(personRecs.get(person.getPerson()), allComponents, componentFrequency, person.getPerson());
                 else components = new ArrayList<>();
             } else {
                 skills = new ArrayList<>();
@@ -564,33 +562,32 @@ public class StakeholdersRecommenderService {
         PersonSRRepository.saveAll(toSave);
     }
 
-    private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency,String s) throws JsonProcessingException {
-        return getSkills(oldRecs, allComponents, componentFrequency,null,s,null);
+    private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String s) throws JsonProcessingException {
+        return getSkills(oldRecs, allComponents, componentFrequency, null, s, null);
 
     }
 
     private List<Skill> getSkills(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency,
-                                  Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair,String person,Map<String, Integer> loggingFrequency) throws JsonProcessingException {
+                                  Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, String person, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
         List<Skill> toret = new ArrayList<>();
         Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
-        Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> appearancesLog=null;
-        if (loggingFrequency!=null) {
+        Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> appearancesLog = null;
+        if (loggingFrequency != null) {
             if (pair.getSecond().containsKey(person))
-            appearancesLog = getAppearancesWithTime(pair.getSecond().get(person), pair.getFirst(), loggingFrequency);
+                appearancesLog = getAppearancesWithTime(pair.getSecond().get(person), pair.getFirst(), loggingFrequency);
         }
-        if (pair!=null && appearancesLog!=null) {
-            for (String n:appearancesLog.getFirst().keySet()) {
-                if (!appearances.containsKey(n))appearances.put(n,new SinglePair<>(0.0,0.0));
+        if (pair != null && appearancesLog != null) {
+            for (String n : appearancesLog.getFirst().keySet()) {
+                if (!appearances.containsKey(n)) appearances.put(n, new SinglePair<>(0.0, 0.0));
             }
             for (String key : appearances.keySet()) {
                 Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
-                Double trueAbility=calculateWeightWithLogging(key,appearancesLog);
-                ability=ability*0.6+trueAbility;
+                Double trueAbility = calculateWeightWithLogging(key, appearancesLog);
+                ability = ability * 0.6 + trueAbility;
                 Skill helper = new Skill(key, ability);
                 toret.add(helper);
             }
-        }
-        else {
+        } else {
             for (String key : appearances.keySet()) {
                 Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
                 Skill helper = new Skill(key, ability);
@@ -601,50 +598,49 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> getAppearancesWithTime(Map<String, Pair<Integer, Integer>> stringPairMap, Map<String, Map<String, Double>> first, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
-        Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> res;
-        Map<String, SinglePair<Double>> appearances=new HashMap<>();
-        Map<String,Pair<Integer,Integer>> times=new HashMap<>();
+    private Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> getAppearancesWithTime(Map<String, Pair<Integer, Integer>> stringPairMap, Map<String, Map<String, Double>> first, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
+        Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> res;
+        Map<String, SinglePair<Double>> appearances = new HashMap<>();
+        Map<String, Pair<Integer, Integer>> times = new HashMap<>();
 
         for (String s : stringPairMap.keySet()) {
             Map<String, Double> help = first.get(s);
-            ObjectMapper mapper=new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper();
             for (String sk : help.keySet()) {
                 addAppearance(loggingFrequency, appearances, help, sk);
-                if (times.containsKey(sk)){
-                    times.put(sk,new Pair<>(times.get(sk).getFirst()+stringPairMap.get(s).getFirst(),times.get(sk).getSecond()+stringPairMap.get(s).getSecond()));
-                }
-                else {
-                    times.put(sk,new Pair<>(stringPairMap.get(s).getFirst(),stringPairMap.get(s).getSecond()));
+                if (times.containsKey(sk)) {
+                    times.put(sk, new Pair<>(times.get(sk).getFirst() + stringPairMap.get(s).getFirst(), times.get(sk).getSecond() + stringPairMap.get(s).getSecond()));
+                } else {
+                    times.put(sk, new Pair<>(stringPairMap.get(s).getFirst(), stringPairMap.get(s).getSecond()));
                 }
             }
         }
 
-        res = new  Pair<>(appearances,times);
+        res = new Pair<>(appearances, times);
         return res;
     }
 
-    private Double calculateWeightWithLogging(String key, Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> appearancesAndTimes) {
+    private Double calculateWeightWithLogging(String key, Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> appearancesAndTimes) {
 
-        Map<String,SinglePair<Double>> appearances=appearancesAndTimes.getFirst();
-        Map<String,Pair<Integer,Integer>> times=appearancesAndTimes.getSecond();
-        Integer editValue=0,viewValue=0;
-        if (times.containsKey(key)) editValue=times.get(key).getFirst();
-        if (times.containsKey(key))  viewValue=times.get(key).getSecond();
-        Double view=-1.0;
-        Double edit=-1.0;
-        if (editValue!=0) {
-            edit=appearances.get(key).p1/appearances.get(key).p2;
+        Map<String, SinglePair<Double>> appearances = appearancesAndTimes.getFirst();
+        Map<String, Pair<Integer, Integer>> times = appearancesAndTimes.getSecond();
+        Integer editValue = 0, viewValue = 0;
+        if (times.containsKey(key)) editValue = times.get(key).getFirst();
+        if (times.containsKey(key)) viewValue = times.get(key).getSecond();
+        Double view = -1.0;
+        Double edit = -1.0;
+        if (editValue != 0) {
+            edit = appearances.get(key).p1 / appearances.get(key).p2;
         }
-        if (viewValue!=0) {
-            view=appearances.get(key).p1/appearances.get(key).p2;
+        if (viewValue != 0) {
+            view = appearances.get(key).p1 / appearances.get(key).p2;
         }
-        Double retValue=0.0;
-        if (view!=-1.0) {
-            retValue=retValue+view*0.1;
+        Double retValue = 0.0;
+        if (view != -1.0) {
+            retValue = retValue + view * 0.1;
         }
-        if (edit!=-1.0) {
-            retValue=retValue+edit*0.3;
+        if (edit != -1.0) {
+            retValue = retValue + edit * 0.3;
         }
         return retValue;
     }
@@ -762,11 +758,11 @@ public class StakeholdersRecommenderService {
 
 
     private List<Skill> computeSkillsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency, Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, String s, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
-        return getSkills(oldRecs, recs, skillsFrequency,pair,s,loggingFrequency);
+        return getSkills(oldRecs, recs, skillsFrequency, pair, s, loggingFrequency);
     }
 
     private Double calculateWeight(Double appearances, Double requirement) {
-        if (appearances==0) return 0.0;
+        if (appearances == 0) return 0.0;
         else return requirement / appearances;
     }
 
@@ -858,22 +854,22 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla,Boolean rake,String organization,Integer size) throws GeneralSecurityException, IOException {
+    private Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla, Boolean rake, String organization, Integer size) throws GeneralSecurityException, IOException {
         SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
-        RestTemplate temp=new RestTemplate();
+        RestTemplate temp = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
-        LogArray log=res.getBody();
-        return log(log.getLogs(),bugzilla,rake,organization,size);
+        ResponseEntity<LogArray> res = temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
+        LogArray log = res.getBody();
+        return log(log.getLogs(), bugzilla, rake, organization, size);
     }
 
-    public Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList,Boolean bugzilla,Boolean rake,String organization,Integer size) throws IOException {
-        ObjectMapper mapper=new ObjectMapper();
-        Map<String,List<Log>> logged=new HashMap<>();
-        for (Log l:logList) {
-            if (l.getBody()!=null&&l.getBody().getUsername()!=null&&l.getBody().getRequirementId()!=null) {
+    public Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList, Boolean bugzilla, Boolean rake, String organization, Integer size) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, List<Log>> logged = new HashMap<>();
+        for (Log l : logList) {
+            if (l.getBody() != null && l.getBody().getUsername() != null && l.getBody().getRequirementId() != null) {
                 if (!logged.containsKey(l.getBody().getUsername())) {
                     ArrayList<Log> list = new ArrayList<>();
                     list.add(l);
@@ -885,85 +881,78 @@ public class StakeholdersRecommenderService {
                 }
             }
         }
-        Map<String, Map<String, Pair<Integer, Integer>>> timesForReq=new HashMap<>();
-        Map<String,List<Log>> reqId=new HashMap<>();
-        for (String s:logged.keySet()) {
-            List<Log> toOrder=logged.get(s);
+        Map<String, Map<String, Pair<Integer, Integer>>> timesForReq = new HashMap<>();
+        Map<String, List<Log>> reqId = new HashMap<>();
+        for (String s : logged.keySet()) {
+            List<Log> toOrder = logged.get(s);
             Collections.sort(toOrder,
                     Comparator.comparingInt(Log::getUnixTime));
-            for (Log l:toOrder) {
+            for (Log l : toOrder) {
                 if (reqId.containsKey(l.getBody().getRequirementId())) {
-                    List<Log> auxList=reqId.get(l.getBody().getRequirementId());
+                    List<Log> auxList = reqId.get(l.getBody().getRequirementId());
                     auxList.add(l);
-                    reqId.put(l.getBody().getRequirementId(),auxList);
-                }
-                else {
-                    List<Log> auxList=new ArrayList<>();
+                    reqId.put(l.getBody().getRequirementId(), auxList);
+                } else {
+                    List<Log> auxList = new ArrayList<>();
                     auxList.add(l);
-                    reqId.put(l.getBody().getRequirementId(),auxList);
+                    reqId.put(l.getBody().getRequirementId(), auxList);
 
                 }
             }
-            Map<String, Pair<Integer,Integer>> times=extractTimeInRequirement(toOrder);
-            logged.put(s,toOrder);
-            timesForReq.put(s,times);
+            Map<String, Pair<Integer, Integer>> times = extractTimeInRequirement(toOrder);
+            logged.put(s, toOrder);
+            timesForReq.put(s, times);
         }
-        Map<String,Requirement> trueRecs=new HashMap<>();
-        for (String s: reqId.keySet()) {
-            List<Log> toOrder=reqId.get(s);
+        Map<String, Requirement> trueRecs = new HashMap<>();
+        for (String s : reqId.keySet()) {
+            List<Log> toOrder = reqId.get(s);
             Collections.sort(toOrder,
                     Comparator.comparingInt(Log::getUnixTime));
-            Requirement req=new Requirement();
+            Requirement req = new Requirement();
             req.setId(s);
-            for (int i=toOrder.size()-1;i>=0;--i) {
-                Log lo=toOrder.get(i);
-                if (req.getName()==null && req.getDescription()==null) {
-                    req.setModified(new Date(lo.getUnixTime()*1000));
-                }
-                else if (req.getName()!=null && req.getDescription()!=null) break;
-                if (req.getName()==null && lo.isName()) {
+            for (int i = toOrder.size() - 1; i >= 0; --i) {
+                Log lo = toOrder.get(i);
+                if (req.getName() == null && req.getDescription() == null) {
+                    req.setModified(new Date(lo.getUnixTime() * 1000));
+                } else if (req.getName() != null && req.getDescription() != null) break;
+                if (req.getName() == null && lo.isName()) {
                     req.setName(lo.getDescriptionOrName());
-                }
-                else if(req.getDescription()==null && lo.isDescription()) {
+                } else if (req.getDescription() == null && lo.isDescription()) {
                     req.setDescription(lo.getDescriptionOrName());
                 }
             }
-            if (req.getDescription()==null) req.setDescription("");
-            if (req.getName()==null) req.setName("");
-            trueRecs.put(s,req);
-            reqId.put(s,toOrder);
+            if (req.getDescription() == null) req.setDescription("");
+            if (req.getName() == null) req.setName("");
+            trueRecs.put(s, req);
+            reqId.put(s, toOrder);
         }
-        Map<String,Map<String,Double>> skills=obtainSkills(trueRecs,bugzilla,rake,organization,size);
-        skills=computeTime(skills,trueRecs);
-        return new Pair<>(skills,timesForReq);
+        Map<String, Map<String, Double>> skills = obtainSkills(trueRecs, bugzilla, rake, organization, size);
+        skills = computeTime(skills, trueRecs);
+        return new Pair<>(skills, timesForReq);
     }
 
 
-
-    private Map<String,Map<String,Double>> computeTime(Map<String, Map<String, Double>> skills,Map<String,Requirement> trueRecs) {
-        skills=computeTimeFactor(trueRecs,skills,new Date());
+    private Map<String, Map<String, Double>> computeTime(Map<String, Map<String, Double>> skills, Map<String, Requirement> trueRecs) {
+        skills = computeTimeFactor(trueRecs, skills, new Date());
         return skills;
     }
 
 
-
-    private Map<String,Map<String,Double>> obtainSkills(Map<String, Requirement> trueRecs,Boolean bugzilla,Boolean rake,String organization,Integer size) throws IOException {
-        Map<String,Map<String,Double>> map;
+    private Map<String, Map<String, Double>> obtainSkills(Map<String, Requirement> trueRecs, Boolean bugzilla, Boolean rake, String organization, Integer size) throws IOException {
+        Map<String, Map<String, Double>> map;
         if (rake) {
-            map=new RAKEKeywordExtractor().computeRake(trueRecs.values());
-        }
-        else if (bugzilla) {
-            Collection<Requirement> col=trueRecs.values();
-            List<Requirement> toMakeSkill=Preprocess.preprocess(new ArrayList<>(col));
-            for (Requirement r:toMakeSkill) {
-                trueRecs.put(r.getId(),r);
+            map = new RAKEKeywordExtractor().computeRake(trueRecs.values());
+        } else if (bugzilla) {
+            Collection<Requirement> col = trueRecs.values();
+            List<Requirement> toMakeSkill = Preprocess.preprocess(new ArrayList<>(col));
+            for (Requirement r : toMakeSkill) {
+                trueRecs.put(r.getId(), r);
             }
             map = computeAllSkillsNoMethod(trueRecs);
-        }
-        else {
-            Map<String,Integer> model=KeywordExtractionModelRepository.getOne(organization).getModel();
-            map=new TFIDFKeywordExtractor().computeTFIDFExtra(model, size,trueRecs);
-            KeywordExtractionModel mod=new KeywordExtractionModel();
+        } else {
+            Map<String, Integer> model = KeywordExtractionModelRepository.getOne(organization).getModel();
+            map = new TFIDFKeywordExtractor().computeTFIDFExtra(model, size, trueRecs);
+            KeywordExtractionModel mod = new KeywordExtractionModel();
             mod.setId(organization);
             mod.setModel(model);
             KeywordExtractionModelRepository.save(mod);
@@ -971,56 +960,50 @@ public class StakeholdersRecommenderService {
         return map;
     }
 
-    private Map<String, Pair<Integer,Integer>> extractTimeInRequirement(List<Log> toOrder) throws JsonProcessingException {
-        String currentSessionId="";
-        String lastElement="";
-        String lastType="";
-        String lastValue="";
-        Integer lastTime=0;
-        Map<String, Pair<Integer,Integer>> toRet=new HashMap<>();
-        for (Log l:toOrder) {
+    private Map<String, Pair<Integer, Integer>> extractTimeInRequirement(List<Log> toOrder) throws JsonProcessingException {
+        String currentSessionId = "";
+        String lastElement = "";
+        String lastType = "";
+        String lastValue = "";
+        Integer lastTime = 0;
+        Map<String, Pair<Integer, Integer>> toRet = new HashMap<>();
+        for (Log l : toOrder) {
             //String newSessionId=l.getHeader().getSessionid();
-           // if (currentSessionId.equals(newSessionId)) {
-                String newType=l.getEvent_type();
-                if (lastElement.equals(l.getBody().getSrcElementclassName())&&lastType.equals("focus")&&newType.equals("blur")) {
-                    Integer time=l.getUnixTime()-lastTime;
-                    if (toRet.containsKey(l.getBody().getRequirementId())) {
-                        if (edited(lastValue,l)) {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(time+toRet.get(l.getBody().getRequirementId()).getFirst(),toRet.get(l.getBody().getRequirementId()).getSecond()));
-                        }
-                        else {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(toRet.get(l.getBody().getRequirementId()).getFirst(),toRet.get(l.getBody().getRequirementId()).getSecond()+time));
-                        }
+            // if (currentSessionId.equals(newSessionId)) {
+            String newType = l.getEvent_type();
+            if (lastElement.equals(l.getBody().getSrcElementclassName()) && lastType.equals("focus") && newType.equals("blur")) {
+                Integer time = l.getUnixTime() - lastTime;
+                if (toRet.containsKey(l.getBody().getRequirementId())) {
+                    if (edited(lastValue, l)) {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(time + toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond()));
+                    } else {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond() + time));
                     }
-                    else {
-                        if (edited(lastValue,l)) {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(time,0));
-                        }
-                        else {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(0,time));
-                        }
+                } else {
+                    if (edited(lastValue, l)) {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(time, 0));
+                    } else {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(0, time));
                     }
-             //   }
+                }
+                //   }
             }
-            lastTime=l.getUnixTime();
-            lastType=l.getEvent_type();
-            lastElement=l.getBody().getSrcElementclassName();
-            lastValue=l.getBody().getValue();
+            lastTime = l.getUnixTime();
+            lastType = l.getEvent_type();
+            lastElement = l.getBody().getSrcElementclassName();
+            lastValue = l.getBody().getValue();
         }
-        ObjectMapper mapper=new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         return toRet;
     }
+
     private boolean edited(String lastValue, Log l) {
         if (l.getBody().getSrcElementclassName().equals("select-dropdown")) {
             return true;
-        }
-        else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control")||l.getBody().getSrcElementclassName().equals("note-placeholder")) {
-            if (!lastValue.equals(l.getBody().getInnerText())) return true;
-            else return false;
-        }
-        else return false;
+        } else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control") || l.getBody().getSrcElementclassName().equals("note-placeholder")) {
+            return !lastValue.equals(l.getBody().getInnerText());
+        } else return false;
     }
-
 
 
 }

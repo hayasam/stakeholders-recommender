@@ -1,19 +1,18 @@
-
-
 package upc.stakeholdersrecommender.entity;
 
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonSRTest {
-    
+
 
     @Test
     public void testGetId() {
@@ -139,5 +138,5 @@ public class PersonSRTest {
         PersonSR instance = new PersonSR();
         instance.setComponents(components);
     }
-    
+
 }

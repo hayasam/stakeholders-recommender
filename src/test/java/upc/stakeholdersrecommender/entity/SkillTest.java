@@ -1,5 +1,3 @@
-
-
 package upc.stakeholdersrecommender.entity;
 
 
@@ -8,7 +6,8 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -30,7 +29,7 @@ public class SkillTest {
         String name = "nam";
         Skill instance = new Skill();
         instance.setName(name);
-        assertEquals("nam",instance.getName());
+        assertEquals("nam", instance.getName());
     }
 
     @Test
@@ -48,7 +47,7 @@ public class SkillTest {
         Double weight = 1.0;
         Skill instance = new Skill();
         instance.setWeight(weight);
-        assertTrue(1.0==instance.getWeight());
+        assertTrue(1.0 == instance.getWeight());
     }
-    
+
 }

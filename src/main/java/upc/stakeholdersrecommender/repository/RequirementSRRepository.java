@@ -12,14 +12,17 @@ import java.util.List;
 
 @Repository
 public interface RequirementSRRepository extends JpaRepository<RequirementSR, String> {
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     RequirementSR findById(RequirementSRId id);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     @Transactional
     void deleteByOrganization(String organization);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     List<RequirementSR> findByOrganization(String organization);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
-    List<RequirementSR> findByOrganizationAndProj(String organization,String id);
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
+    List<RequirementSR> findByOrganizationAndProj(String organization, String id);
 
 }

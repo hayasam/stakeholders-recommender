@@ -10,9 +10,9 @@ import java.io.Serializable;
 public class RecommendSchema implements Serializable {
     @ApiModelProperty(notes = "The identifier of the requirement to recommend.", required = true)
     private Requirement requirement;
-    @ApiModelProperty(notes = "The identifier of the project the requirement belongs to.",required = true)
+    @ApiModelProperty(notes = "The identifier of the project the requirement belongs to.", required = true)
     private ProjectMinimal project;
-    @ApiModelProperty(notes = "The identifier of the person who asks for this recommendation.",required = true)
+    @ApiModelProperty(notes = "The identifier of the person who asks for this recommendation.", required = true)
     private PersonMinimal user;
 
     public Requirement getRequirement() {

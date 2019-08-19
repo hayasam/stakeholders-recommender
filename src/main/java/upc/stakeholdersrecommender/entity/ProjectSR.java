@@ -30,7 +30,7 @@ public class ProjectSR implements Serializable {
     }
 
     public ProjectSR(ProjectSRId newId) {
-        this.id=newId;
+        this.id = newId;
     }
 
     public ProjectSRId getId() {

@@ -5,7 +5,8 @@ public class Log {
     private Header header;
     private String event_type;
 
-    public Log(){}
+    public Log() {
+    }
 
     public Body getBody() {
         return body;
@@ -37,18 +38,17 @@ public class Log {
 
 
     public String getDescriptionOrName() {
-        String toRet="";
-        if (body.getInnerText()!=null&& !body.getInnerText().equals("")) {
-            toRet=body.getInnerText();
-        }
-        else if (body.getValue()!=null&& !body.getValue().equals("")) {
-            toRet=body.getValue();
+        String toRet = "";
+        if (body.getInnerText() != null && !body.getInnerText().equals("")) {
+            toRet = body.getInnerText();
+        } else if (body.getValue() != null && !body.getValue().equals("")) {
+            toRet = body.getValue();
         }
         return toRet;
     }
 
     public boolean isDescription() {
-        return body.getSrcElementclassName().equals("note-placeholder")||body.getSrcElementclassName().equals("note-editable or-description-active");
+        return body.getSrcElementclassName().equals("note-placeholder") || body.getSrcElementclassName().equals("note-editable or-description-active");
     }
 
 

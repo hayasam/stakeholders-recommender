@@ -39,10 +39,10 @@ public class RequirementSR implements Serializable {
     }
 
     public RequirementSR(Requirement req, String id, String org) {
-        this.id = new RequirementSRId(id, req.getId(),org);
+        this.id = new RequirementSRId(id, req.getId(), org);
         this.projectIdQuery = req.getId();
-        this.organization=org;
-        this.proj=id;
+        this.organization = org;
+        this.proj = id;
     }
 
     public RequirementSRId getId() {

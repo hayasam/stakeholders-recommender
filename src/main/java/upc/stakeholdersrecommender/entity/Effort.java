@@ -15,7 +15,7 @@ public class Effort implements Serializable {
     private ProjectSRId id;
 
     @ElementCollection
-    private Map<Double,Double> effortMap;
+    private Map<Double, Double> effortMap;
 
     public ProjectSRId getId() {
         return id;

@@ -1,5 +1,3 @@
-
-
 package upc.stakeholdersrecommender.entity;
 
 import org.junit.Test;
@@ -16,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RejectedPersonTest {
-    
+
     @Test
     public void testGetUser() {
         System.out.println("getUser");
@@ -29,10 +27,10 @@ public class RejectedPersonTest {
     @Test
     public void testSetUser() {
         System.out.println("setUser");
-        RejectedPersonId user = new RejectedPersonId("one","two");
+        RejectedPersonId user = new RejectedPersonId("one", "two");
         RejectedPerson instance = new RejectedPerson();
         instance.setUser(user);
-        assertTrue(instance.getUser().getPersonId().equals("one")&&instance.getUser().getOrganizationId().equals("two"));
+        assertTrue(instance.getUser().getPersonId().equals("one") && instance.getUser().getOrganizationId().equals("two"));
     }
 
     @Test
@@ -50,7 +48,7 @@ public class RejectedPersonTest {
         Map<String, HashSet<String>> deleted = null;
         RejectedPerson instance = new RejectedPerson();
         instance.setDeleted(deleted);
-        assertEquals(null,instance.getDeleted());
+        assertEquals(null, instance.getDeleted());
     }
-    
+
 }

@@ -12,35 +12,39 @@ import static org.junit.Assert.assertTrue;
 public class LogTest {
 
     @Test
-    public void LogTest(){
-        Log log=new Log();
-        assertTrue(log!=null);
+    public void LogTest() {
+        Log log = new Log();
+        assertTrue(log != null);
     }
+
     @Test
     public void getBodyTest() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         log.setBody(bo);
-        assertTrue(log.getBody()==bo);
+        assertTrue(log.getBody() == bo);
     }
+
     @Test
     public void getHeaderTest() {
-        Log log=new Log();
-        Header bo=new Header();
+        Log log = new Log();
+        Header bo = new Header();
         log.setHeader(bo);
-        assertTrue(log.getHeader()==bo);
+        assertTrue(log.getHeader() == bo);
     }
+
     @Test
     public void getUnixTimeTest() {
-        Log log=new Log();
-        Header bo=new Header();
+        Log log = new Log();
+        Header bo = new Header();
         log.setHeader(bo);
-        assertTrue(log.getHeader()==bo);
+        assertTrue(log.getHeader() == bo);
 
     }
+
     @Test
     public void getEvent_type() {
-        Log log=new Log();
+        Log log = new Log();
         log.setEvent_type("ev");
         assertTrue(log.getEvent_type().equals("ev"));
 
@@ -48,8 +52,8 @@ public class LogTest {
 
     @Test
     public void getDescriptionOrNameTest() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         bo.setInnerText("name");
         log.setBody(bo);
         assertTrue(log.getDescriptionOrName().equals("name"));
@@ -65,8 +69,8 @@ public class LogTest {
 
     @Test
     public void isDescriptionTrue() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         bo.setSrcElementclassName("note-placeholder");
         log.setBody(bo);
         assertTrue(log.isDescription());
@@ -74,26 +78,29 @@ public class LogTest {
         log.setBody(bo);
         assertTrue(log.isDescription());
     }
+
     @Test
     public void isDescriptionFalse() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         bo.setSrcElementclassName("fail");
         log.setBody(bo);
         assertTrue(!log.isDescription());
     }
+
     @Test
     public void isNameFalse() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         bo.setSrcElementclassName("thing");
         log.setBody(bo);
         assertTrue(!log.isName());
     }
+
     @Test
     public void isNameTrue() {
-        Log log=new Log();
-        Body bo=new Body();
+        Log log = new Log();
+        Body bo = new Body();
         bo.setSrcElementclassName("or-requirement-title form-control");
         log.setBody(bo);
         assertTrue(log.isName());

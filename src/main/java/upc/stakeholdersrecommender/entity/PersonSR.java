@@ -44,7 +44,7 @@ public class PersonSR implements Serializable {
         this.availability = availability;
         this.name = id.getPersonId();
         this.skills = skills;
-        this.organization=org;
+        this.organization = org;
     }
 
     public PersonSR(PersonSRId id) {

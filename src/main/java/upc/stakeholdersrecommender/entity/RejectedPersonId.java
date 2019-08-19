@@ -8,20 +8,19 @@ import java.util.Objects;
 @Embeddable
 public class RejectedPersonId implements Serializable {
 
-    @Column(name = "personId",length=300)
+    @Column(name = "personId", length = 300)
     private String personId;
 
-    @Column(name = "organizationId",length=300)
+    @Column(name = "organizationId", length = 300)
     private String organizationId;
-
 
 
     public RejectedPersonId() {
     }
 
-    public RejectedPersonId( String personId, String organizationId) {
+    public RejectedPersonId(String personId, String organizationId) {
         this.personId = personId;
-        this.organizationId=organizationId;
+        this.organizationId = organizationId;
     }
 
 
@@ -54,7 +53,7 @@ public class RejectedPersonId implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash( getPersonId(),getOrganizationId());
+        return Objects.hash(getPersonId(), getOrganizationId());
     }
 
 

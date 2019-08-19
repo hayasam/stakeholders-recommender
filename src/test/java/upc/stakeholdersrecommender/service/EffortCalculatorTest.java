@@ -1,17 +1,15 @@
-
-
 package upc.stakeholdersrecommender.service;
 
-import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import upc.stakeholdersrecommender.domain.Schemas.EffortCalculatorSchema;
 import upc.stakeholdersrecommender.domain.Schemas.SetEffortSchema;
+
+import java.io.IOException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -41,7 +39,7 @@ public class EffortCalculatorTest {
                 "  ]\n" +
                 "}";
         req = mapper.readValue(jsonInString, SetEffortSchema.class);
-        instance.setEffort(req, "1","UPC");
+        instance.setEffort(req, "1", "UPC");
     }
 
     @Test
@@ -74,7 +72,7 @@ public class EffortCalculatorTest {
                 "  ]\n" +
                 "}";
         req = mapper.readValue(jsonInString, EffortCalculatorSchema.class);
-        instance.effortCalc(req, "1","UPC");
+        instance.effortCalc(req, "1", "UPC");
     }
 
 }

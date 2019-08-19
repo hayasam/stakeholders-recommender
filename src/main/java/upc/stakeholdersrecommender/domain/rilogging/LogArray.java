@@ -5,10 +5,10 @@ import java.util.List;
 public class LogArray {
 
 
-
     private List<Log> logs;
 
-    public LogArray(){}
+    public LogArray() {
+    }
 
     public List<Log> getLogs() {
         return logs;

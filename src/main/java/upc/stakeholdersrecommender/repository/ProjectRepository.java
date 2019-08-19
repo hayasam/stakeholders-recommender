@@ -11,13 +11,14 @@ import javax.persistence.QueryHint;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectSR, String> {
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     @Transactional
     void deleteByOrganization(String organization);
 
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     ProjectSR findByOrganization(String organization);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     ProjectSR findById(ProjectSRId organization);
 
 

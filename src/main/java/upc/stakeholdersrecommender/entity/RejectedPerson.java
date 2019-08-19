@@ -32,7 +32,7 @@ public class RejectedPerson implements Serializable {
 
     public RejectedPerson(RejectedPersonId user) {
         this.user = user;
-        this.organization=user.getOrganizationId();
+        this.organization = user.getOrganizationId();
     }
 
     public RejectedPersonId getUser() {

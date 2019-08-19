@@ -13,7 +13,8 @@ public class Body {
     private String projectId;
     private Integer unixTime;
 
-    public Body(){}
+    public Body() {
+    }
 
     public String getValue() {
         return value;

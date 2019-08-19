@@ -12,12 +12,13 @@ import java.util.List;
 
 @Repository
 public interface RejectedPersonRepository extends JpaRepository<RejectedPerson, String> {
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     RejectedPerson findByUser(RejectedPersonId id);
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     @Transactional
     void deleteByOrganization(String organization);
 
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value   ="50000")})
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "50000")})
     List<RejectedPerson> findByOrganization(String organization);
 }
