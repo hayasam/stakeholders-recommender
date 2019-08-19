@@ -1,11 +1,13 @@
 package upc.stakeholdersrecommender.domain.Preprocess;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Requirement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class PreprocessService {
@@ -54,6 +56,7 @@ public class PreprocessService {
         List<RequirementPreprocessed> re=res.getRequirements();
         RequirementPreprocessed processed=re.get(0);
         for (String j:processed.getDescription().split(" ")) {
+            if (!j.equals(""))
             result.add(j);
         }
         return result;

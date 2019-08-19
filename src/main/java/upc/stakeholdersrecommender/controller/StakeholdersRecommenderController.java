@@ -12,6 +12,7 @@ import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.service.EffortCalculator;
 import upc.stakeholdersrecommender.service.StakeholdersRecommenderService;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -35,11 +36,12 @@ public class StakeholdersRecommenderController {
     @RequestParam Boolean withComponent,@ApiParam(value = "The organization that is making the request.", example = "UPC", required=true)
     @RequestParam String organization ,@ApiParam(value = "If auto-mapping is used (i.e., set to true), it is not necessary to set or compute effort (i.e., to establish the mappint from effort points to hours). The mapping used in auto-mapping is a 1 to 1 mapping of effort to hours.", example = "true", required=true)
     @RequestParam Boolean autoMapping,@ApiParam(value = "If set to true, the endpoint returns each requirement with its set of keywords." ,example = "true", required=true)
-    @RequestParam Boolean keywords,@ApiParam(value = "Whether bugzilla preprocessing is used", example = "true",required=false)@RequestParam(value="keywordPreprocessing",defaultValue = "false",required=false) Boolean bugzilla) throws Exception {
+    @RequestParam Boolean keywords,@ApiParam(value = "Whether bugzilla preprocessing is used", example = "true",required=false)@RequestParam(value="keywordPreprocessing",defaultValue = "false",required=false) Boolean bugzilla,
+                                   @ApiParam(value = "Whether OpenReq Live logging is taken into account", example = "false",required=false)@RequestParam(value="logging",defaultValue = "false",required=false) Boolean logging) throws Exception {
         System.out.println("Starting batch process");
         int res = 0;
         try {
-            res = stakeholdersRecommenderService.addBatch(batch, withAvailability,withComponent,organization,autoMapping,bugzilla);
+            res = stakeholdersRecommenderService.addBatch(batch, withAvailability,withComponent,organization,autoMapping,bugzilla,logging);
         } catch (IOException e) {
             System.out.println("Finished batch process");
             return new ResponseEntity(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
