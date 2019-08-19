@@ -249,7 +249,7 @@ public class StakeholdersRecommenderServiceTest {
                     "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization="UPC";
-        Integer result = instance.addBatch(bat, false,false,organization,false,false,false);
+        Integer result = instance.addBatch(bat, false,false,organization,false,false);
         Integer expected=5;
         assertEquals(result,expected);
     }
@@ -302,7 +302,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization="UPC";
-        Integer result = instance.addBatch(bat, true,false,organization,true,false,false);
+        Integer result = instance.addBatch(bat, true,false,organization,true,false);
         Integer expected=5;
         assertEquals(result,expected);
     }
@@ -354,7 +354,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization="UPC";
-        Integer result = instance.addBatch(bat, true,true,organization,true,false,false);
+        Integer result = instance.addBatch(bat, true,true,organization,true,false);
         Integer expected=5;
         assertEquals(result,expected);
     }
@@ -406,7 +406,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization="UPC";
-        Integer result = instance.addBatch(bat, true,true,organization,true,false,false);
+        Integer result = instance.addBatch(bat, true,true,organization,true,false);
         Integer expected=5;
         assertEquals(result,expected);
         List<ProjectKeywordSchema> res=instance.extractKeywords("UPC",bat);
