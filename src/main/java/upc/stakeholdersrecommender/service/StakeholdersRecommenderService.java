@@ -913,7 +913,7 @@ public class StakeholdersRecommenderService {
             for (int i = toOrder.size() - 1; i >= 0; --i) {
                 Log lo = toOrder.get(i);
                 if (req.getName() == null && req.getDescription() == null) {
-                    req.setModified(new Date(lo.getUnixTime() * 1000));
+                    req.setModified(new Date(lo.getUnixTime() * (long) 1000));
                 } else if (req.getName() != null && req.getDescription() != null) break;
                 if (req.getName() == null && lo.isName()) {
                     req.setName(lo.getDescriptionOrName());
