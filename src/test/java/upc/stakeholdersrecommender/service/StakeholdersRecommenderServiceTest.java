@@ -1,6 +1,7 @@
 package upc.stakeholdersrecommender.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import upc.stakeholdersrecommender.domain.Schemas.ProjectKeywordSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendReturnSchema;
 import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -361,6 +364,66 @@ public class StakeholdersRecommenderServiceTest {
         assertEquals(result, expected);
     }
 
+
+    @Test
+    public void testAddBatchAvailabilityPreprocessing() throws Exception {
+        System.out.println("addBatch");
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File("src/main/resources/testingFiles/BatchTest.txt");
+        String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
+        String organization = "UPC";
+        Integer result = instance.addBatch(bat, true, true, organization, true, true, false);
+        Integer expected = 22213;
+        assertEquals(result, expected);
+    }
+
+    @Test
+    public void testAddBatchAvailabilityTfIdfLogging() throws Exception {
+        System.out.println("addBatch");
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File("src/main/resources/testingFiles/BatchTest.txt");
+        String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
+        String organization = "UPC";
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, true);
+        Integer expected = 22213;
+        assertEquals(result, expected);
+    }
+
+    @Test
+    public void testRecommendPreprocessingLogging() throws Exception {
+        System.out.println("recommend");
+        ObjectMapper mapper = new ObjectMapper();
+        RecommendSchema req;
+        testAddBatchAvailabilityAutoMappingComponent();
+        File file = new File("src/main/resources/testingFiles/RecommendTest.txt");
+        String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
+
+        int k = 10;
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC");
+        String res = mapper.writeValueAsString(result);
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.13636363636363635}]",res);
+    }
+
+
+    @Test
+    public void testRecommendPreprocessing() throws Exception {
+        System.out.println("recommend");
+        ObjectMapper mapper = new ObjectMapper();
+        RecommendSchema req;
+        testAddBatchAvailabilityAutoMappingComponent();
+        File file = new File("src/main/resources/testingFiles/RecommendTest.txt");
+        String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
+
+        int k = 10;
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC");
+        String res = mapper.writeValueAsString(result);
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.13636363636363635}]",res);
+    }
+
     @Test
     public void testKeyword() throws Exception {
         System.out.println("addBatch");
@@ -415,4 +478,6 @@ public class StakeholdersRecommenderServiceTest {
         List<ProjectKeywordSchema> res = instance.extractKeywords("UPC", bat);
         assertTrue(res.get(0).getProjectId().equals("1"));
     }
+
+
 }

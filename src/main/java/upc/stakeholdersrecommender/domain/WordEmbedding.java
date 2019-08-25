@@ -24,12 +24,14 @@ public class WordEmbedding {
         Double[] help1 = null, help2 = null;
         if (model.containsKey(a)) help1 = model.get(a);
         if (model.containsKey(b)) help2 = model.get(b);
+        System.out.println(a+b);
         if (help1 != null && help2 != null) {
             return cosineSimilarity(help1, help2);
         } else return -1.0;
     }
 
     private Double cosineSimilarity(Double[] help1, Double[] help2) {
+        System.out.println("IT WORKS");
         Double sum = 0.0;
         for (int i = 0; i < help1.length; ++i) {
             sum += help1[i] * help2[i];

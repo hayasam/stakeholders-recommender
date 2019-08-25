@@ -226,7 +226,7 @@ public class StakeholdersRecommenderService {
             Double weightToAdd = 0.0;
             for (String skill : skillTrad.keySet()) {
                 if (skill.equals(done)) {
-                    weightToAdd = 10.0;
+                    weightToAdd = 100.0;
                     total = total + skillTrad.get(skill).getWeight();
                     break;
                 } else {
@@ -234,7 +234,7 @@ public class StakeholdersRecommenderService {
                     if (val > weightToAdd) weightToAdd = val;
                 }
             }
-            if (weightToAdd != 10.0) total = total + weightToAdd;
+            if (weightToAdd != 100.0) total = total + weightToAdd;
         }
         Double amount = (double) req.getSkills().size();
         Double appropiateness;
@@ -866,8 +866,8 @@ public class StakeholdersRecommenderService {
     }
 
     public Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList, Boolean bugzilla, Boolean rake, String organization, Integer size) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         Map<String, List<Log>> logged = new HashMap<>();
+        if (logList!=null)
         for (Log l : logList) {
             if (l.getBody() != null && l.getBody().getUsername() != null && l.getBody().getRequirementId() != null) {
                 if (!logged.containsKey(l.getBody().getUsername())) {
