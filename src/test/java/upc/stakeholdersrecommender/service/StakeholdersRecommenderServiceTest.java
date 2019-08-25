@@ -396,7 +396,7 @@ public class StakeholdersRecommenderServiceTest {
         System.out.println("recommend");
         ObjectMapper mapper = new ObjectMapper();
         RecommendSchema req;
-        testAddBatchAvailabilityAutoMappingComponent();
+        testAddBatchAvailabilityPreprocessing();
         File file = new File("src/main/resources/testingFiles/RecommendTest.txt");
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         req = mapper.readValue(jsonInString, RecommendSchema.class);
@@ -404,7 +404,26 @@ public class StakeholdersRecommenderServiceTest {
         int k = 10;
         List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC");
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.13636363636363635}]",res);
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
+    }
+
+    @Test
+    public void testRecommendLeftovers() throws Exception {
+        System.out.println("recommend");
+        ObjectMapper mapper = new ObjectMapper();
+        RecommendSchema req;
+        File file = new File("src/main/resources/testingFiles/BatchTest.txt");
+        String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
+        String organization = "UPC";
+        instance.addBatch(bat, true, true, organization, true, true, false);
+        file = new File("src/main/resources/testingFiles/RecommendTest.txt");
+        jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+        req = mapper.readValue(jsonInString, RecommendSchema.class);
+        int k = 10;
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC");
+        String res = mapper.writeValueAsString(result);
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
     }
 
 
