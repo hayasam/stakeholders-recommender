@@ -836,6 +836,7 @@ public class StakeholdersRecommenderService {
                     Comparator.comparingDouble(Skill::getWeight).reversed());
             List<Skill> newList = new ArrayList<>();
             if (k != -1) {
+                if (k>skill.size()) k=skill.size();
                 for (int i = 0; i < k; ++i) {
                     newList.add(skill.get(i));
                 }
