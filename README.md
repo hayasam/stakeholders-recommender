@@ -51,6 +51,7 @@ Next sections provide a general overview of the technical details of the stakeho
 ### How to use it
 
 You can take a look at the Swagger documentation [here](https://api.openreq.eu/#/services/stakeholders-recommender), which includes specific, technical details of the REST API to communicate to the service.
+
 If that url is down, execute the jar and look at the Swagger documentation in "http://localhost:9410/swagger-ui.html" .
 
 ### Notes for developers

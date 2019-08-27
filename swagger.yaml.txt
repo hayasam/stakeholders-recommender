@@ -1,6 +1,17 @@
 swagger: '2.0'
 info:
-  description: 'Recommender that, given a list of stakeholders, their work history with prior requirements, a project, and new requirements, gives the most appropiate set of stakeholders to manage those new requirements'
+  description: |-
+    The goal of the stakeholder Recommendercomponent is to recommend stakeholders that can contribute to a specific requirement. For doing such recommendation, the component matches the keywords of the requirements and the skills of the persons. In addition, the recommendation also takes into account the availability of users. The three items needed to do the recommendations are learnt by the component as follows:
+
+    1.  Keywords of the requirements. These keywords represent the main skills a person should have to cover this requirement (by covering a requirement we mean the contribution in a requirement or even its implementation). For extracting them, the title and description of the requirements enter in a natural language processing pipeline, which output is the keywords of the requirements.
+
+    2.  Skills of the persons. The skills represent abilities that the persons have achieved by contributing to requirements in the past. For computing these skills, the component needs to know for each person, the requirements s/he has contributed to. The skills of a person are the keywords of the requirements of which the person is responsible for. Additionally, for each skill a user has, the component computes a proficiency value (i.e., how expert the user is in this task). Finally, this proficiency value is deprecated by  a factor time. As an example, imagine persons A and B are responsible for the same  number of requirements that need a specific skill. However, the last time person A   worked on such requirements is already one year ago, while person B has been  working recently on these requirements. It makes sense that the proficiency of B the 
+    skill is higher than the proficiency of A, since B has the knowledge closer in time. The  time factor tries to balance these situations by deprecating the proficiency taking into 
+    account the date of the requirements. In addition, the skills of users are also gathered  from the implicit feedback got from an external OpenReq component ri-logging. With this implicit information, the component learns new skills or updates the proficiency of the skills of the persons by using the information of how users interact with a user 
+    interface to browse, create and edit requirements.
+
+    3.  Availability of persons. Persons have a number of hours to work in a project. The component calculates how many hours the persons have still available for a project. After that, the available hours are normalized in a rank from 0 to 1. The use of implicit context information and availability is parameterized, so users can choose when to use it and when not. 
+    Finally, the recommendation of stakeholders is done taking into account the keywords of the requirement, the skills and proficiency values that the persons have, and the availabilityof the persons.
   version: '0.0'
   title: Stakeholder Recommender
   contact: {}
@@ -209,7 +220,7 @@ paths:
           x-example: UPC
         - name: projectSpecific
           in: query
-          description: 'If set to true, the recommendation only takes into account as possible set of stakeholders the ones in the project to which the requirement pertains. If set to false, this set of stakeholders will be all the stakeholders received in the batch_process of the organization that is making the request. If set to false, it takes all stakeholders with enough availability in any project and considers them. The availabilityScore of the partcipants of other projects will be always one. '
+          description: 'If set to true, the recommendation only takes into account as possible set of stakeholders the ones in the project to which the requirement pertains. If set to false, this set of stakeholders will be all the stakeholders received in the batch_process of the organization that is making the request, and will take all stakeholders with enough availability in any project. The availabilityScore of the participants of other projects will be always one if they are considered. '
           required: true
           type: boolean
           allowEmptyValue: false
