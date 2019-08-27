@@ -631,11 +631,11 @@ public class StakeholdersRecommenderService {
         Double edit = -1.0;
         if (editValue != 0) {
             edit = appearances.get(key).p1 / appearances.get(key).p2;
-            edit = edit*0.7 + (editValue/100)*0.3;
+            edit = edit*0.7 + (double)(editValue/100)*0.3;
         }
         if (viewValue != 0) {
             view = appearances.get(key).p1 / appearances.get(key).p2;
-            view = view*0.7 + (view/100)*0.3;
+            view = view*0.7 + (double)(viewValue/100)*0.3;
         }
         Double retValue = 0.0;
         if (view != -1.0) {
