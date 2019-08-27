@@ -22,6 +22,12 @@ import java.util.List;
 @RequestMapping("/upc/stakeholders-recommender")
 @Api(value = "Stakeholders Recommender API", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StakeholdersRecommenderController {
+    // FIX README
+    // GENERATE YAML
+    // ADD INTRODUCTION
+
+    // FINALIZE SONARQUBE
+    // REUNION LUNES 11
 
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;

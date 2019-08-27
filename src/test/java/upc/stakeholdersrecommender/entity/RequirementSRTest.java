@@ -97,5 +97,31 @@ public class RequirementSRTest {
         instance.setModified_at(modified_at);
         assertEquals("122", instance.getModified_at());
     }
+    @Test
+    public void testSetProj() {
+        System.out.println("setProj");
+        String proj = "122";
+        RequirementSR instance = new RequirementSR();
+        instance.setProj(proj);
+        assertEquals("122", instance.getProj());
+    }
+    @Test
+    public void testSetOrganization() {
+        System.out.println("setOrganization");
+        String proj = "122";
+        RequirementSR instance = new RequirementSR();
+        instance.setOrganization(proj);
+        assertEquals("122", instance.getOrganization());
+    }
+    @Test
+    public void testCreateRequirementSRId() {
+        System.out.println("createRequirementSRId");
+        RequirementSRId id=new RequirementSRId();
+        RequirementSR instance = new RequirementSR(id);
+        assertEquals(id, instance.getId());
+    }
+
+
+
 
 }

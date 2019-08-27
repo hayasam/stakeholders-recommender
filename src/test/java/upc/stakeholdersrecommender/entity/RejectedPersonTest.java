@@ -25,6 +25,26 @@ public class RejectedPersonTest {
     }
 
     @Test
+    public void testSetOrganization() {
+        System.out.println("setOrganization");
+        RejectedPerson instance = new RejectedPerson();
+        instance.setOrganization("Org");
+        assertEquals("Org", instance.getOrganization());
+    }
+
+
+    @Test
+    public void testSetRejectedPerson() {
+        System.out.println("rejectedPerson");
+        RejectedPersonId rej=new RejectedPersonId();
+        rej.setOrganizationId("Org");
+        rej.setPersonId("Per");
+        RejectedPerson instance = new RejectedPerson(rej);
+        assertEquals("Org", instance.getOrganization());
+        assertEquals("Per",instance.getUser().getPersonId());
+    }
+
+    @Test
     public void testSetUser() {
         System.out.println("setUser");
         RejectedPersonId user = new RejectedPersonId("one", "two");
