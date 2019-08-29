@@ -624,18 +624,18 @@ public class StakeholdersRecommenderService {
 
         Map<String, SinglePair<Double>> appearances = appearancesAndTimes.getFirst();
         Map<String, Pair<Integer, Integer>> times = appearancesAndTimes.getSecond();
-        Integer editValue = 0, viewValue = 0;
-        if (times.containsKey(key)) editValue = times.get(key).getFirst();
-        if (times.containsKey(key)) viewValue = times.get(key).getSecond();
+        Double editValue = 0.0, viewValue = 0.0;
+        if (times.containsKey(key)) editValue = (double) times.get(key).getFirst();
+        if (times.containsKey(key)) viewValue = (double) times.get(key).getSecond();
         Double view = -1.0;
         Double edit = -1.0;
-        if (editValue != 0) {
+        if (editValue != 0.0) {
             edit = appearances.get(key).p1 / appearances.get(key).p2;
             edit = edit*0.7 + (double)(editValue/100)*0.3;
         }
-        if (viewValue != 0) {
+        if (viewValue != 0.0) {
             view = appearances.get(key).p1 / appearances.get(key).p2;
-            view = view*0.7 + (double)(viewValue/100)*0.3;
+            view = view*0.7 + (viewValue/100)*0.3;
         }
         Double retValue = 0.0;
         if (view != -1.0) {
