@@ -1,5 +1,8 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Header {
     public Header() {
     }

@@ -1,9 +1,15 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Log {
     private Body body;
     private Header header;
     private String event_type;
+    @JsonIgnore
+    private String ip;
 
     public Log() {
     }
@@ -36,6 +42,13 @@ public class Log {
         this.event_type = event_type;
     }
 
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     public String getDescriptionOrName() {
         String toRet = "";

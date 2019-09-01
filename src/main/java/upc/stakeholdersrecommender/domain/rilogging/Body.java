@@ -1,6 +1,8 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Body {
 
     private String value;
@@ -12,6 +14,7 @@ public class Body {
     private String innerText;
     private String projectId;
     private Integer unixTime;
+
 
     public Body() {
     }

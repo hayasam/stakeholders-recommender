@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.service.EffortCalculator;
@@ -41,7 +42,7 @@ public class StakeholdersRecommenderController {
         System.out.println("Starting batch process");
         int res = 0;
         try {
-            res = stakeholdersRecommenderService.addBatch(batch, withAvailability, withComponent, organization, autoMapping, bugzilla, logging);
+            res = stakeholdersRecommenderService.addBatch(batch, withAvailability, withComponent, organization, autoMapping, bugzilla, logging,0);
         } catch (IOException e) {
             System.out.println("Finished batch process");
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -54,7 +55,6 @@ public class StakeholdersRecommenderController {
             return new ResponseEntity<>(keys, HttpStatus.CREATED);
         }
     }
-
 
     @RequestMapping(value = "reject_recommendation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "This endpoint is used to state that the user identied by REJECTED must not be recommended for REQUIREMENT if USER performs the recommendation for REQUIREMENT.", notes = "")
@@ -72,7 +72,7 @@ public class StakeholdersRecommenderController {
                                                                  @ApiParam(value = "Maximum number of stakeholders to be returned by the recommender.", example = "10", required = true) @RequestParam Integer k, @ApiParam(value = "If set to true, the recommendation only takes into account as possible set of stakeholders the ones in the project to which the requirement pertains. If set to false, this set of stakeholders will be all the stakeholders received in the batch_process of the organization that is making the request, and will take all stakeholders with enough availability in any project. The availabilityScore of the participants of other projects will be always one if they are considered. ", required = true, example = "false") @RequestParam Boolean projectSpecific
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) throws Exception {
         System.out.println("Starting recommendation");
-        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific, organization);
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific, organization,0);
         System.out.println("Finished recommendation");
         return new ResponseEntity<>(ret, HttpStatus.CREATED);
     }

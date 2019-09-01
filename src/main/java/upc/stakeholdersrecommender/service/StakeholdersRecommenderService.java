@@ -22,9 +22,13 @@ import upc.stakeholdersrecommender.domain.rilogging.Log;
 import upc.stakeholdersrecommender.domain.rilogging.LogArray;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
+import org.apache.commons.io.FileUtils;
+
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -61,7 +65,7 @@ public class StakeholdersRecommenderService {
     private PreprocessService Preprocess;
 
 
-    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
+    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization, Integer test) throws Exception {
         String p = request.getProject().getId();
         List<RecommendReturnSchema> ret;
         List<PersonSR> persList = new ArrayList<>();
@@ -75,7 +79,7 @@ public class StakeholdersRecommenderService {
         Boolean rake = pro.getRake();
         Boolean bugzilla = pro.getBugzilla();
         if (bugzilla) {
-            newReq.setSkills(Preprocess.preprocessSingular(requirement));
+            newReq.setSkills(Preprocess.preprocessSingular(requirement,test));
         } else {
             if (!rake) {
                 Integer size = pro.getRecSize();
@@ -297,13 +301,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing, Boolean logging) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing, Boolean logging,Integer test) throws Exception {
         purge(organization);
         verify(request);
         Map<String, Requirement> recs = new HashMap<>();
         List<Requirement> requeriments;
         if (bugzillaPreprocessing) {
-            requeriments = Preprocess.preprocess(request.getRequirements());
+            requeriments = Preprocess.preprocess(request.getRequirements(),test);
         } else {
             requeriments = request.getRequirements();
         }
@@ -351,7 +355,7 @@ public class StakeholdersRecommenderService {
         Map<String, Integer> loggingFrequency = null;
 
         if (logging) {
-            pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize);
+            pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize,test);
             loggingFrequency = getSkillFrequency(pair.getFirst());
         }
 
@@ -847,6 +851,7 @@ public class StakeholdersRecommenderService {
         } else return null;
     }
 
+
     private class SinglePair<T> {
         T p1, p2;
 
@@ -857,18 +862,37 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla, Boolean rake, String organization, Integer size) throws GeneralSecurityException, IOException {
-        SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
-        RestTemplate temp = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<LogArray> res = temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
-        LogArray log = res.getBody();
-        return log(log.getLogs(), bugzilla, rake, organization, size);
+    private Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla, Boolean rake, String organization, Integer size, Integer test) throws GeneralSecurityException, IOException {
+        LogArray log=null;
+        if (test==0) {
+            SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
+            RestTemplate temp = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<LogArray> res = temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
+            log = res.getBody();
+        }
+        else {
+            ObjectMapper map=new ObjectMapper();
+            File file = new File("src/main/resources/testingFiles/RiLoggingResponse.txt");
+            String jsonInString= null;
+            try {
+                jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                log = map.readValue(jsonInString, LogArray.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return log(log.getLogs(), bugzilla, rake, organization, size,test);
     }
 
-    public Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList, Boolean bugzilla, Boolean rake, String organization, Integer size) throws IOException {
+    public Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList, Boolean bugzilla, Boolean rake, String organization, Integer size, Integer test) throws IOException {
         Map<String, List<Log>> logged = new HashMap<>();
         if (logList!=null)
         for (Log l : logList) {
@@ -929,7 +953,7 @@ public class StakeholdersRecommenderService {
             trueRecs.put(s, req);
             reqId.put(s, toOrder);
         }
-        Map<String, Map<String, Double>> skills = obtainSkills(trueRecs, bugzilla, rake, organization, size);
+        Map<String, Map<String, Double>> skills = obtainSkills(trueRecs, bugzilla, rake, organization, size,test);
         skills = computeTime(skills, trueRecs);
         return new Pair<>(skills, timesForReq);
     }
@@ -941,13 +965,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private Map<String, Map<String, Double>> obtainSkills(Map<String, Requirement> trueRecs, Boolean bugzilla, Boolean rake, String organization, Integer size) throws IOException {
+    private Map<String, Map<String, Double>> obtainSkills(Map<String, Requirement> trueRecs, Boolean bugzilla, Boolean rake, String organization, Integer size,Integer test) throws IOException {
         Map<String, Map<String, Double>> map;
         if (rake) {
             map = new RAKEKeywordExtractor().computeRake(trueRecs.values());
         } else if (bugzilla) {
             Collection<Requirement> col = trueRecs.values();
-            List<Requirement> toMakeSkill = Preprocess.preprocess(new ArrayList<>(col));
+            List<Requirement> toMakeSkill = Preprocess.preprocess(new ArrayList<>(col),test);
             for (Requirement r : toMakeSkill) {
                 trueRecs.put(r.getId(), r);
             }
