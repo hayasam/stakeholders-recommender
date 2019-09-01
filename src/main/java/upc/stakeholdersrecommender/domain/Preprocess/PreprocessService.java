@@ -63,7 +63,7 @@ public class PreprocessService {
     }
 
 
-    public List<String> preprocessSingular(Requirement requirement,Integer test) {
+    public List<String> preprocessSingular(Requirement requirement,Integer test) throws IOException {
         RequirementPreprocessList toSend = new RequirementPreprocessList();
         List<RequirementPreprocess> aux = new ArrayList<>();
         RequirementPreprocess req = new RequirementPreprocess();
@@ -86,13 +86,9 @@ public class PreprocessService {
         }
         else {
             ObjectMapper map=new ObjectMapper();
-            try {
                 String[] s=map.readValue("[\"indicate\",\"completed\",\"requirements\",\"releases\",\"status\",\"of\",\"requirements\",\"and\",\"releases\",\"visualization\",\"of\",\"completed\",\"requirements\",\"releases\",\"indicate\",\"completed\",\"requirements\",\"releases\",\"status\",\"of\",\"requirements\",\"and\",\"releases\"]\n",
                         String[].class);
                 result=(Arrays.asList(s));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         return result;
     }
