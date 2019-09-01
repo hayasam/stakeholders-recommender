@@ -877,16 +877,8 @@ public class StakeholdersRecommenderService {
             ObjectMapper map=new ObjectMapper();
             File file = new File("src/main/resources/testingFiles/RiLoggingResponse.txt");
             String jsonInString= null;
-            try {
-                jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                log = map.readValue(jsonInString, LogArray.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+            log = map.readValue(jsonInString, LogArray.class);
         }
 
         return log(log.getLogs(), bugzilla, rake, organization, size,test);

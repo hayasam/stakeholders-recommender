@@ -11,13 +11,17 @@ import upc.stakeholdersrecommender.domain.Schemas.RecommendSchema;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.logging.Logger;
 
 @Service
 public class PreprocessService {
+
+    Logger logger = Logger.getLogger(PreprocessService.class.getName());
+
     public PreprocessService() {
     }
 
-    public List<Requirement> preprocess(List<Requirement> requirements,Integer test) {
+    public List<Requirement> preprocess(List<Requirement> requirements,Integer test) throws IOException {
         List<Requirement> result = new ArrayList<>();
         if (test==0) {
             RequirementPreprocessList toSend = new RequirementPreprocessList();
@@ -46,31 +50,14 @@ public class PreprocessService {
             ObjectMapper map = new ObjectMapper();
             File file = new File("src/main/resources/testingFiles/PreprocessingResponse.txt");
             String jsonInString = null;
-            try {
-                jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                result = new ArrayList<>(Arrays.asList(map.readValue(jsonInString, Requirement[].class)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         }
         else if (test==2) {
             ObjectMapper map = new ObjectMapper();
             File file = new File("src/main/resources/testingFiles/PreprocessBig.txt");
             String jsonInString = null;
-            try {
-                jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                result = new ArrayList<>(Arrays.asList(map.readValue(jsonInString, Requirement[].class)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+            result = new ArrayList<>(Arrays.asList(map.readValue(jsonInString, Requirement[].class)));
         }
         return result;
     }
