@@ -4,6 +4,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import upc.stakeholdersrecommender.entity.Skill;
+
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +23,6 @@ public class ParticipantTest {
         System.out.println("create");
         Participant instance = new Participant("1", "2");
         assertTrue(instance.getPerson().equals("1") && instance.getProject().equals("2"));
-
     }
 
 }
