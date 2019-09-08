@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import upc.stakeholdersrecommender.domain.Requirement;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.entity.Skill;
 import upc.stakeholdersrecommender.service.EffortCalculator;
@@ -46,24 +45,23 @@ public class StakeholdersRecommenderController {
 
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Starting batch process from "+organization);
+        System.out.println(s + " | Starting batch process from " + organization);
         int res = 0;
         try {
-            res = stakeholdersRecommenderService.addBatch(batch, withAvailability, withComponent, organization, autoMapping, bugzilla, logging,0);
+            res = stakeholdersRecommenderService.addBatch(batch, withAvailability, withComponent, organization, autoMapping, bugzilla, logging, 0);
         } catch (IOException e) {
             s = formatter.format(new Date());
-            System.out.println(s+" | Finished batch process "+organization);
+            System.out.println(s + " | Finished batch process " + organization);
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (!keywords) {
             s = formatter.format(new Date());
-            System.out.println(s+" | Finished batch process from "+organization);
+            System.out.println(s + " | Finished batch process from " + organization);
             return new ResponseEntity<>(new BatchReturnSchema(res), HttpStatus.CREATED);
-        }
-        else {
+        } else {
             s = formatter.format(new Date());
             List<ProjectKeywordSchema> keys = stakeholdersRecommenderService.extractKeywords(organization, batch);
-            System.out.println(s+" | Finished batch process "+organization);
+            System.out.println(s + " | Finished batch process " + organization);
             return new ResponseEntity<>(keys, HttpStatus.CREATED);
         }
     }
@@ -74,10 +72,10 @@ public class StakeholdersRecommenderController {
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Starting rejection of recommendation from "+organization);
+        System.out.println(s + " | Starting rejection of recommendation from " + organization);
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement, organization);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished rejection of recommendation from "+organization+" | "+new Date());
+        System.out.println(s + " | Finished rejection of recommendation from " + organization + " | " + new Date());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -88,10 +86,10 @@ public class StakeholdersRecommenderController {
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) throws Exception {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Starting recommendation from "+organization);
-        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific, organization,0);
+        System.out.println(s + " | Starting recommendation from " + organization);
+        List<RecommendReturnSchema> ret = stakeholdersRecommenderService.recommend(request, k, projectSpecific, organization, 0);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished recommendation from "+organization);
+        System.out.println(s + " | Finished recommendation from " + organization);
         return new ResponseEntity<>(ret, HttpStatus.CREATED);
     }
 
@@ -101,10 +99,10 @@ public class StakeholdersRecommenderController {
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) throws IOException {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Starting set effort from "+organization);
+        System.out.println(s + " | Starting set effort from " + organization);
         effortCalc.setEffort(eff, project, organization);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished set effort from "+organization);
+        System.out.println(s + " | Finished set effort from " + organization);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
@@ -114,10 +112,10 @@ public class StakeholdersRecommenderController {
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) throws IOException {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Starting computation of effort from "+organization);
+        System.out.println(s + " | Starting computation of effort from " + organization);
         effortCalc.effortCalc(eff, project, organization);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished computation of effort from "+organization);
+        System.out.println(s + " | Finished computation of effort from " + organization);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
@@ -127,10 +125,10 @@ public class StakeholdersRecommenderController {
             , @ApiParam(value = "The organization that is making the request.", example = "UPC", required = true) @RequestParam String organization) {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Undoing rejection from "+organization);
+        System.out.println(s + " | Undoing rejection from " + organization);
         stakeholdersRecommenderService.undo_recommend_reject(rejected, user, requirement, organization);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished rejection from "+organization);
+        System.out.println(s + " | Finished rejection from " + organization);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -141,10 +139,10 @@ public class StakeholdersRecommenderController {
                                           @ApiParam(value = "Maximum number of skills to be returned", example = "10", required = false) @RequestParam(value = "k", defaultValue = "-1", required = false) Integer k) {
         Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String s = formatter.format(new Date());
-        System.out.println(s+" | Started get person skills from "+organization);
+        System.out.println(s + " | Started get person skills from " + organization);
         List<Skill> skills = stakeholdersRecommenderService.getPersonSkills(person, organization, k);
         s = formatter.format(new Date());
-        System.out.println(s+" | Finished get person skills from "+organization);
+        System.out.println(s + " | Finished get person skills from " + organization);
         return new ResponseEntity<>(skills, HttpStatus.OK);
     }
 
