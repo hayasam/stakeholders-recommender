@@ -17,6 +17,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.apache.xmlbeans.impl.common.Levenshtein.distance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -56,7 +57,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
@@ -91,7 +92,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, false, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, false, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
@@ -126,7 +127,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
@@ -163,7 +164,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals(res, "[]");
     }
@@ -199,7 +200,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
@@ -249,7 +250,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
         assertEquals(res, "[]");
     }
@@ -303,7 +304,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, false, false, organization, false, false, false,0);
+        Integer result = instance.addBatch(bat, false, false, organization, false, false, false,1);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -356,7 +357,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, false, organization, true, false, false,0);
+        Integer result = instance.addBatch(bat, true, false, organization, true, false, false,1);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -409,7 +410,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,0);
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,1);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -422,7 +423,7 @@ public class StakeholdersRecommenderServiceTest {
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, true, true,0);
+        Integer result = instance.addBatch(bat, true, true, organization, true, true, true,2);
         Integer expected = 22213;
         assertEquals(result, expected);
     }
@@ -435,7 +436,7 @@ public class StakeholdersRecommenderServiceTest {
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, false, true,0);
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, true,1);
         Integer expected = 22213;
         assertEquals(result, expected);
     }
@@ -451,9 +452,12 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
-        assertEquals(result.size(),10);
+        String s="[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"254\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13429365752426303},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"22\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13204162824085602},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"1\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.12882151600388306},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"260\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.08603980783086922},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"2\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.06751206120688939},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"15\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.060057074318516424},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"245\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05705376748365999},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"257\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05340446815471452},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"47\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04820298580437775},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"223\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04596896140205564}]";
+        Double dist=(double) distance(s,res);
+        Double percentage =dist/res.length();
+        assertTrue(percentage<0.1);
     }
 
     @Test
@@ -467,9 +471,13 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",2);
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
+        String s="[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"1\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.21995032496806483},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"22\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13649867479870212},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"2\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.1233462287241922},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"15\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.08653215914689405},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"142\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.08501582589473772},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"25\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.07087741754784019},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"38\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.07022368744732053},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"212\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.057475521818266775},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"65\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05574629878795652},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"214\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05201326946766942}]\n";
+        Double dist=(double) distance(s,res);
+        Double percentage =dist/res.length();
+        System.out.println(res);
+        assertTrue(percentage<0.1);
     }
 
     @Test
@@ -486,9 +494,13 @@ public class StakeholdersRecommenderServiceTest {
         jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         req = mapper.readValue(jsonInString, RecommendSchema.class);
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",2);
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"235\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2856033272577937}]",res);
+        String s="[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"1\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.21995032496806483},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"22\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13649867479870212},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"2\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.1233462287241922},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"15\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.08653215914689405},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"142\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.08501582589473772},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"25\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.07087741754784019},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"38\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.07022321870041932},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"212\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05745384225327756},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"65\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05574629878795652},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"214\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.05201326946766942}]\n";
+        Double dist=(double) distance(s,res);
+        Double percentage =dist/res.length();
+        System.out.println(res);
+        assertTrue(percentage<0.1);
     }
 
 
@@ -503,9 +515,12 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
+        String s="[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"22\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13971077173798735},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"1\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.13679338569143035},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"15\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.07360075154597227},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"2\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.06999829304655297},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"212\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.045740563813790984},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"117\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04464753998839412},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"47\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04425330148288506},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"38\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04362902765076417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"33\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04347882557014783},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"104\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.04334282886870377}]";
+        Double dist=(double) distance(s,res);
+        Double percentage =dist/res.length();
+        assertTrue(percentage<0.1);
     }
 
     @Test

@@ -2,7 +2,6 @@ package upc.stakeholdersrecommender.domain.Preprocess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.omg.CORBA.Object;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Requirement;
@@ -11,12 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.logging.Logger;
 
 @Service
 public class PreprocessService {
 
-    Logger logger = Logger.getLogger(PreprocessService.class.getName());
 
     public PreprocessService() {
     }
@@ -31,10 +28,10 @@ public class PreprocessService {
                 reqMap.put(r.getId(), r);
                 RequirementPreprocess req = new RequirementPreprocess();
                 req.setId(r.getId());
-                String text = r.getDescription().replaceAll("[\\[\\].,:;!?\"&]", " ");
+                String text = r.getDescription().replaceAll("[\\[\\].,:;!?\"&+=<>0-9]", " ");
                 req.setDescription(text);
                 if (r.getName() != null) {
-                    text = r.getName().replaceAll("[\\[\\].,:;!?\"&]", " ");
+                    text = r.getName().replaceAll("[\\[\\].,:;!?\"&=<>+0-9]", " ");
                     req.setTitle(text);
                 }
                 else req.setTitle("");
@@ -60,8 +57,6 @@ public class PreprocessService {
             String jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
             result = new ArrayList<>(Arrays.asList(map.readValue(jsonInString, Requirement[].class)));
         }
-        ObjectMapper map=new ObjectMapper();
-        System.out.println(map.writeValueAsString(result));
         return result;
     }
 
@@ -71,10 +66,10 @@ public class PreprocessService {
         List<RequirementPreprocess> aux = new ArrayList<>();
         RequirementPreprocess req = new RequirementPreprocess();
         req.setId(requirement.getId());
-        String text = requirement.getDescription().replaceAll("[\\[\\].,:;!?\"&]", " ");
+        String text = requirement.getDescription().replaceAll("[\\[\\].,:;!?\"&=+<>0-9]", " ");
         req.setDescription(text);
         if (requirement.getName() != null) {
-            text = requirement.getName().replaceAll("[\\[\\].,:;!?\"&]", " ");
+            text = requirement.getName().replaceAll("[\\[\\].,:;!?\"&=+<>0-9]", " ");
             req.setTitle(text);
         }
         else req.setTitle("");
@@ -82,7 +77,7 @@ public class PreprocessService {
         toSend.setRequirements(aux);
         RestTemplate temp = new RestTemplate();
         List<String> result = new ArrayList<>();
-        if (test == 0 && test == 1) {
+        if (test == 0 || test == 1) {
             RequirementPreprocessedList res = temp.postForObject("http://217.172.12.199:9406/keywords-extraction/requirements?stemmer=false", toSend, RequirementPreprocessedList.class);
             List<RequirementPreprocessed> re = res.getRequirements();
             RequirementPreprocessed processed = re.get(0);
@@ -96,9 +91,6 @@ public class PreprocessService {
                     String[].class);
             result = (Arrays.asList(s));
         }
-
-        ObjectMapper map=new ObjectMapper();
-        System.out.println(map.writeValueAsString(result));
         return result;
     }
 

@@ -174,10 +174,24 @@ public class StakeholdersRecommenderService {
             Double compSum = 0.0;
             Double resComp = 0.0;
             for (String s : req.getSkillsSet()) {
+                Double weightToAdd = 0.0;
+                Skill mostSimilarSkill = null;
                 for (Skill j : person.getSkills()) {
-                    if (s.equals(j.getName())) {
-                        sum += j.getWeight();
+                    if (j.getName().equals(s)) {
+                        weightToAdd = 100.0;
+                        sum = sum + j.getWeight();
+                        break;
+                    } else {
+                        Double val = WordEmbedding.computeSimilarity(j.getName(), s);
+                        if (val > weightToAdd) {
+                            weightToAdd = val;
+                            mostSimilarSkill = j;
+                        }
                     }
+                }
+                if (weightToAdd != 100.0) {
+                    if (weightToAdd!=0.0&&mostSimilarSkill!=null)
+                        sum = sum + weightToAdd * mostSimilarSkill.getWeight();
                 }
             }
             if (req.getComponent() != null) {
@@ -244,7 +258,7 @@ public class StakeholdersRecommenderService {
                     }
                     if (weightToAdd != 100.0) {
                         if (weightToAdd!=0.0)
-                        total = total + weightToAdd * skillTrad.get(mostSimilarWord).getWeight();
+                        total = total + (weightToAdd * skillTrad.get(mostSimilarWord).getWeight());
                     }
                 }
             }
@@ -319,8 +333,6 @@ public class StakeholdersRecommenderService {
         } else {
             requeriments = request.getRequirements();
         }
-        ObjectMapper obj=new ObjectMapper();
-        System.out.println(obj.writeValueAsString(requeriments));
         for (Requirement r : requeriments) {
             SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
             Date dtIn = inFormat.parse(r.getModified_at());
@@ -415,7 +427,8 @@ public class StakeholdersRecommenderService {
             Requirement r = recs.get(s);
             Set<String> helper = new HashSet<>();
             for (String h : r.getDescription().split(" ")) {
-                if (!h.equals(""))
+                h=h.replace(".","");
+                if (!h.equals("")&&h.length()>1)
                     helper.add(h);
             }
             Map<String, Double> aux = new HashMap<>();
@@ -424,7 +437,7 @@ public class StakeholdersRecommenderService {
             }
             ret.put(s, aux);
         }
-        return ret;
+        return  computeTimeFactor(recs,ret,new Date());
     }
 
 
@@ -1039,80 +1052,6 @@ public class StakeholdersRecommenderService {
        else return false;
     }
 
-
-
-    private Map<String,Map<String,Double>> obtainSkills(Map<String, Requirement> trueRecs,Boolean bugzilla,Boolean rake,String organization,Integer size) throws IOException {
-        Map<String,Map<String,Double>> map;
-        if (rake) {
-            map=new RAKEKeywordExtractor().computeRake(trueRecs.values());
-        }
-        else if (bugzilla) {
-            Collection<Requirement> col=trueRecs.values();
-            List<Requirement> toMakeSkill=Preprocess.preprocess(new ArrayList<>(col));
-            for (Requirement r:toMakeSkill) {
-                trueRecs.put(r.getId(),r);
-            }
-            map = computeAllSkillsNoMethod(trueRecs);
-        }
-        else {
-            Map<String,Integer> model=KeywordExtractionModelRepository.getOne(organization).getModel();
-            map=new TFIDFKeywordExtractor().computeTFIDFExtra(model, size,trueRecs);
-            KeywordExtractionModel mod=new KeywordExtractionModel();
-            mod.setId(organization);
-            mod.setModel(model);
-            KeywordExtractionModelRepository.save(mod);
-        }
-        return map;
-    }
-
-    private Map<String, Pair<Integer,Integer>> extractTimeInRequirement(List<Log> toOrder) {
-        String currentSessionId="";
-        String lastElement="";
-        String lastType="";
-        String lastValue="";
-        Integer lastTime=0;
-        Map<String, Pair<Integer,Integer>> toRet=new HashMap<>();
-        for (Log l:toOrder) {
-            String newSessionId=l.getHeader().getSessionid();
-            if (currentSessionId.equals(newSessionId)) {
-                String newType=l.getEvent_type();
-                if (lastElement.equals(l.getBody().getSrcElementclassName())&&lastType.equals("focus")&&newType.equals("blur")) {
-                    Integer time=l.getUnixTime()-lastTime;
-                    if (toRet.containsKey(l.getBody().getRequirementId())) {
-                        if (edited(lastValue,l)) {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(time+toRet.get(l.getBody().getRequirementId()).getFirst(),toRet.get(l.getBody().getRequirementId()).getSecond()));
-                        }
-                        else {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(toRet.get(l.getBody().getRequirementId()).getFirst(),toRet.get(l.getBody().getRequirementId()).getSecond()+time));
-                        }
-                    }
-                    else {
-                        if (edited(lastValue,l)) {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(time,0));
-                        }
-                        else {
-                            toRet.put(l.getBody().getRequirementId(),new Pair<>(0,time));
-                        }
-                    }
-                }
-            }
-            lastTime=l.getUnixTime();
-            lastType=l.getEvent_type();
-            lastElement=l.getBody().getSrcElementclassName();
-            lastValue=l.getBody().getValue();
-        }
-        return toRet;
-    }
-    private boolean edited(String lastValue, Log l) {
-        if (l.getBody().getSrcElementclassName().equals("select-dropdown")) {
-            return true;
-        }
-        else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control")||l.getBody().getSrcElementclassName().equals("note-placeholder")) {
-            if (!lastValue.equals(l.getBody().getInnerText())) return true;
-            else return false;
-        }
-        else return false;
-    }
 
 
 
