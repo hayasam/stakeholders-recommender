@@ -2,6 +2,7 @@ package upc.stakeholdersrecommender.domain.Preprocess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.omg.CORBA.Object;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.Requirement;
@@ -30,8 +31,12 @@ public class PreprocessService {
                 reqMap.put(r.getId(), r);
                 RequirementPreprocess req = new RequirementPreprocess();
                 req.setId(r.getId());
-                req.setDescription(r.getDescription());
-                if (r.getName() != null) req.setTitle(r.getName());
+                String text = r.getDescription().replaceAll("[\\[\\].,:;!?\"&]", " ");
+                req.setDescription(text);
+                if (r.getName() != null) {
+                    text = r.getName().replaceAll("[\\[\\].,:;!?\"&]", " ");
+                    req.setTitle(text);
+                }
                 else req.setTitle("");
                 aux.add(req);
             }
@@ -55,6 +60,8 @@ public class PreprocessService {
             String jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
             result = new ArrayList<>(Arrays.asList(map.readValue(jsonInString, Requirement[].class)));
         }
+        ObjectMapper map=new ObjectMapper();
+        System.out.println(map.writeValueAsString(result));
         return result;
     }
 
@@ -64,8 +71,12 @@ public class PreprocessService {
         List<RequirementPreprocess> aux = new ArrayList<>();
         RequirementPreprocess req = new RequirementPreprocess();
         req.setId(requirement.getId());
-        req.setDescription(requirement.getDescription());
-        if (requirement.getName() != null) req.setTitle(requirement.getName());
+        String text = requirement.getDescription().replaceAll("[\\[\\].,:;!?\"&]", " ");
+        req.setDescription(text);
+        if (requirement.getName() != null) {
+            text = requirement.getName().replaceAll("[\\[\\].,:;!?\"&]", " ");
+            req.setTitle(text);
+        }
         else req.setTitle("");
         aux.add(req);
         toSend.setRequirements(aux);
@@ -85,6 +96,9 @@ public class PreprocessService {
                     String[].class);
             result = (Arrays.asList(s));
         }
+
+        ObjectMapper map=new ObjectMapper();
+        System.out.println(map.writeValueAsString(result));
         return result;
     }
 

@@ -61,7 +61,7 @@ public class Log {
     }
 
     public boolean isDescription() {
-        return body.getSrcElementclassName().equals("note-placeholder") || body.getSrcElementclassName().equals("note-editable or-description-active");
+        return body.getSrcElementclassName().equals("note-editable") || body.getSrcElementclassName().equals("note-editable or-description-active");
     }
 
 

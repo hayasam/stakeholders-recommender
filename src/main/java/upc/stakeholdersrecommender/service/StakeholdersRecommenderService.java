@@ -173,7 +173,7 @@ public class StakeholdersRecommenderService {
             Double sum = 0.0;
             Double compSum = 0.0;
             Double resComp = 0.0;
-            for (String s : req.getSkills()) {
+            for (String s : req.getSkillsSet()) {
                 for (Skill j : person.getSkills()) {
                     if (s.equals(j.getName())) {
                         sum += j.getWeight();
@@ -191,10 +191,10 @@ public class StakeholdersRecommenderService {
                 resComp = compSum / req.getComponent().size();
             }
             Double res;
-            if (req.getSkills().size() == 0) {
+            if (req.getSkillsSet().size() == 0) {
                 res = 0.0;
             } else {
-                res = sum / req.getSkills().size();
+                res = sum / req.getSkillsSet().size();
             }
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, person, skillTrad);
@@ -220,26 +220,35 @@ public class StakeholdersRecommenderService {
     }
 
     private Double getAppropiateness(RequirementSR req, PersonSR person, Map<String, Skill> skillTrad) throws IOException {
-        List<String> reqSkills = req.getSkills();
-        for (Skill sk : person.getSkills()) {
-            skillTrad.put(sk.getName(), sk);
-        }
+        Set<String> reqSkills = req.getSkillsSet();
         Double total = 0.0;
-        for (String done : reqSkills) {
-            Double weightToAdd = 0.0;
-            for (String skill : skillTrad.keySet()) {
-                if (skill.equals(done)) {
-                    weightToAdd = 100.0;
-                    total = total + skillTrad.get(skill).getWeight();
-                    break;
-                } else {
-                    Double val = WordEmbedding.computeSimilarity(skill, done);
-                    if (val > weightToAdd) weightToAdd = val;
+        if (person.getSkills()!=null&&person.getSkills().size()>0) {
+            for (Skill sk : person.getSkills()) {
+                skillTrad.put(sk.getName(), sk);
+            }
+            for (String done : reqSkills) {
+                Double weightToAdd = 0.0;
+                String mostSimilarWord = "";
+                for (String skill : skillTrad.keySet()) {
+                        if (skill.equals(done)) {
+                            weightToAdd = 100.0;
+                            total = total + skillTrad.get(skill).getWeight();
+                            break;
+                        } else {
+                            Double val = WordEmbedding.computeSimilarity(skill, done);
+                            if (val > weightToAdd) {
+                                weightToAdd = val;
+                                mostSimilarWord = skill;
+                            }
+                        }
+                    }
+                    if (weightToAdd != 100.0) {
+                        if (weightToAdd!=0.0)
+                        total = total + weightToAdd * skillTrad.get(mostSimilarWord).getWeight();
+                    }
                 }
             }
-            if (weightToAdd != 100.0) total = total + weightToAdd;
-        }
-        Double amount = (double) req.getSkills().size();
+        Double amount = (double) req.getSkillsSet().size();
         Double appropiateness;
         if (amount == 0.0) {
             appropiateness = 0.0;
@@ -813,7 +822,7 @@ public class StakeholdersRecommenderService {
             for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization, id)) {
                 KeywordReturnSchema key = new KeywordReturnSchema();
                 key.setRequirement(req.getId().getRequirementId());
-                key.setSkills(req.getSkills());
+                key.setSkills(new ArrayList<>(req.getSkillsSet()));
                 reqs.add(key);
             }
             proje.setRequirements(reqs);
@@ -982,22 +991,24 @@ public class StakeholdersRecommenderService {
         String lastElement = "";
         String lastType = "";
         String lastValue = "";
+        String lastInnertext="";
         Integer lastTime = 0;
         Map<String, Pair<Integer, Integer>> toRet = new HashMap<>();
         for (Log l : toOrder) {
             //String newSessionId=l.getHeader().getSessionid();
             // if (currentSessionId.equals(newSessionId)) {
             String newType = l.getEvent_type();
-            if (lastElement.equals(l.getBody().getSrcElementclassName()) && lastType.equals("focus") && newType.equals("blur")) {
+            if ((lastElement.equals(l.getBody().getSrcElementclassName())||(lastElement.equals("note-editable")&&l.getBody().getSrcElementclassName().equals("note-editable or-description-active"))
+                    ||(lastElement.equals("note-editable or-description-active")&&l.getBody().getSrcElementclassName().equals("note-editable")))&& lastType.equals("focus") && newType.equals("blur")) {
                 Integer time = l.getUnixTime() - lastTime;
                 if (toRet.containsKey(l.getBody().getRequirementId())) {
-                    if (edited(lastValue, l)) {
+                    if (edited(lastValue,lastInnertext, l)) {
                         toRet.put(l.getBody().getRequirementId(), new Pair<>(time + toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond()));
                     } else {
                         toRet.put(l.getBody().getRequirementId(), new Pair<>(toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond() + time));
                     }
                 } else {
-                    if (edited(lastValue, l)) {
+                    if (edited(lastValue,lastInnertext, l)) {
                         toRet.put(l.getBody().getRequirementId(), new Pair<>(time, 0));
                     } else {
                         toRet.put(l.getBody().getRequirementId(), new Pair<>(0, time));
@@ -1009,17 +1020,21 @@ public class StakeholdersRecommenderService {
             lastType = l.getEvent_type();
             lastElement = l.getBody().getSrcElementclassName();
             lastValue = l.getBody().getValue();
+            lastInnertext=l.getBody().getInnerText();
         }
-        ObjectMapper mapper = new ObjectMapper();
         return toRet;
     }
 
-    private boolean edited(String lastValue, Log l) {
+    private boolean edited(String lastValue,String lastInnerText, Log l) {
         if (l.getBody().getSrcElementclassName().equals("select-dropdown")) {
             return true;
-        } else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control") || l.getBody().getSrcElementclassName().equals("note-placeholder")) {
-            return !lastValue.equals(l.getBody().getInnerText());
-        } else return false;
+        } else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control")) {
+            return !lastValue.equals(l.getBody().getValue());
+        }
+        else if (l.getBody().getSrcElementclassName().equals("note-editable")||l.getBody().getSrcElementclassName().equals("note-editable or-description-active")) {
+            return !lastInnerText.equals(l.getBody().getInnerText());
+        }
+       else return false;
     }
 
 

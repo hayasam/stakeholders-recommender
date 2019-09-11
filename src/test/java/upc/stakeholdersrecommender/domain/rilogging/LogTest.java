@@ -71,7 +71,7 @@ public class LogTest {
     public void isDescriptionTrue() {
         Log log = new Log();
         Body bo = new Body();
-        bo.setSrcElementclassName("note-placeholder");
+        bo.setSrcElementclassName("note-editable");
         log.setBody(bo);
         assertTrue(log.isDescription());
         bo.setSrcElementclassName("note-editable or-description-active");

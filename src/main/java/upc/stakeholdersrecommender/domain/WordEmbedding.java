@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.sqrt;
+
 @Service
 public class WordEmbedding {
 
@@ -34,7 +36,15 @@ public class WordEmbedding {
         for (int i = 0; i < help1.length; ++i) {
             sum += help1[i] * help2[i];
         }
-        return sum / help1.length;
+        return sum /(norm(help1)*norm(help2));
+    }
+
+    private Double norm (Double[] array) {
+        Double tot=0.0;
+        for (Double d:array) {
+            tot+=d*d;
+        }
+        return sqrt(tot);
     }
 
     private void loadModel(String h) {

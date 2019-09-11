@@ -13,7 +13,7 @@ import java.util.*;
 
 public class RAKEKeywordExtractor {
 
-    private Double cutoff = 6.0;
+    private Double cutoff = 3.0;
 
     public List<Map<String, Double>> extractKeywords(List<String> corpus) throws IOException {
         List<Map<String, Double>> res = new ArrayList<>();
@@ -71,6 +71,7 @@ public class RAKEKeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
+                .addTokenFilter("kstem")
                 .build();
         return analyze(text, analyzer);
     }
@@ -79,7 +80,7 @@ public class RAKEKeywordExtractor {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
-                .addTokenFilter("porterstem")
+                .addTokenFilter("kstem")
                 .build();
         return analyze(text, analyzer);
     }

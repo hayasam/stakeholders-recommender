@@ -45,6 +45,7 @@ public class TFIDFKeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
+                .addTokenFilter("kstem")
                 .build();
         return analyze(text, analyzer);
     }

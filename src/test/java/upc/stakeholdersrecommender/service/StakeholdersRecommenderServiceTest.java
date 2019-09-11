@@ -56,9 +56,9 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.16666666666666666}]");
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
 
     @Test
@@ -91,9 +91,9 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, false, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, false, "UPC",0);
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.16666666666666666}]");
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
 
     @Test
@@ -126,9 +126,9 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
-        assertEquals(res, "[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.16666666666666666}]");
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":0.97,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
 
 
@@ -163,7 +163,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals(res, "[]");
     }
@@ -199,9 +199,9 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.16666666666666666}]", res);
+        assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.42774495717678834}]",res);
     }
 
     @Test
@@ -212,7 +212,7 @@ public class StakeholdersRecommenderServiceTest {
         int k = 10;
         List<Skill> result = instance.getPersonSkills("230","UPC",k);
         String res = mapper.writeValueAsString(result);
-        assertEquals("[{\"name\":\"requir\",\"weight\":0.5},{\"name\":\"realli\",\"weight\":0.5}]", res);
+        assertEquals("[{\"name\":\"requirement\",\"weight\":0.5},{\"name\":\"title\",\"weight\":0.5}]",res);
     }
 
 
@@ -249,7 +249,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals(res, "[]");
     }
@@ -303,7 +303,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, false, false, organization, false, false, false,1);
+        Integer result = instance.addBatch(bat, false, false, organization, false, false, false,0);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -356,7 +356,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, false, organization, true, false, false,1);
+        Integer result = instance.addBatch(bat, true, false, organization, true, false, false,0);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -409,7 +409,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,1);
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,0);
         Integer expected = 5;
         assertEquals(result, expected);
     }
@@ -422,7 +422,7 @@ public class StakeholdersRecommenderServiceTest {
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, true, true,2);
+        Integer result = instance.addBatch(bat, true, true, organization, true, true, true,0);
         Integer expected = 22213;
         assertEquals(result, expected);
     }
@@ -435,7 +435,7 @@ public class StakeholdersRecommenderServiceTest {
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, false, true,1);
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, true,0);
         Integer expected = 22213;
         assertEquals(result, expected);
     }
@@ -451,7 +451,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals(result.size(),10);
     }
@@ -467,7 +467,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",2);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
     }
@@ -481,12 +481,12 @@ public class StakeholdersRecommenderServiceTest {
         String jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        instance.addBatch(bat, true, true, organization, true, true, false,2);
+        instance.addBatch(bat, true, true, organization, true, true, false,0);
         file = new File("src/main/resources/testingFiles/RecommendTest.txt");
         jsonInString= FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
         req = mapper.readValue(jsonInString, RecommendSchema.class);
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",2);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"235\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2856033272577937}]",res);
     }
@@ -503,7 +503,7 @@ public class StakeholdersRecommenderServiceTest {
         req = mapper.readValue(jsonInString, RecommendSchema.class);
 
         int k = 10;
-        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",1);
+        List<RecommendReturnSchema> result = instance.recommend(req, k, true, "UPC",0);
         String res = mapper.writeValueAsString(result);
         assertEquals("[{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"114\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3521163869028451},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"113\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.349448148083429},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"232\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3317735038997425},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"233\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3279027783878485},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"111\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.32637802991726417},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"234\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3179875007991653},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"110\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.30398483580310104},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"112\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.3009058003298778},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"231\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.2912088808908845},{\"requirement\":{\"id\":\"1\"},\"person\":{\"username\":\"230\"},\"availabilityScore\":1.0,\"appropiatenessScore\":0.28769962766034657}]",res);
     }
@@ -556,7 +556,7 @@ public class StakeholdersRecommenderServiceTest {
                 "    \t";
         BatchSchema bat = mapper.readValue(jsonInString, BatchSchema.class);
         String organization = "UPC";
-        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,1);
+        Integer result = instance.addBatch(bat, true, true, organization, true, false, false,0);
         Integer expected = 5;
         assertEquals(result, expected);
         List<ProjectKeywordSchema> res = instance.extractKeywords("UPC", bat);
