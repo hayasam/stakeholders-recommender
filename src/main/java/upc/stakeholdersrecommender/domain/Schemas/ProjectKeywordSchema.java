@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
+
 @ApiModel(description = "Class representing a project with its list of requirements with their keywords.")
 public class ProjectKeywordSchema {
     @ApiModelProperty(notes = "Requirements with their keywords.", required = true)

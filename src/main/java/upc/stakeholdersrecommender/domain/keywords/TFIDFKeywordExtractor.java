@@ -14,8 +14,6 @@ public class TFIDFKeywordExtractor {
     private HashMap<String, Integer> corpusFrequency = new HashMap<>();
 
 
-
-
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<>();
         for (String s : doc) {
@@ -32,7 +30,7 @@ public class TFIDFKeywordExtractor {
 
 
     private double idf(Integer size, Integer frequency) {
-        return Math.log( size.doubleValue() / frequency.doubleValue() + 1.0);
+        return Math.log(size.doubleValue() / frequency.doubleValue() + 1.0);
     }
 
 
@@ -47,6 +45,7 @@ public class TFIDFKeywordExtractor {
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
+                .addTokenFilter("kstem")
                 .build();
         return analyze(text, analyzer);
     }
@@ -72,18 +71,17 @@ public class TFIDFKeywordExtractor {
         return ret;
     }
 
-    public List<String> computeTFIDFSingular(Requirement req, Map<String,Integer> model, Integer corpusSize) throws IOException {
-        List<String> doc=englishAnalyze(clean_text(req.getDescription()));
-        Map<String,Integer> wordBag=tf(doc);
-        List<String> keywords=new ArrayList<>();
-        for (String s:wordBag.keySet()) {
+    public List<String> computeTFIDFSingular(Requirement req, Map<String, Integer> model, Integer corpusSize) throws IOException {
+        List<String> doc = englishAnalyze(clean_text(req.getDescription()));
+        Map<String, Integer> wordBag = tf(doc);
+        List<String> keywords = new ArrayList<>();
+        for (String s : wordBag.keySet()) {
             if (model.containsKey(s)) {
-                model.put(s,model.get(s)+1);
-                if (wordBag.get(s)*idf(corpusSize,model.get(s))>=cutoffParameter) keywords.add(s);
-            }
-            else {
-                model.put(s,1);
-                if (wordBag.get(s)*idf(corpusSize,model.get(s))>=cutoffParameter) keywords.add(s);
+                model.put(s, model.get(s) + 1);
+                if (wordBag.get(s) * idf(corpusSize, model.get(s)) >= cutoffParameter) keywords.add(s);
+            } else {
+                model.put(s, 1);
+                if (wordBag.get(s) * idf(corpusSize, model.get(s)) >= cutoffParameter) keywords.add(s);
             }
         }
         return keywords;
@@ -110,6 +108,28 @@ public class TFIDFKeywordExtractor {
 
     }
 
+
+    public Map<String, Map<String, Double>> computeTFIDFExtra(Map<String, Integer> model, Integer size, Map<String, Requirement> trueRecs) throws IOException {
+        Map<String, Map<String, Double>> result = new HashMap<>();
+        for (String l : trueRecs.keySet()) {
+            Requirement req = trueRecs.get(l);
+            List<String> doc = englishAnalyze(clean_text(req.getDescription()));
+            Map<String, Integer> wordBag = tf(doc);
+            Map<String, Double> keywords = new HashMap<>();
+            for (String s : wordBag.keySet()) {
+                if (model.containsKey(s)) {
+                    model.put(s, model.get(s) + 1);
+                    if (wordBag.get(s) * idf(size, model.get(s)) >= cutoffParameter) keywords.put(s, 0.0);
+                } else {
+                    model.put(s, 1);
+                    if (wordBag.get(s) * idf(size, model.get(s)) >= cutoffParameter) keywords.put(s, 0.0);
+                }
+            }
+            result.put(l, keywords);
+        }
+        return result;
+
+    }
 
 
     private List<Map<String, Double>> tfIdf(List<List<String>> docs) {
@@ -142,7 +162,7 @@ public class TFIDFKeywordExtractor {
         String result = "";
         if (text.contains("[")) {
             String[] p = text.split("]\\[");
-            for (String f: p) {
+            for (String f : p) {
                 if (f.charAt(0) != '[') f = "[" + f;
                 if (f.charAt(f.length() - 1) != ']') f = f.concat("]");
                 String[] thing = f.split("\\[");
@@ -164,12 +184,12 @@ public class TFIDFKeywordExtractor {
         String[] aux4 = text.split("]");
         String[] aux2 = aux4[aux4.length - 1].split(" ");
         for (String a : aux2) {
-            String helper="";
+            String helper = "";
             if (a.toUpperCase().equals(a)) {
                 for (int i = 0; i < 10; ++i) {
                     helper = helper.concat(" " + a);
                 }
-                a=helper;
+                a = helper;
             }
             result = result.concat(" " + a);
         }

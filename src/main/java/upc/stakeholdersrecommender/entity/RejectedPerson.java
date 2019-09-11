@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Entity
 @Table(name = "rejected")
@@ -34,7 +32,7 @@ public class RejectedPerson implements Serializable {
 
     public RejectedPerson(RejectedPersonId user) {
         this.user = user;
-        this.organization=user.getOrganizationId();
+        this.organization = user.getOrganizationId();
     }
 
     public RejectedPersonId getUser() {

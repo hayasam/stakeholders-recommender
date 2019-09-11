@@ -1,4 +1,3 @@
-
 package upc.stakeholdersrecommender.entity;
 
 import org.junit.Test;
@@ -6,12 +5,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PersonSRIdTest {
-    
+
 
     @Test
     public void testGetprojectId() {
@@ -77,9 +76,9 @@ public class PersonSRIdTest {
     public void testHashCode() {
         System.out.println("hashCode");
         PersonSRId instance = new PersonSRId();
-        int expResult =new PersonSRId().hashCode();
+        int expResult = new PersonSRId().hashCode();
         int result = instance.hashCode();
         assertEquals(expResult, result);
     }
-    
+
 }

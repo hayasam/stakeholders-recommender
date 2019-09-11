@@ -8,15 +8,14 @@ import java.util.Objects;
 @Embeddable
 public class PersonSRId implements Serializable {
 
-    @Column(name = "projectId",length=300)
+    @Column(name = "projectId", length = 300)
     private String projectId;
 
-    @Column(name = "personId",length=300)
+    @Column(name = "personId", length = 300)
     private String personId;
 
-    @Column(name = "organizationId",length = 300)
+    @Column(name = "organizationId", length = 300)
     private String organizationId;
-
 
 
     public PersonSRId() {
@@ -25,7 +24,7 @@ public class PersonSRId implements Serializable {
     public PersonSRId(String projectId, String personId, String organizationId) {
         this.projectId = projectId;
         this.personId = personId;
-        this.organizationId=organizationId;
+        this.organizationId = organizationId;
     }
 
     public String getPersonId() {
@@ -66,7 +65,7 @@ public class PersonSRId implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getProjectId(), getPersonId(),getOrganizationId());
+        return Objects.hash(getProjectId(), getPersonId(), getOrganizationId());
     }
 
 

@@ -1,12 +1,17 @@
 package upc.stakeholdersrecommender.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneandone.compositejks.SslContextUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import upc.stakeholdersrecommender.domain.*;
@@ -14,14 +19,15 @@ import upc.stakeholdersrecommender.domain.Preprocess.PreprocessService;
 import upc.stakeholdersrecommender.domain.Schemas.*;
 import upc.stakeholdersrecommender.domain.keywords.RAKEKeywordExtractor;
 import upc.stakeholdersrecommender.domain.keywords.TFIDFKeywordExtractor;
-
 import upc.stakeholdersrecommender.domain.rilogging.Log;
 import upc.stakeholdersrecommender.domain.rilogging.LogArray;
 import upc.stakeholdersrecommender.entity.*;
 import upc.stakeholdersrecommender.repository.*;
 
 import javax.transaction.Transactional;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,7 +64,7 @@ public class StakeholdersRecommenderService {
     private PreprocessService Preprocess;
 
 
-    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization) throws Exception {
+    public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization, Integer test) throws Exception {
         String p = request.getProject().getId();
         List<RecommendReturnSchema> ret;
         List<PersonSR> persList = new ArrayList<>();
@@ -72,9 +78,8 @@ public class StakeholdersRecommenderService {
         Boolean rake = pro.getRake();
         Boolean bugzilla = pro.getBugzilla();
         if (bugzilla) {
-            newReq.setSkills(Preprocess.preprocessSingular(requirement));
-        }
-        else {
+            newReq.setSkills(Preprocess.preprocessSingular(requirement, test));
+        } else {
             if (!rake) {
                 Integer size = pro.getRecSize();
                 newReq.setSkills(new TFIDFKeywordExtractor().computeTFIDFSingular(requirement, KeywordExtractionModelRepository.getOne(organization).getModel(), size));
@@ -168,7 +173,7 @@ public class StakeholdersRecommenderService {
             Double sum = 0.0;
             Double compSum = 0.0;
             Double resComp = 0.0;
-            for (String s : req.getSkills()) {
+            for (String s : req.getSkillsSet()) {
                 for (Skill j : person.getSkills()) {
                     if (s.equals(j.getName())) {
                         sum += j.getWeight();
@@ -186,10 +191,10 @@ public class StakeholdersRecommenderService {
                 resComp = compSum / req.getComponent().size();
             }
             Double res;
-            if (req.getSkills().size() == 0) {
+            if (req.getSkillsSet().size() == 0) {
                 res = 0.0;
             } else {
-                res = sum / req.getSkills().size();
+                res = sum / req.getSkillsSet().size();
             }
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, person, skillTrad);
@@ -215,26 +220,35 @@ public class StakeholdersRecommenderService {
     }
 
     private Double getAppropiateness(RequirementSR req, PersonSR person, Map<String, Skill> skillTrad) throws IOException {
-        List<String> reqSkills = req.getSkills();
-        for (Skill sk : person.getSkills()) {
-            skillTrad.put(sk.getName(), sk);
-        }
+        Set<String> reqSkills = req.getSkillsSet();
         Double total = 0.0;
-        for (String done : reqSkills) {
-            Double weightToAdd = 0.0;
-            for (String skill : skillTrad.keySet()) {
-                if (skill.equals(done)) {
-                    weightToAdd = 10.0;
-                    total = total + skillTrad.get(skill).getWeight();
-                    break;
-                } else {
-                    Double val = WordEmbedding.computeSimilarity(skill, done);
-                    if (val > weightToAdd) weightToAdd = val;
+        if (person.getSkills()!=null&&person.getSkills().size()>0) {
+            for (Skill sk : person.getSkills()) {
+                skillTrad.put(sk.getName(), sk);
+            }
+            for (String done : reqSkills) {
+                Double weightToAdd = 0.0;
+                String mostSimilarWord = "";
+                for (String skill : skillTrad.keySet()) {
+                        if (skill.equals(done)) {
+                            weightToAdd = 100.0;
+                            total = total + skillTrad.get(skill).getWeight();
+                            break;
+                        } else {
+                            Double val = WordEmbedding.computeSimilarity(skill, done);
+                            if (val > weightToAdd) {
+                                weightToAdd = val;
+                                mostSimilarWord = skill;
+                            }
+                        }
+                    }
+                    if (weightToAdd != 100.0) {
+                        if (weightToAdd!=0.0)
+                        total = total + weightToAdd * skillTrad.get(mostSimilarWord).getWeight();
+                    }
                 }
             }
-            if (weightToAdd != 10.0) total = total + weightToAdd;
-        }
-        Double amount = (double) req.getSkills().size();
+        Double amount = (double) req.getSkillsSet().size();
         Double appropiateness;
         if (amount == 0.0) {
             appropiateness = 0.0;
@@ -295,13 +309,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing, Boolean logging) throws Exception {
+    public Integer addBatch(BatchSchema request, Boolean withAvailability, Boolean withComponent, String organization, Boolean autoMapping, Boolean bugzillaPreprocessing, Boolean logging, Integer test) throws Exception {
         purge(organization);
         verify(request);
         Map<String, Requirement> recs = new HashMap<>();
         List<Requirement> requeriments;
         if (bugzillaPreprocessing) {
-            requeriments = Preprocess.preprocess(request.getRequirements());
+            requeriments = Preprocess.preprocess(request.getRequirements(), test);
         } else {
             requeriments = request.getRequirements();
         }
@@ -323,8 +337,7 @@ public class StakeholdersRecommenderService {
             if (requeriments.size() > 100) rake = false;
             if (rake) allSkills = computeAllSkillsRequirementRAKE(recs, organization);
             else allSkills = computeAllSkillsRequirement(recs, organization);
-        }
-        else {
+        } else {
             allSkills = computeAllSkillsNoMethod(recs);
         }
         Map<String, Integer> skillfrequency = getSkillFrequency(allSkills);
@@ -348,10 +361,11 @@ public class StakeholdersRecommenderService {
         Set<String> seenPersons = new HashSet<>();
         Integer recSize = request.getRequirements().size();
 
-        Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair=null;
-        Map<String, Integer> loggingFrequency=null;
+        Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair = null;
+        Map<String, Integer> loggingFrequency = null;
+
         if (logging) {
-            pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize);
+            pair = getUserLogging(bugzillaPreprocessing, rake, organization, recSize, test);
             loggingFrequency = getSkillFrequency(pair.getFirst());
         }
 
@@ -377,7 +391,7 @@ public class StakeholdersRecommenderService {
             }
             List<Participant> part = new ArrayList<>();
             if (participants.containsKey(proj.getId())) part = participants.get(proj.getId());
-            String id = instanciateProject(proj, part, organization, rake, recSize,bugzillaPreprocessing);
+            String id = instanciateProject(proj, part, organization, rake, recSize, bugzillaPreprocessing);
             Map<String, Double> hourMap = new HashMap<>();
             for (Participant par : part) {
                 hourMap.put(par.getPerson(), par.getAvailability());
@@ -386,28 +400,29 @@ public class StakeholdersRecommenderService {
                 seenPersons.add(p.getPerson());
             }
             instanciateFeatureBatch(proj.getSpecifiedRequirements(), id, allSkills, recs, withComponent, allComponents, organization);
-            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization,pair,loggingFrequency);
+            instanciateResourceBatch(hourMap, part, recs, allSkills, personRecs, skillfrequency, proj.getSpecifiedRequirements(), id, withAvailability, withComponent, allComponents, componentFrequency, organization, pair, loggingFrequency);
         }
         persons.removeAll(seenPersons);
-        instanciateLeftovers(persons, projs, allSkills, personRecs, skillfrequency, withComponent, allComponents, componentFrequency, organization,pair,loggingFrequency);
+        instanciateLeftovers(persons, projs, allSkills, personRecs, skillfrequency, withComponent, allComponents, componentFrequency, organization, pair, loggingFrequency);
         Integer particips = 0;
         if (request.getParticipants() != null) particips = request.getParticipants().size();
         return request.getPersons().size() + request.getProjects().size() + request.getRequirements().size() + request.getResponsibles().size() + particips;
     }
 
     private Map<String, Map<String, Double>> computeAllSkillsNoMethod(Map<String, Requirement> recs) {
-        Map<String, Map<String, Double>> ret=new HashMap<>();
-        for (String s:recs.keySet()) {
-            Requirement r=recs.get(s);
-            Set<String> helper=new HashSet<>();
-            for (String h:r.getDescription().split(" ")) {
-                helper.add(h);
+        Map<String, Map<String, Double>> ret = new HashMap<>();
+        for (String s : recs.keySet()) {
+            Requirement r = recs.get(s);
+            Set<String> helper = new HashSet<>();
+            for (String h : r.getDescription().split(" ")) {
+                if (!h.equals(""))
+                    helper.add(h);
             }
-            Map<String,Double> aux=new HashMap<>();
-            for (String j:helper) {
-                aux.put(j,0.0);
+            Map<String, Double> aux = new HashMap<>();
+            for (String j : helper) {
+                aux.put(j, 0.0);
             }
-            ret.put(s,aux);
+            ret.put(s, aux);
         }
         return ret;
     }
@@ -453,7 +468,7 @@ public class StakeholdersRecommenderService {
     }
 
     private void instanciateLeftovers(Set<String> persons, Set<String> oldIds, Map<String, Map<String, Double>> allSkills, Map<String, Set<String>> personRecs, Map<String, Integer> skillFrequency, Boolean withComponent
-            , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization, Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, Map<String, Integer> loggingFrequency) {
+            , Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String organization, Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
         String newId = RandomStringUtils.random(15, true, true);
         while (oldIds.contains(newId)) newId = RandomStringUtils.random(15, true, true);
         List<PersonSR> toSave = new ArrayList<>();
@@ -461,9 +476,9 @@ public class StakeholdersRecommenderService {
             List<Skill> skills;
             List<Skill> components;
             if (personRecs.get(s) != null) {
-                skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency, pair,s,loggingFrequency);
+                skills = computeSkillsPerson(personRecs.get(s), allSkills, skillFrequency, pair, s, loggingFrequency);
                 if (withComponent)
-                    components = computeComponentsPerson(personRecs.get(s), allComponents, componentFrequency,s);
+                    components = computeComponentsPerson(personRecs.get(s), allComponents, componentFrequency, s);
                 else components = new ArrayList<>();
             } else {
                 skills = new ArrayList<>();
@@ -534,9 +549,9 @@ public class StakeholdersRecommenderService {
             List<Skill> skills;
             List<Skill> components;
             if (personRecs.get(person.getPerson()) != null) {
-                skills = computeSkillsPerson(personRecs.get(person.getPerson()), allSkills, skillFrequency,pair, person.getPerson(), loggingFrequency);
+                skills = computeSkillsPerson(personRecs.get(person.getPerson()), allSkills, skillFrequency, pair, person.getPerson(), loggingFrequency);
                 if (withComponent)
-                    components = computeComponentsPerson(personRecs.get(person.getPerson()), allComponents, componentFrequency,person.getPerson());
+                    components = computeComponentsPerson(personRecs.get(person.getPerson()), allComponents, componentFrequency, person.getPerson());
                 else components = new ArrayList<>();
             } else {
                 skills = new ArrayList<>();
@@ -561,31 +576,32 @@ public class StakeholdersRecommenderService {
         PersonSRRepository.saveAll(toSave);
     }
 
-    private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency,String s) {
-        return getSkills(oldRecs, allComponents, componentFrequency,null,s,null);
+    private List<Skill> computeComponentsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency, String s) throws JsonProcessingException {
+        return getSkills(oldRecs, allComponents, componentFrequency, null, s, null);
 
     }
 
     private List<Skill> getSkills(Set<String> oldRecs, Map<String, Map<String, Double>> allComponents, Map<String, Integer> componentFrequency,
-                                  Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair,String person,Map<String, Integer> loggingFrequency) {
+                                  Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, String person, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
         List<Skill> toret = new ArrayList<>();
         Map<String, SinglePair<Double>> appearances = getAppearances(oldRecs, allComponents, componentFrequency);
-        Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> appearancesLog=null;
-        if (loggingFrequency!=null) {
-            System.out.println(pair.getSecond().containsKey(person));
+        Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> appearancesLog = null;
+        if (loggingFrequency != null) {
             if (pair.getSecond().containsKey(person))
-            appearancesLog = getAppearancesWithTime(pair.getSecond().get(person), pair.getFirst(), loggingFrequency);
+                appearancesLog = getAppearancesWithTime(pair.getSecond().get(person), pair.getFirst(), loggingFrequency);
         }
-        if (pair!=null && appearancesLog!=null) {
+        if (pair != null && appearancesLog != null) {
+            for (String n : appearancesLog.getFirst().keySet()) {
+                if (!appearances.containsKey(n)) appearances.put(n, new SinglePair<>(0.0, 0.0));
+            }
             for (String key : appearances.keySet()) {
                 Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
-                Double trueAbility=calculateWeightWithLogging(key,appearancesLog);
-                ability=ability*0.6+trueAbility;
+                Double trueAbility = calculateWeightWithLogging(key, appearancesLog);
+                ability = ability * 0.6 + trueAbility;
                 Skill helper = new Skill(key, ability);
                 toret.add(helper);
             }
-        }
-        else {
+        } else {
             for (String key : appearances.keySet()) {
                 Double ability = calculateWeight(appearances.get(key).p2, appearances.get(key).p1);
                 Skill helper = new Skill(key, ability);
@@ -596,58 +612,52 @@ public class StakeholdersRecommenderService {
         return toret;
     }
 
-    private Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> getAppearancesWithTime(Map<String, Pair<Integer, Integer>> stringPairMap, Map<String, Map<String, Double>> first, Map<String, Integer> loggingFrequency) {
-        Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> res;
-        Map<String, SinglePair<Double>> appearances=new HashMap<>();
-        Map<String,Pair<Integer,Integer>> times=new HashMap<>();
+    private Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> getAppearancesWithTime(Map<String, Pair<Integer, Integer>> stringPairMap, Map<String, Map<String, Double>> first, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
+        Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> res;
+        Map<String, SinglePair<Double>> appearances = new HashMap<>();
+        Map<String, Pair<Integer, Integer>> times = new HashMap<>();
+
         for (String s : stringPairMap.keySet()) {
             Map<String, Double> help = first.get(s);
+            ObjectMapper mapper = new ObjectMapper();
             for (String sk : help.keySet()) {
-                if (appearances.containsKey(sk)) {
-                    SinglePair<Double> aux = appearances.get(sk);
-                    Double auxi = aux.p1 + help.get(sk);
-                    appearances.put(sk, new SinglePair<>(auxi, aux.p2));
+                addAppearance(loggingFrequency, appearances, help, sk);
+                if (times.containsKey(sk)) {
+                    times.put(sk, new Pair<>(times.get(sk).getFirst() + stringPairMap.get(s).getFirst(), times.get(sk).getSecond() + stringPairMap.get(s).getSecond()));
                 } else {
-                    appearances.put(sk, new SinglePair<>(help.get(sk), (double) loggingFrequency.get(sk)));
-                }
-                if (times.containsKey(sk)){
-                    times.put(sk,new Pair<>(times.get(sk).getFirst()+stringPairMap.get(s).getFirst(),times.get(sk).getSecond()+stringPairMap.get(s).getSecond()));
-                }
-                else {
-                    times.put(sk,new Pair<>(stringPairMap.get(s).getFirst(),stringPairMap.get(s).getSecond()));
+                    times.put(sk, new Pair<>(stringPairMap.get(s).getFirst(), stringPairMap.get(s).getSecond()));
                 }
             }
         }
-        res = new  Pair<>(appearances,times);
+
+        res = new Pair<>(appearances, times);
         return res;
     }
 
-    private Double calculateWeightWithLogging(String key, Pair<Map<String, SinglePair<Double>>,Map<String,Pair<Integer,Integer>>> appearancesAndTimes) {
+    private Double calculateWeightWithLogging(String key, Pair<Map<String, SinglePair<Double>>, Map<String, Pair<Integer, Integer>>> appearancesAndTimes) {
 
-        Map<String,SinglePair<Double>> appearances=appearancesAndTimes.getFirst();
-        Map<String,Pair<Integer,Integer>> times=appearancesAndTimes.getSecond();
-        System.out.println(times.keySet());
-        Integer editValue=0,viewValue=0;
-        if (times.containsKey(key)) editValue=times.get(key).getFirst();
-        if (times.containsKey(key))  viewValue=times.get(key).getSecond();
-        Double view=-1.0;
-        Double edit=-1.0;
-        if (editValue!=0) {
-            edit=appearances.get(key).p1/appearances.get(key).p2;
-            edit=edit-0.2*max(0,(300-editValue/300));
+        Map<String, SinglePair<Double>> appearances = appearancesAndTimes.getFirst();
+        Map<String, Pair<Integer, Integer>> times = appearancesAndTimes.getSecond();
+        Double editValue = 0.0, viewValue = 0.0;
+        if (times.containsKey(key)) editValue = (double) times.get(key).getFirst();
+        if (times.containsKey(key)) viewValue = (double) times.get(key).getSecond();
+        Double view = -1.0;
+        Double edit = -1.0;
+        if (editValue != 0.0) {
+            edit = appearances.get(key).p1 / appearances.get(key).p2;
+            edit = edit * 0.7 + (editValue / 100) * 0.3;
         }
-        if (viewValue!=0) {
-            view=appearances.get(key).p1/appearances.get(key).p2;
-            view=view-0.2*max(0,(300-viewValue/300));
+        if (viewValue != 0.0) {
+            view = appearances.get(key).p1 / appearances.get(key).p2;
+            view = view * 0.7 + (viewValue / 100) * 0.3;
         }
-        Double retValue=0.0;
-        if (view!=-1.0) {
-            retValue=retValue+view*0.1;
+        Double retValue = 0.0;
+        if (view != -1.0) {
+            retValue = retValue + view * 0.1;
         }
-        if (edit!=-1.0) {
-            retValue=retValue+edit*0.2;
+        if (edit != -1.0) {
+            retValue = retValue + edit * 0.3;
         }
-        System.out.println(retValue);
         return retValue;
     }
 
@@ -656,16 +666,20 @@ public class StakeholdersRecommenderService {
         for (String s : oldRecs) {
             Map<String, Double> help = allComponents.get(s);
             for (String sk : help.keySet()) {
-                if (appearances.containsKey(sk)) {
-                    SinglePair<Double> aux = appearances.get(sk);
-                    Double auxi = aux.p1 + help.get(sk);
-                    appearances.put(sk, new SinglePair<>(auxi, aux.p2));
-                } else {
-                    appearances.put(sk, new SinglePair<>(help.get(sk), (double) componentFrequency.get(sk)));
-                }
+                addAppearance(componentFrequency, appearances, help, sk);
             }
         }
         return appearances;
+    }
+
+    private void addAppearance(Map<String, Integer> componentFrequency, Map<String, SinglePair<Double>> appearances, Map<String, Double> help, String sk) {
+        if (appearances.containsKey(sk)) {
+            SinglePair<Double> aux = appearances.get(sk);
+            Double auxi = aux.p1 + help.get(sk);
+            appearances.put(sk, new SinglePair<>(auxi, aux.p2));
+        } else {
+            appearances.put(sk, new SinglePair<>(help.get(sk), (double) componentFrequency.get(sk)));
+        }
     }
 
     private Double computeAvailability(List<String> recs, Map<String, Set<String>> personRecs, Participant person, Map<String, Requirement> requirementMap, String project, Double totalHours, String organization) throws Exception {
@@ -759,12 +773,13 @@ public class StakeholdersRecommenderService {
     }
 
 
-    private List<Skill> computeSkillsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency, Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, String s, Map<String, Integer> loggingFrequency) {
-        return getSkills(oldRecs, recs, skillsFrequency,pair,s,loggingFrequency);
+    private List<Skill> computeSkillsPerson(Set<String> oldRecs, Map<String, Map<String, Double>> recs, Map<String, Integer> skillsFrequency, Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> pair, String s, Map<String, Integer> loggingFrequency) throws JsonProcessingException {
+        return getSkills(oldRecs, recs, skillsFrequency, pair, s, loggingFrequency);
     }
 
     private Double calculateWeight(Double appearances, Double requirement) {
-        return requirement / appearances;
+        if (appearances == 0) return 0.0;
+        else return requirement / appearances;
     }
 
     private Map<String, Set<String>> getPersonRecs(BatchSchema request) {
@@ -809,7 +824,7 @@ public class StakeholdersRecommenderService {
             for (RequirementSR req : RequirementSRRepository.findByOrganizationAndProj(organization, id)) {
                 KeywordReturnSchema key = new KeywordReturnSchema();
                 key.setRequirement(req.getId().getRequirementId());
-                key.setSkills(req.getSkills());
+                key.setSkills(new ArrayList<>(req.getSkillsSet()));
                 reqs.add(key);
             }
             proje.setRequirements(reqs);
@@ -837,6 +852,7 @@ public class StakeholdersRecommenderService {
                     Comparator.comparingDouble(Skill::getWeight).reversed());
             List<Skill> newList = new ArrayList<>();
             if (k != -1) {
+                if (k > skill.size()) k = skill.size();
                 for (int i = 0; i < k; ++i) {
                     newList.add(skill.get(i));
                 }
@@ -844,6 +860,7 @@ public class StakeholdersRecommenderService {
             return newList;
         } else return null;
     }
+
 
     private class SinglePair<T> {
         T p1, p2;
@@ -855,91 +872,171 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla,Boolean rake,String organization,Integer size) throws GeneralSecurityException, IOException {
-        SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
-        RestTemplate temp=new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<LogArray> res =temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
-        LogArray log=res.getBody();
-        return log(log.getLogs(),bugzilla,rake,organization,size);
+    private Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> getUserLogging(Boolean bugzilla, Boolean rake, String organization, Integer size, Integer test) throws GeneralSecurityException, IOException {
+        LogArray log = null;
+        if (test == 0) {
+            SslContextUtils.mergeWithSystem("cert/lets_encrypt.jks");
+            RestTemplate temp = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth("7kyT5sGL8y5ax6qHJU32L4CJ");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<LogArray> res = temp.exchange("https://api.openreq.eu/ri-logging/frontend/log", HttpMethod.GET, entity, LogArray.class);
+            log = res.getBody();
+        } else {
+            ObjectMapper map = new ObjectMapper();
+            File file = new File("src/main/resources/testingFiles/RiLoggingResponse.txt");
+            String jsonInString = null;
+            jsonInString = FileUtils.readFileToString(file, StandardCharsets.US_ASCII);
+            log = map.readValue(jsonInString, LogArray.class);
+        }
+
+        return log(log.getLogs(), bugzilla, rake, organization, size, test);
     }
 
-    public Pair<Map<String,Map<String,Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList,Boolean bugzilla,Boolean rake,String organization,Integer size) throws IOException {
-        Map<String,List<Log>> logged=new HashMap<>();
-        for (Log l:logList) {
-            if (l.getBody()!=null&&l.getBody().getUsername()!=null&&l.getBody().getRequirementId()!=null) {
-                if (!logged.containsKey(l.getBody().getUsername())) {
-                    ArrayList<Log> list = new ArrayList<>();
-                    list.add(l);
-                    logged.put(l.getBody().getUsername(), list);
-                } else {
-                    List<Log> list = logged.get(l.getBody().getUsername());
-                    list.add(l);
-                    logged.put(l.getBody().getUsername(), list);
+    public Pair<Map<String, Map<String, Double>>, Map<String, Map<String, Pair<Integer, Integer>>>> log(List<Log> logList, Boolean bugzilla, Boolean rake, String organization, Integer size, Integer test) throws IOException {
+        Map<String, List<Log>> logged = new HashMap<>();
+        if (logList != null)
+            for (Log l : logList) {
+                if (l.getBody() != null && l.getBody().getUsername() != null && l.getBody().getRequirementId() != null) {
+                    if (!logged.containsKey(l.getBody().getUsername())) {
+                        ArrayList<Log> list = new ArrayList<>();
+                        list.add(l);
+                        logged.put(l.getBody().getUsername(), list);
+                    } else {
+                        List<Log> list = logged.get(l.getBody().getUsername());
+                        list.add(l);
+                        logged.put(l.getBody().getUsername(), list);
+                    }
                 }
             }
-        }
-        Map<String, Map<String, Pair<Integer, Integer>>> timesForReq=new HashMap<>();
-        Map<String,List<Log>> reqId=new HashMap<>();
-        for (String s:logged.keySet()) {
-            List<Log> toOrder=logged.get(s);
+        Map<String, Map<String, Pair<Integer, Integer>>> timesForReq = new HashMap<>();
+        Map<String, List<Log>> reqId = new HashMap<>();
+        for (String s : logged.keySet()) {
+            List<Log> toOrder = logged.get(s);
             Collections.sort(toOrder,
                     Comparator.comparingInt(Log::getUnixTime));
-            for (Log l:toOrder) {
+            for (Log l : toOrder) {
                 if (reqId.containsKey(l.getBody().getRequirementId())) {
-                    List<Log> auxList=reqId.get(l.getBody().getRequirementId());
+                    List<Log> auxList = reqId.get(l.getBody().getRequirementId());
                     auxList.add(l);
-                    reqId.put(l.getBody().getRequirementId(),auxList);
-                }
-                else {
-                    List<Log> auxList=new ArrayList<>();
+                    reqId.put(l.getBody().getRequirementId(), auxList);
+                } else {
+                    List<Log> auxList = new ArrayList<>();
                     auxList.add(l);
-                    reqId.put(l.getBody().getRequirementId(),auxList);
+                    reqId.put(l.getBody().getRequirementId(), auxList);
 
                 }
             }
-            Map<String, Pair<Integer,Integer>> times=extractTimeInRequirement(toOrder);
-            logged.put(s,toOrder);
-            timesForReq.put(s,times);
+            Map<String, Pair<Integer, Integer>> times = extractTimeInRequirement(toOrder);
+            logged.put(s, toOrder);
+            timesForReq.put(s, times);
         }
-        Map<String,Requirement> trueRecs=new HashMap<>();
-        for (String s:reqId.keySet()) {
-            List<Log> toOrder=logged.get(s);
+        Map<String, Requirement> trueRecs = new HashMap<>();
+        for (String s : reqId.keySet()) {
+            List<Log> toOrder = reqId.get(s);
             Collections.sort(toOrder,
                     Comparator.comparingInt(Log::getUnixTime));
-            Requirement req=new Requirement();
+            Requirement req = new Requirement();
             req.setId(s);
-            for (int i=toOrder.size()-1;i>=0;--i) {
-                if (req.getName()==null && req.getDescription()==null) {
-                    req.setModified(new Date(toOrder.get(i).getUnixTime()*1000));
-                }
-                else if (req.getName()!=null && req.getDescription()!=null) break;
-                Log lo=toOrder.get(i);
-                if (req.getName()!=null && lo.isName()) {
-                    req.setName(lo.getName());
-                }
-                if(req.getDescription()!=null && lo.isDescription()) {
-                    req.setDescription(lo.getDescription());
+            for (int i = toOrder.size() - 1; i >= 0; --i) {
+                Log lo = toOrder.get(i);
+                if (req.getName() == null && req.getDescription() == null) {
+                    req.setModified(new Date(lo.getUnixTime() * (long) 1000));
+                } else if (req.getName() != null && req.getDescription() != null) break;
+                if (req.getName() == null && lo.isName()) {
+                    req.setName(lo.getDescriptionOrName());
+                } else if (req.getDescription() == null && lo.isDescription()) {
+                    req.setDescription(lo.getDescriptionOrName());
                 }
             }
-            if (req.getDescription()==null) req.setDescription("");
-            if (req.getName()==null) req.setName("");
-            trueRecs.put(s,req);
-            reqId.put(s,toOrder);
-            System.out.println(req.getDescription()+" "+req.getName());
+            if (req.getDescription() == null) req.setDescription("");
+            if (req.getName() == null) req.setName("");
+            trueRecs.put(s, req);
+            reqId.put(s, toOrder);
         }
-        Map<String,Map<String,Double>> skills=obtainSkills(trueRecs,bugzilla,rake,organization,size);
-        skills=computeTime(skills,trueRecs);
-        return new Pair<>(skills,timesForReq);
+        Map<String, Map<String, Double>> skills = obtainSkills(trueRecs, bugzilla, rake, organization, size, test);
+        skills = computeTime(skills, trueRecs);
+        return new Pair<>(skills, timesForReq);
     }
 
 
-
-    private Map<String,Map<String,Double>> computeTime(Map<String, Map<String, Double>> skills,Map<String,Requirement> trueRecs) {
-        skills=computeTimeFactor(trueRecs,skills,new Date());
+    private Map<String, Map<String, Double>> computeTime(Map<String, Map<String, Double>> skills, Map<String, Requirement> trueRecs) {
+        skills = computeTimeFactor(trueRecs, skills, new Date());
         return skills;
+    }
+
+
+    private Map<String, Map<String, Double>> obtainSkills(Map<String, Requirement> trueRecs, Boolean bugzilla, Boolean rake, String organization, Integer size, Integer test) throws IOException {
+        Map<String, Map<String, Double>> map;
+        if (rake) {
+            map = new RAKEKeywordExtractor().computeRake(trueRecs.values());
+        } else if (bugzilla) {
+            Collection<Requirement> col = trueRecs.values();
+            List<Requirement> toMakeSkill = Preprocess.preprocess(new ArrayList<>(col), test);
+            for (Requirement r : toMakeSkill) {
+                trueRecs.put(r.getId(), r);
+            }
+            map = computeAllSkillsNoMethod(trueRecs);
+        } else {
+            Map<String, Integer> model = KeywordExtractionModelRepository.getOne(organization).getModel();
+            map = new TFIDFKeywordExtractor().computeTFIDFExtra(model, size, trueRecs);
+            KeywordExtractionModel mod = new KeywordExtractionModel();
+            mod.setId(organization);
+            mod.setModel(model);
+            KeywordExtractionModelRepository.save(mod);
+        }
+        return map;
+    }
+
+    private Map<String, Pair<Integer, Integer>> extractTimeInRequirement(List<Log> toOrder) throws JsonProcessingException {
+        String currentSessionId = "";
+        String lastElement = "";
+        String lastType = "";
+        String lastValue = "";
+        String lastInnertext="";
+        Integer lastTime = 0;
+        Map<String, Pair<Integer, Integer>> toRet = new HashMap<>();
+        for (Log l : toOrder) {
+            //String newSessionId=l.getHeader().getSessionid();
+            // if (currentSessionId.equals(newSessionId)) {
+            String newType = l.getEvent_type();
+            if ((lastElement.equals(l.getBody().getSrcElementclassName())||(lastElement.equals("note-editable")&&l.getBody().getSrcElementclassName().equals("note-editable or-description-active"))
+                    ||(lastElement.equals("note-editable or-description-active")&&l.getBody().getSrcElementclassName().equals("note-editable")))&& lastType.equals("focus") && newType.equals("blur")) {
+                Integer time = l.getUnixTime() - lastTime;
+                if (toRet.containsKey(l.getBody().getRequirementId())) {
+                    if (edited(lastValue,lastInnertext, l)) {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(time + toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond()));
+                    } else {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(toRet.get(l.getBody().getRequirementId()).getFirst(), toRet.get(l.getBody().getRequirementId()).getSecond() + time));
+                    }
+                } else {
+                    if (edited(lastValue,lastInnertext, l)) {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(time, 0));
+                    } else {
+                        toRet.put(l.getBody().getRequirementId(), new Pair<>(0, time));
+                    }
+                }
+                //   }
+            }
+            lastTime = l.getUnixTime();
+            lastType = l.getEvent_type();
+            lastElement = l.getBody().getSrcElementclassName();
+            lastValue = l.getBody().getValue();
+            lastInnertext=l.getBody().getInnerText();
+        }
+        return toRet;
+    }
+
+    private boolean edited(String lastValue,String lastInnerText, Log l) {
+        if (l.getBody().getSrcElementclassName().equals("select-dropdown")) {
+            return true;
+        } else if (l.getBody().getSrcElementclassName().equals("or-requirement-title form-control")) {
+            return !lastValue.equals(l.getBody().getValue());
+        }
+        else if (l.getBody().getSrcElementclassName().equals("note-editable")||l.getBody().getSrcElementclassName().equals("note-editable or-description-active")) {
+            return !lastInnerText.equals(l.getBody().getInnerText());
+        }
+       else return false;
     }
 
 

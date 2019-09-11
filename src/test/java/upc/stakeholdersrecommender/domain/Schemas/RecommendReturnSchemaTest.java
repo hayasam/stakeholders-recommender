@@ -1,15 +1,12 @@
 package upc.stakeholdersrecommender.domain.Schemas;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -36,8 +33,8 @@ public class RecommendReturnSchemaTest {
     @Test
     public void testGetPerson() {
         System.out.println("getPerson");
-        RecommendReturnSchema instance =new RecommendReturnSchema();
-        PersonMinimal p=new PersonMinimal();
+        RecommendReturnSchema instance = new RecommendReturnSchema();
+        PersonMinimal p = new PersonMinimal();
         p.setUsername("wh");
         instance.setPerson(p);
         PersonMinimal result = instance.getPerson();
@@ -68,7 +65,7 @@ public class RecommendReturnSchemaTest {
         Double availabilityScore = 2.0;
         RecommendReturnSchema instance = new RecommendReturnSchema();
         instance.setAvailabilityScore(availabilityScore);
-        assertTrue(2.0==instance.getAvailabilityScore());
+        assertTrue(2.0 == instance.getAvailabilityScore());
     }
 
     @Test
@@ -86,15 +83,15 @@ public class RecommendReturnSchemaTest {
         Double apropiatenessScore = 1.2;
         RecommendReturnSchema instance = new RecommendReturnSchema();
         instance.setAppropiatenessScore(apropiatenessScore);
-        assertTrue(1.2==instance.getAppropiatenessScore());
+        assertTrue(1.2 == instance.getAppropiatenessScore());
     }
 
     @Test
     public void testCompareTo() {
         System.out.println("compareTo");
         RecommendReturnSchema a = new RecommendReturnSchema();
-        PersonMinimal p=new PersonMinimal();
-        RequirementMinimal r=new RequirementMinimal("1");
+        PersonMinimal p = new PersonMinimal();
+        RequirementMinimal r = new RequirementMinimal("1");
         p.setUsername("wh");
         a.setPerson(p);
         a.setAppropiatenessScore(1.0);
@@ -109,5 +106,5 @@ public class RecommendReturnSchemaTest {
         int result = instance.compareTo(a);
         assertEquals(expResult, result);
     }
-    
+
 }

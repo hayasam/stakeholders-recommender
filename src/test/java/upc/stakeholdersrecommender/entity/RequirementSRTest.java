@@ -1,20 +1,19 @@
-
-
 package upc.stakeholdersrecommender.entity;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RequirementSRTest {
-    
+
     @Test
     public void testGetId() {
         System.out.println("getID");
@@ -27,10 +26,10 @@ public class RequirementSRTest {
     @Test
     public void testSetId() {
         System.out.println("setID");
-        RequirementSRId id = new RequirementSRId("one","two","three");
+        RequirementSRId id = new RequirementSRId("one", "two", "three");
         RequirementSR instance = new RequirementSR();
         instance.setId(id);
-        assertEquals(new RequirementSRId("one","two","three"),instance.getId());
+        assertEquals(new RequirementSRId("one", "two", "three"), instance.getId());
     }
 
     @Test
@@ -49,7 +48,7 @@ public class RequirementSRTest {
         String projectIdQuery = "12";
         RequirementSR instance = new RequirementSR();
         instance.setProjectIdQuery(projectIdQuery);
-        assertEquals("12",instance.getProjectIdQuery());
+        assertEquals("12", instance.getProjectIdQuery());
     }
 
     @Test
@@ -67,7 +66,7 @@ public class RequirementSRTest {
         ArrayList<String> skills = null;
         RequirementSR instance = new RequirementSR();
         instance.setSkills(skills);
-        assertEquals(null,instance.getSkills());
+        assertEquals(null, instance.getSkills());
 
     }
 
@@ -77,7 +76,7 @@ public class RequirementSRTest {
         List<String> skills = null;
         RequirementSR instance = new RequirementSR();
         instance.setSkills(skills);
-        assertEquals(null,instance.getSkills());
+        assertEquals(null, instance.getSkills());
     }
 
     @Test
@@ -96,7 +95,33 @@ public class RequirementSRTest {
         String modified_at = "122";
         RequirementSR instance = new RequirementSR();
         instance.setModified_at(modified_at);
-        assertEquals("122",instance.getModified_at());
+        assertEquals("122", instance.getModified_at());
     }
-    
+    @Test
+    public void testSetProj() {
+        System.out.println("setProj");
+        String proj = "122";
+        RequirementSR instance = new RequirementSR();
+        instance.setProj(proj);
+        assertEquals("122", instance.getProj());
+    }
+    @Test
+    public void testSetOrganization() {
+        System.out.println("setOrganization");
+        String proj = "122";
+        RequirementSR instance = new RequirementSR();
+        instance.setOrganization(proj);
+        assertEquals("122", instance.getOrganization());
+    }
+    @Test
+    public void testCreateRequirementSRId() {
+        System.out.println("createRequirementSRId");
+        RequirementSRId id=new RequirementSRId();
+        RequirementSR instance = new RequirementSR(id);
+        assertEquals(id, instance.getId());
+    }
+
+
+
+
 }

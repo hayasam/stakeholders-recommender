@@ -5,7 +5,8 @@ public class RequirementPreprocess {
     private String title;
     private String description;
 
-    public RequirementPreprocess(){}
+    public RequirementPreprocess() {
+    }
 
     public String getId() {
         return id;

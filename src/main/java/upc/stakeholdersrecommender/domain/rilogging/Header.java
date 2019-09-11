@@ -1,7 +1,12 @@
 package upc.stakeholdersrecommender.domain.rilogging;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Header {
-    public Header(){}
+    public Header() {
+    }
+
     private String Sessionid;
 
     public String getSessionid() {

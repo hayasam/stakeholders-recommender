@@ -13,48 +13,50 @@ import java.util.*;
 
 public class RAKEKeywordExtractor {
 
-    private Double cutoff=6.0;
+    private Double cutoff = 3.0;
 
-         public List<Map<String,Double>> extractKeywords(List<String> corpus) throws IOException {
-            List<Map<String,Double>> res= new ArrayList<>();
-            Rake rake=new Rake();
-            for (String s:corpus) {
-                String text="";
-                for (String k:RAKEanalyzeNoStopword(s)) {
-                    text=text+" "+k;
-                }
-                Map<String,Double> aux=rake.getKeywordsFromText(text);
-                String sum="";
-                for (String j:aux.keySet()) {
-                    Double val=aux.get(j);
-                    if (val>=cutoff) sum=sum+" "+j;
-                }
-                List<String> result=RAKEanalyze(sum);
-                Map<String,Double> helper=new HashMap<>();
-                for (String i:result) {
-                    helper.put(i,aux.get(i));
-                }
-                res.add(helper);
-            }
-            return res;
-        }
-     public List<String> computeTFIDFSingular(Requirement req) throws IOException {
+    public List<Map<String, Double>> extractKeywords(List<String> corpus) throws IOException {
+        List<Map<String, Double>> res = new ArrayList<>();
         Rake rake = new Rake();
-        String text = "";
-            for (String k : RAKEanalyzeNoStopword(req.getDescription())) {
+        for (String s : corpus) {
+            String text = "";
+            for (String k : RAKEanalyzeNoStopword(s)) {
                 text = text + " " + k;
             }
             Map<String, Double> aux = rake.getKeywordsFromText(text);
-            text="";
-            for (String l:aux.keySet()) {
-                Double val=aux.get(l);
-                if (val>=cutoff); text=text+" "+l;
+            String sum = "";
+            for (String j : aux.keySet()) {
+                Double val = aux.get(j);
+                if (val >= cutoff) sum = sum + " " + j;
             }
-            return RAKEanalyze(text);
+            List<String> result = RAKEanalyze(sum);
+            Map<String, Double> helper = new HashMap<>();
+            for (String i : result) {
+                helper.put(i, aux.get(i));
+            }
+            res.add(helper);
         }
+        return res;
+    }
+
+    public List<String> computeTFIDFSingular(Requirement req) throws IOException {
+        Rake rake = new Rake();
+        String text = "";
+        for (String k : RAKEanalyzeNoStopword(req.getDescription())) {
+            text = text + " " + k;
+        }
+        Map<String, Double> aux = rake.getKeywordsFromText(text);
+        text = "";
+        for (String l : aux.keySet()) {
+            Double val = aux.get(l);
+            if (val >= cutoff) ;
+            text = text + " " + l;
+        }
+        return RAKEanalyze(text);
+    }
 
 
-     public Map<String, Map<String, Double>> computeRake(Collection<Requirement> corpus) throws IOException {
+    public Map<String, Map<String, Double>> computeRake(Collection<Requirement> corpus) throws IOException {
         List<String> docs = new ArrayList<>();
         for (Requirement r : corpus) {
             docs.add(r.getDescription());
@@ -63,24 +65,27 @@ public class RAKEKeywordExtractor {
         int counter = 0;
         return TFIDFKeywordExtractor.getStringMapMap(corpus, res, counter);
     }
-     List<String> RAKEanalyze(String text) throws IOException {
+
+    List<String> RAKEanalyze(String text) throws IOException {
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
                 .addTokenFilter("stop")
-                .build();
-        return analyze(text, analyzer);
-    }
-     List<String> RAKEanalyzeNoStopword(String text) throws IOException {
-        Analyzer analyzer = CustomAnalyzer.builder()
-                .withTokenizer("standard")
-                .addTokenFilter("lowercase")
-                .addTokenFilter("porterstem")
+                .addTokenFilter("kstem")
                 .build();
         return analyze(text, analyzer);
     }
 
-     List<String> analyze(String text, Analyzer analyzer) throws IOException {
+    List<String> RAKEanalyzeNoStopword(String text) throws IOException {
+        Analyzer analyzer = CustomAnalyzer.builder()
+                .withTokenizer("standard")
+                .addTokenFilter("lowercase")
+                .addTokenFilter("kstem")
+                .build();
+        return analyze(text, analyzer);
+    }
+
+    List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<>();
         return getAnalyzedStrings(text, analyzer, result);
     }

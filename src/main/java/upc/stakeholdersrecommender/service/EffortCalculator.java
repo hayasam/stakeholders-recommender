@@ -23,49 +23,48 @@ public class EffortCalculator {
     EffortRepository effortRepository;
 
     public void effortCalc(EffortCalculatorSchema eff, String id, String organization) {
-        if (effortRepository.findById(new ProjectSRId(id,organization))!=null) {
-            effortRepository.deleteById(new ProjectSRId(id,organization));
+        if (effortRepository.findById(new ProjectSRId(id, organization)) != null) {
+            effortRepository.deleteById(new ProjectSRId(id, organization));
         }
-        Map<Double,List<Double>> auxiliar=new HashMap<>();
-        for (RequirementBasic req: eff.getRequirements()) {
+        Map<Double, List<Double>> auxiliar = new HashMap<>();
+        for (RequirementBasic req : eff.getRequirements()) {
             if (auxiliar.containsKey(req.getEffort())) {
-                List<Double> intList= auxiliar.get(req.getEffort());
+                List<Double> intList = auxiliar.get(req.getEffort());
                 intList.add(req.getHours());
-                auxiliar.put(req.getEffort(),intList);
-            }
-            else {
-                List<Double> intList= new ArrayList<>();
+                auxiliar.put(req.getEffort(), intList);
+            } else {
+                List<Double> intList = new ArrayList<>();
                 intList.add(req.getHours());
-                auxiliar.put(req.getEffort(),intList);
+                auxiliar.put(req.getEffort(), intList);
             }
         }
-        HashMap<Double,Double> effortMap=new HashMap<>();
-        for (Double s:auxiliar.keySet()) {
-            List<Double> d=auxiliar.get(s);
-            Double count=0.0;
-            for (Double dub:d) {
-                count+=dub;
+        HashMap<Double, Double> effortMap = new HashMap<>();
+        for (Double s : auxiliar.keySet()) {
+            List<Double> d = auxiliar.get(s);
+            Double count = 0.0;
+            for (Double dub : d) {
+                count += dub;
             }
-            Double average=count/d.size();
-            effortMap.put(s,average);
+            Double average = count / d.size();
+            effortMap.put(s, average);
         }
-        Effort effort=new Effort();
+        Effort effort = new Effort();
         effort.setEffortMap(effortMap);
-        effort.setId(new ProjectSRId(id,organization));
+        effort.setId(new ProjectSRId(id, organization));
         effortRepository.save(effort);
     }
 
     public void setEffort(SetEffortSchema set, String id, String organization) {
-        if (effortRepository.findById(new ProjectSRId(id,organization))!=null) {
-            effortRepository.deleteById(new ProjectSRId(id,organization));
+        if (effortRepository.findById(new ProjectSRId(id, organization)) != null) {
+            effortRepository.deleteById(new ProjectSRId(id, organization));
         }
-        HashMap<Double,Double> effortMap=new HashMap<>();
-        for (EffortHour r:set.getEffortToHour()) {
-            effortMap.put(r.getEffort(),r.getHours());
+        HashMap<Double, Double> effortMap = new HashMap<>();
+        for (EffortHour r : set.getEffortToHour()) {
+            effortMap.put(r.getEffort(), r.getHours());
         }
-        Effort effort=new Effort();
+        Effort effort = new Effort();
         effort.setEffortMap(effortMap);
-        effort.setId(new ProjectSRId(id,organization));
+        effort.setId(new ProjectSRId(id, organization));
         effortRepository.save(effort);
     }
 

@@ -1,0 +1,765 @@
+swagger: '2.0'
+info:
+  description: |-
+    The goal of the stakeholder Recommendercomponent is to recommend stakeholders that can contribute to a specific requirement. For doing such recommendation, the component matches the keywords of the requirements and the skills of the persons. In addition, the recommendation also takes into account the availability of users. The three items needed to do the recommendations are learnt by the component as follows:
+
+    1.  Keywords of the requirements. These keywords represent the main skills a person should have to cover this requirement (by covering a requirement we mean the contribution in a requirement or even its implementation). For extracting them, the title and description of the requirements enter in a natural language processing pipeline, which output is the keywords of the requirements.
+
+    2.  Skills of the persons. The skills represent abilities that the persons have achieved by contributing to requirements in the past. For computing these skills, the component needs to know for each person, the requirements s/he has contributed to. The skills of a person are the keywords of the requirements of which the person is responsible for. Additionally, for each skill a user has, the component computes a proficiency value (i.e., how expert the user is in this task). Finally, this proficiency value is deprecated by  a factor time. As an example, imagine persons A and B are responsible for the same  number of requirements that need a specific skill. However, the last time person A   worked on such requirements is already one year ago, while person B has been  working recently on these requirements. It makes sense that the proficiency of B the 
+    skill is higher than the proficiency of A, since B has the knowledge closer in time. The  time factor tries to balance these situations by deprecating the proficiency taking into 
+    account the date of the requirements. In addition, the skills of users are also gathered  from the implicit feedback got from an external OpenReq component ri-logging. With this implicit information, the component learns new skills or updates the proficiency of the skills of the persons by using the information of how users interact with a user 
+    interface to browse, create and edit requirements.
+
+    3.  Availability of persons. Persons have a number of hours to work in a project. The component calculates how many hours the persons have still available for a project. After that, the available hours are normalized in a rank from 0 to 1. The use of implicit context information and availability is parameterized, so users can choose when to use it and when not. 
+    Finally, the recommendation of stakeholders is done taking into account the keywords of the requirement, the skills and proficiency values that the persons have, and the availabilityof the persons.
+  version: '0.0'
+  title: Stakeholder Recommender
+  contact: {}
+host: 'localhost:9410'
+basePath: /
+tags:
+  - name: stakeholders-recommender-controller
+    description: Stakeholders Recommender Controller
+paths:
+  /upc/stakeholders-recommender/batch_process:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: 'This endpoint is used to upload the required data for making stakeholder recommendations. /n The parameter withAvailability species whether availability is calculated based on the stakeholder''s past history or not. All information in the database is purged every time this method is called. A person''s relation to the project is defined with PARTICIPANT (availability is expressed in hours), while the person is defined in PERSONS, the requirements in REQUIREMENTS, the project in PROJECTS, and a person''s relation to a requirement in RESPONSIBLES (i.e., the person is the one in charge of the requirement)., response = BatchReturnSchema.class'
+      operationId: addBatchUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: autoMapping
+          in: query
+          description: 'If auto-mapping is used (i.e., set to true), it is not necessary to set or compute effort (i.e., to establish the mappint from effort points to hours). The mapping used in auto-mapping is a 1 to 1 mapping of effort to hours.'
+          required: true
+          type: boolean
+          allowEmptyValue: false
+          x-example: true
+        - in: body
+          name: batch
+          description: batch
+          required: true
+          schema:
+            $ref: '#/definitions/BatchSchema'
+        - name: keywordPreprocessing
+          in: query
+          description: Whether bugzilla preprocessing is used
+          required: false
+          type: boolean
+          default: false
+          allowEmptyValue: false
+          x-example: true
+        - name: keywords
+          in: query
+          description: 'If set to true, the endpoint returns each requirement with its set of keywords.'
+          required: true
+          type: boolean
+          allowEmptyValue: false
+          x-example: true
+        - name: logging
+          in: query
+          description: Whether OpenReq Live logging is taken into account
+          required: false
+          type: boolean
+          default: false
+          allowEmptyValue: false
+          x-example: false
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: withAvailability
+          in: query
+          description: 'If set to true, the recommendations for the organization making the request will take into account the stakeholder’s availability. If set to false, the field “availability” in participant is optional.'
+          required: true
+          type: boolean
+          allowEmptyValue: false
+          x-example: 'false'
+        - name: withComponent
+          in: query
+          description: 'If set to true, the recommendations for the organization making the request will take into account the requirement’s component (which is expressed in the requirementParts field of a requirement). If set to false, it is not necessary to state the component.'
+          required: true
+          type: boolean
+          allowEmptyValue: false
+          x-example: 'false'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/computeEffort:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: 'This endpoint generates a mapping of effort points into hours specific to the project specified, based in the historic information given. Each requirement sohuld contain the effort stated in a scale from 1 to 5, and the hours that have been needed to complete this requirement. Taking this into account, the service computes the average of hours needed per effort point.'
+      operationId: calculateEffortUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: eff
+          description: eff
+          required: true
+          schema:
+            $ref: '#/definitions/EffortCalculatorSchema'
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: project
+          in: query
+          description: The project in which the effort mapping will be used in future recommendations.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: '1'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/getPersonSkills:
+    get:
+      tags:
+        - stakeholders-recommender-controller
+      summary: Get the set of skills of a person
+      operationId: getPersonSkillsUsingGET
+      produces:
+        - application/json
+      parameters:
+        - name: k
+          in: query
+          description: Maximum number of skills to be returned
+          required: false
+          type: integer
+          default: -1
+          format: int32
+          allowEmptyValue: false
+          x-example: 10
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: person
+          in: query
+          description: Id of the person.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: Not JohnDoe
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/recommend:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: 'Given a REQUIREMENT in a PROJECT, asked by a USER, the stakeholder recommender service performs a recommendation and returns a list of the best K stakeholders with an appropiateness between 0 and 1(being 1 the best appropriateness) based on the historic data given in the batch_process request.'
+      operationId: recommendUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: k
+          in: query
+          description: Maximum number of stakeholders to be returned by the recommender.
+          required: true
+          type: integer
+          format: int32
+          allowEmptyValue: false
+          x-example: 10
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: projectSpecific
+          in: query
+          description: 'If set to true, the recommendation only takes into account as possible set of stakeholders the ones in the project to which the requirement pertains. If set to false, this set of stakeholders will be all the stakeholders received in the batch_process of the organization that is making the request, and will take all stakeholders with enough availability in any project. The availabilityScore of the participants of other projects will be always one if they are considered. '
+          required: true
+          type: boolean
+          allowEmptyValue: false
+          x-example: 'false'
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            $ref: '#/definitions/RecommendSchema'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RecommendReturnSchema'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/reject_recommendation:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: This endpoint is used to state that the user identied by REJECTED must not be recommended for REQUIREMENT if USER performs the recommendation for REQUIREMENT.
+      operationId: recommendRejectUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: rejected
+          in: query
+          description: Id of the person who is rejected.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: Not JohnDoe
+        - name: requirement
+          in: query
+          description: Id of the requirement from which the person REJECTED is rejected.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: '1'
+        - name: user
+          in: query
+          description: Id of the person who makes the rejection.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: JohnDoe
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/setEffort:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: Set the mapping of effort points to hours for an specific project. The effort points go in a scale from 1 to 5.
+      operationId: setEffortUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - in: body
+          name: eff
+          description: eff
+          required: true
+          schema:
+            $ref: '#/definitions/SetEffortSchema'
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: project
+          in: query
+          description: The project in which the effort mapping should be used.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: '1'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /upc/stakeholders-recommender/undoRejection:
+    post:
+      tags:
+        - stakeholders-recommender-controller
+      summary: This endpoint is used to state that the user identified by REJECTED will again be considered as valid to the REQUIREMENT when the person USER ask for a recommendation over this requirement.
+      operationId: undoRejectionUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: organization
+          in: query
+          description: The organization that is making the request.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: UPC
+        - name: rejected
+          in: query
+          description: Id of the person who was rejected.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: Not JohnDoe
+        - name: requirement
+          in: query
+          description: Id of the requirement from which the person REJECTED was rejected by the person USER.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: '1'
+        - name: user
+          in: query
+          description: Id of the person who made the initial rejection.
+          required: true
+          type: string
+          allowEmptyValue: false
+          x-example: JohnDoe
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseEntity'
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+definitions:
+  BatchSchema:
+    type: object
+    required:
+      - participants
+      - persons
+      - projects
+      - requirements
+      - responsibles
+    properties:
+      participants:
+        type: array
+        description: List of participants.
+        items:
+          $ref: '#/definitions/Participant'
+      persons:
+        type: array
+        description: List of stakeholders.
+        items:
+          $ref: '#/definitions/PersonMinimal'
+      projects:
+        type: array
+        description: List of projects.
+        items:
+          $ref: '#/definitions/Project'
+      requirements:
+        type: array
+        description: List of requirements.
+        items:
+          $ref: '#/definitions/Requirement'
+      responsibles:
+        type: array
+        description: List of responsibles.
+        items:
+          $ref: '#/definitions/Responsible'
+    title: BatchSchema
+    description: Class representing the information needed for the recommendation of stakeholders.
+  EffortCalculatorSchema:
+    type: object
+    required:
+      - requirements
+    properties:
+      requirements:
+        type: array
+        description: List of requirements with their effort points and hours.
+        items:
+          $ref: '#/definitions/RequirementBasic'
+    title: EffortCalculatorSchema
+    description: Class representing the requirements with their effort points and hours.
+  EffortHour:
+    type: object
+    required:
+      - effort
+      - hours
+    properties:
+      effort:
+        type: number
+        format: double
+        example: '1.0'
+        description: The effort.
+      hours:
+        type: number
+        format: double
+        example: '1.0'
+        description: The hours.
+    title: EffortHour
+    description: Class representing the mapping between effort points and hours.
+  Participant:
+    type: object
+    required:
+      - availability
+      - person
+      - project
+    properties:
+      availability:
+        type: number
+        format: double
+        example: 40
+        description: 'Hours the person has for this project, necessary if parameter withAvailability is true.'
+      person:
+        type: string
+        example: John Doe
+        description: Identifier of the person.
+      project:
+        type: string
+        example: '1'
+        description: Identifier of the project.
+    title: Participant
+    description: 'Class representing the relation of a person working for a project, and the time this person has with the project.'
+  PersonMinimal:
+    type: object
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        example: John Doe
+        description: Username of stakeholder.
+    title: PersonMinimal
+    description: 'Class representing a stakeholder, only with ID.'
+  Project:
+    type: object
+    required:
+      - id
+      - specifiedRequirements
+    properties:
+      id:
+        type: string
+        example: 1
+        description: Identifier of the project.
+      specifiedRequirements:
+        type: array
+        example:
+          - '1'
+        description: List of requirement identifiers.
+        items:
+          type: string
+    title: Project
+    description: Class representing a project.
+  ProjectMinimal:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        example: '1'
+        description: Identifier of project.
+    title: ProjectMinimal
+    description: 'Class representing a project, only with ID.'
+  RecommendReturnSchema:
+    type: object
+    required:
+      - appropiatenessScore
+      - availabilityScore
+      - person
+      - requirement
+    properties:
+      appropiatenessScore:
+        type: number
+        format: double
+        example: 0.223
+        description: Appropiateness of the recommendation.
+      availabilityScore:
+        type: number
+        format: double
+        example: 0.5
+        description: Availability score of the person.
+      person:
+        description: Person that is recommended.
+        $ref: '#/definitions/PersonMinimal'
+      requirement:
+        description: Requirement that was requested.
+        $ref: '#/definitions/RequirementMinimal'
+    title: RecommendReturnSchema
+    description: Class representing the recommendation of a stakeholder.
+  RecommendSchema:
+    type: object
+    required:
+      - project
+      - requirement
+      - user
+    properties:
+      project:
+        description: The identifier of the project the requirement belongs to.
+        $ref: '#/definitions/ProjectMinimal'
+      requirement:
+        description: The identifier of the requirement to recommend.
+        $ref: '#/definitions/Requirement'
+      user:
+        description: The identifier of the person who asks for this recommendation.
+        $ref: '#/definitions/PersonMinimal'
+    title: RecommendSchema
+    description: Class representing the information needed to generate a recommendation for a requirement.
+  Requirement:
+    type: object
+    required:
+      - description
+      - id
+      - name
+    properties:
+      description:
+        type: string
+        example: 'This is not really a requirement, but an example'
+        description: The requirement's description.
+      effort:
+        type: number
+        format: double
+        example: '3.0'
+        description: 'How much effort the requirement will take. It is not required if using the parameter withAvailability as false, or using autoMapping'
+      id:
+        type: string
+        example: '1'
+        description: Identifier of the requirement.
+      modified_at:
+        type: string
+        example: '2014-01-13T15:14:17Z'
+        description: When was the requirement last modified.
+      name:
+        type: string
+        example: This is a title
+        description: The title of the requirement
+      requirementParts:
+        type: array
+        description: The requirement parts of the requirement
+        items:
+          $ref: '#/definitions/RequirementPart'
+    title: Requirement
+    description: Class representing a requirement.
+  RequirementBasic:
+    type: object
+    required:
+      - effort
+      - hours
+      - id
+    properties:
+      effort:
+        type: number
+        format: double
+        example: '1.0'
+        description: The effort points of the requirement.
+      hours:
+        type: number
+        format: double
+        example: '1.0'
+        description: The hours it took to finish the requirement.
+      id:
+        type: string
+        example: '1'
+        description: The id of the requirement.
+    title: RequirementBasic
+    description: 'Class representing a requirement with only their id, effort and hours.'
+  RequirementMinimal:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        example: 1
+        description: Identifier of requirement.
+    title: RequirementMinimal
+    description: 'Class representing a requirement, only with ID.'
+  RequirementPart:
+    type: object
+    required:
+      - id
+      - name
+    properties:
+      id:
+        type: string
+        example: '3'
+        description: The ID of the requirement part
+      name:
+        type: string
+        example: UI
+        description: The name of the requirement part
+    title: RequirementPart
+  ResponseEntity:
+    type: object
+    properties:
+      body:
+        type: object
+      statusCode:
+        type: string
+        enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+      statusCodeValue:
+        type: integer
+        format: int32
+    title: ResponseEntity
+  Responsible:
+    type: object
+    required:
+      - person
+      - requirement
+    properties:
+      person:
+        type: string
+        example: John Doe
+        description: Identifier of the person.
+      requirement:
+        type: string
+        example: '1'
+        description: Identifier of the requirement.
+    title: Responsible
+    description: Class representing the relation between a requirement and a person.
+  SetEffortSchema:
+    type: object
+    required:
+      - effortToHour
+    properties:
+      effortToHour:
+        type: array
+        description: Array of effort with their respective hours to map.
+        items:
+          $ref: '#/definitions/EffortHour'
+    title: SetEffortSchema
+    description: Class representing the mapping between effort and hours that is to be set.

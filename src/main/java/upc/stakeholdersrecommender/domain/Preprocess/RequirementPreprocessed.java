@@ -8,17 +8,17 @@ public class RequirementPreprocessed {
     private List<String> description_tokens;
 
 
-    public RequirementPreprocessed(){
+    public RequirementPreprocessed() {
 
     }
 
     public String getDescription() {
-        String fused="";
-        for (String t:title_tokens) {
-            fused=fused+" "+t;
+        String fused = "";
+        for (String t : title_tokens) {
+            fused = fused + " " + t;
         }
-        for (String d:description_tokens) {
-            fused=fused+" "+d;
+        for (String d : description_tokens) {
+            fused = fused + " " + d;
         }
         return fused;
     }

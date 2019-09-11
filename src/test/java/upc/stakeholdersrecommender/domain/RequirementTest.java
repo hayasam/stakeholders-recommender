@@ -1,17 +1,18 @@
-
-
 package upc.stakeholdersrecommender.domain;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import upc.stakeholdersrecommender.entity.Skill;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RequirementTest {
@@ -70,9 +71,9 @@ public class RequirementTest {
         Skill auxiliar = new Skill("sk");
         Requirement instance = new Requirement();
         instance.addSkill(auxiliar);
-        String s="";
-        for (Skill sk:instance.getSkills()) {
-            s=s+sk.getName();
+        String s = "";
+        for (Skill sk : instance.getSkills()) {
+            s = s + sk.getName();
         }
         assertEquals("sk", s);
     }
@@ -94,7 +95,7 @@ public class RequirementTest {
         Double effort = 1.0;
         Requirement instance = new Requirement();
         instance.setEffort(effort);
-        assertTrue(1.0==instance.getEffort());
+        assertTrue(1.0 == instance.getEffort());
     }
 
 
@@ -149,9 +150,9 @@ public class RequirementTest {
     public void testSetSkills() {
         System.out.println("setSkills");
         Requirement instance = new Requirement();
-        List<Skill> skill=new ArrayList<>();
+        List<Skill> skill = new ArrayList<>();
         instance.setSkills(skill);
         assertEquals(skill, instance.getSkills());
     }
-    
+
 }

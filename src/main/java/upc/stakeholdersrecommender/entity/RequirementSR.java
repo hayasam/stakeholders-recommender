@@ -6,7 +6,9 @@ import upc.stakeholdersrecommender.domain.Requirement;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "requirementSR",
@@ -39,10 +41,10 @@ public class RequirementSR implements Serializable {
     }
 
     public RequirementSR(Requirement req, String id, String org) {
-        this.id = new RequirementSRId(id, req.getId(),org);
+        this.id = new RequirementSRId(id, req.getId(), org);
         this.projectIdQuery = req.getId();
-        this.organization=org;
-        this.proj=id;
+        this.organization = org;
+        this.proj = id;
     }
 
     public RequirementSRId getId() {
@@ -63,6 +65,11 @@ public class RequirementSR implements Serializable {
 
     public List<String> getSkills() {
         return skills;
+    }
+
+    public Set<String> getSkillsSet() {
+        Set ret=new HashSet<>(skills);
+        return ret;
     }
 
     public void setSkills(ArrayList<String> skills) {

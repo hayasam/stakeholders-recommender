@@ -1,0 +1,21 @@
+{
+  "project": {
+    "id": "1"
+  },
+  "requirement": {
+    "description": "Visualization of completed Requirements / Releases",
+    "effort": "1.0",
+    "id": "1",
+    "modified_at": "2014-01-13T15:14:17Z",
+    "name": "Indicate completed Requirements / Releases (Status of Requirements and Releases)",
+    "requirementParts": [
+      {
+        "id": "3",
+        "name": "UI"
+      }
+    ]
+  },
+  "user": {
+    "username": "root"
+  }
+}

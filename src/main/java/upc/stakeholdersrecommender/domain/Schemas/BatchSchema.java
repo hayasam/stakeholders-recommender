@@ -2,7 +2,10 @@ package upc.stakeholdersrecommender.domain.Schemas;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import upc.stakeholdersrecommender.domain.*;
+import upc.stakeholdersrecommender.domain.Participant;
+import upc.stakeholdersrecommender.domain.Project;
+import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.Responsible;
 
 import java.io.Serializable;
 import java.util.List;

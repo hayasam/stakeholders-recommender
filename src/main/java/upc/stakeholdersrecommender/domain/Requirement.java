@@ -23,7 +23,7 @@ public class Requirement implements Serializable {
     private String name;
 
     @JsonIgnore
-    private List<Skill> skills = new ArrayList<Skill>();
+    private List<Skill> skills = new ArrayList<>();
 
     @JsonIgnore
     private Date modified;

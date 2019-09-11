@@ -1,5 +1,3 @@
-
-
 package upc.stakeholdersrecommender.domain;
 
 import org.junit.Test;
@@ -7,12 +5,13 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ResponsibleTest {
-    
+
 
     @Test
     public void testGetRequirement() {
@@ -30,7 +29,7 @@ public class ResponsibleTest {
         String requirements = "r";
         Responsible instance = new Responsible();
         instance.setRequirement(requirements);
-        assertEquals("r",instance.getRequirement());
+        assertEquals("r", instance.getRequirement());
     }
 
 
@@ -50,16 +49,16 @@ public class ResponsibleTest {
         String person = "p";
         Responsible instance = new Responsible();
         instance.setPerson(person);
-        assertEquals("p",instance.getPerson());
+        assertEquals("p", instance.getPerson());
 
     }
 
     @Test
     public void testCreate() {
         System.out.println("create");
-        Responsible instance = new Responsible("1","2");
-        assertTrue(instance.getPerson().equals("1")&&instance.getRequirement().equals("2"));
+        Responsible instance = new Responsible("1", "2");
+        assertTrue(instance.getPerson().equals("1") && instance.getRequirement().equals("2"));
 
     }
-    
+
 }

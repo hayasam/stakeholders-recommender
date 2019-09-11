@@ -5,11 +5,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Class representing a requirement with only their id, effort and hours.")
 public class RequirementBasic {
-    @ApiModelProperty(notes = "The id of the requirement.", example="\"1\"",required = true)
+    @ApiModelProperty(notes = "The id of the requirement.", example = "\"1\"", required = true)
     private String id;
-    @ApiModelProperty(notes = "The effort points of the requirement.", example="\"1.0\"",required = true)
+    @ApiModelProperty(notes = "The effort points of the requirement.", example = "\"1.0\"", required = true)
     private Double effort;
-    @ApiModelProperty(notes = "The hours it took to finish the requirement.", example="\"1.0\"",required = true)
+    @ApiModelProperty(notes = "The hours it took to finish the requirement.", example = "\"1.0\"", required = true)
     private Double hours;
 
     public String getId() {
