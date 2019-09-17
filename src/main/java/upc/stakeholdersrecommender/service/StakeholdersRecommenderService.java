@@ -62,6 +62,8 @@ public class StakeholdersRecommenderService {
     private WordEmbedding WordEmbedding;
     @Autowired
     private PreprocessService Preprocess;
+    @Autowired
+    private TextPreprocessing pre;
 
 
     public List<RecommendReturnSchema> recommend(RecommendSchema request, int k, Boolean projectSpecific, String organization, Integer test) throws Exception {
@@ -78,6 +80,8 @@ public class StakeholdersRecommenderService {
         Boolean rake = pro.getRake();
         Boolean bugzilla = pro.getBugzilla();
         if (bugzilla) {
+            requirement.setDescription(pre.text_preprocess(requirement.getDescription()));
+            requirement.setName(pre.text_preprocess(requirement.getName()));
             newReq.setSkills(Preprocess.preprocessSingular(requirement, test));
         } else {
             if (!rake) {
@@ -156,14 +160,41 @@ public class StakeholdersRecommenderService {
         for (PersonSR pers : people) {
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, pers, skillTrad);
-            Double availability = pers.getAvailability();
-            PersonMinimal min = new PersonMinimal();
-            min.setUsername(pers.getName());
-            ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()), min, appropiateness, availability));
+            if (appropiateness>0) {
+                PersonMinimal min = new PersonMinimal();
+                min.setUsername(pers.getName());
+                ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()), min, appropiateness, pers.getAvailability()));
+            }
         }
         Collections.sort(ret,
                 Comparator.comparingDouble(RecommendReturnSchema::getAppropiatenessScore).reversed());
+        if (ret.size()>1) {
+            RecommendReturnSchema best = ret.get(0);
+            Double percentage = getPercentage(best, people, req);
+            Double conversion=percentage/best.getAppropiatenessScore();
+            for (RecommendReturnSchema recommend:ret) {
+                recommend.setAppropiatenessScore(recommend.getAppropiatenessScore()*conversion);
+            }
+        }
         return ret;
+    }
+
+    private Double getPercentage(RecommendReturnSchema best,PersonSR[] people,RequirementSR req) {
+        Double percentage=0.0;
+        PersonSR chosen=null;
+        for (PersonSR pers:people) {
+            if (pers.getName().equals(best.getPerson().getUsername())) chosen=pers;
+        }
+        Integer intersect=0;
+        for (Skill j:chosen.getSkills()) {
+            for (String sk:req.getSkillsSet()) {
+                if (sk.equals(j.getName())) {
+                    intersect++;
+                }
+            }
+        }
+        percentage=intersect.doubleValue()/(double)req.getSkillsSet().size();
+        return percentage;
     }
 
     private PersonSR[] computeBestStakeholders(List<PersonSR> persList, RequirementSR req, Double hours, int k, Boolean projectSpecific) throws IOException {
@@ -329,7 +360,8 @@ public class StakeholdersRecommenderService {
         Map<String, Requirement> recs = new HashMap<>();
         List<Requirement> requeriments;
         if (bugzillaPreprocessing) {
-            requeriments = Preprocess.preprocess(request.getRequirements(), test);
+            requeriments=cleanRequirements(request.getRequirements());
+            requeriments = Preprocess.preprocess(requeriments, test);
         } else {
             requeriments = request.getRequirements();
         }
@@ -632,7 +664,6 @@ public class StakeholdersRecommenderService {
 
         for (String s : stringPairMap.keySet()) {
             Map<String, Double> help = first.get(s);
-            ObjectMapper mapper = new ObjectMapper();
             for (String sk : help.keySet()) {
                 addAppearance(loggingFrequency, appearances, help, sk);
                 if (times.containsKey(sk)) {
@@ -1053,6 +1084,16 @@ public class StakeholdersRecommenderService {
     }
 
 
-
+    public List<Requirement> cleanRequirements(List<Requirement> requirements) throws IOException {
+        List<Requirement> toRet=new ArrayList<>();
+        for (Requirement r:requirements) {
+            if (r.getDescription()!=null)
+            r.setDescription(pre.text_preprocess(r.getDescription()));
+            if (r.getName()!=null)
+            r.setName(pre.text_preprocess(r.getName()));
+            toRet.add(r);
+        }
+        return toRet;
+    }
 
 }

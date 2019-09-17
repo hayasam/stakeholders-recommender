@@ -39,8 +39,8 @@ public class TfIdfTest {
         }
         Map<String, Map<String,Double>> res=keywordExtractor.computeTFIDF(reqList);
         System.out.println(map.writeValueAsString(res));
-        assertEquals("{\"510041\":{},\"510146\":{},\"510057\":{\"gtk\":20.79441541679836},\"509920\":{\"platform\":20.79441541679836},\"510158\":{},\"509913\":{},\"510160\":{}}",map.writeValueAsString(res));
-
+        String result=map.writeValueAsString(res);
+        assertEquals("{\"510041\":{},\"510146\":{},\"510057\":{\"gtk\":20.79441541679836},\"509920\":{\"platform\":20.79441541679836},\"510158\":{},\"509913\":{},\"510160\":{}}",result);
     }
 
     @Test

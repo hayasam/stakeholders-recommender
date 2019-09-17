@@ -27,6 +27,9 @@ import java.util.List;
 @Api(value = "Stakeholders Recommender API", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StakeholdersRecommenderController {
 
+    // Tornar el primer en el percentatge mes alt, basat en nskills/skills
+    // Remove ALL modal verbs
+
     @Autowired
     StakeholdersRecommenderService stakeholdersRecommenderService;
     @Autowired
@@ -76,7 +79,7 @@ public class StakeholdersRecommenderController {
         System.out.println(s + " | Starting rejection of recommendation from " + organization);
         stakeholdersRecommenderService.recommend_reject(rejected, user, requirement, organization);
         s = formatter.format(new Date());
-        System.out.println(s + " | Finished rejection of recommendation from " + organization + " | " + new Date());
+        System.out.println(s + " | Finished rejection of recommendation from " + organization);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

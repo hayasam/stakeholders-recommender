@@ -28,10 +28,10 @@ public class PreprocessService {
                 reqMap.put(r.getId(), r);
                 RequirementPreprocess req = new RequirementPreprocess();
                 req.setId(r.getId());
-                String text = r.getDescription().replaceAll("[\\[\\].,:;!?\"&+=<>0-9]", " ");
+                String text = r.getDescription();
                 req.setDescription(text);
                 if (r.getName() != null) {
-                    text = r.getName().replaceAll("[\\[\\].,:;!?\"&=<>+0-9]", " ");
+                    text = r.getName();
                     req.setTitle(text);
                 }
                 else req.setTitle("");
@@ -66,10 +66,10 @@ public class PreprocessService {
         List<RequirementPreprocess> aux = new ArrayList<>();
         RequirementPreprocess req = new RequirementPreprocess();
         req.setId(requirement.getId());
-        String text = requirement.getDescription().replaceAll("[\\[\\].,:;!?\"&=+<>0-9]", " ");
+        String text = requirement.getDescription();
         req.setDescription(text);
         if (requirement.getName() != null) {
-            text = requirement.getName().replaceAll("[\\[\\].,:;!?\"&=+<>0-9]", " ");
+            text = requirement.getName();
             req.setTitle(text);
         }
         else req.setTitle("");

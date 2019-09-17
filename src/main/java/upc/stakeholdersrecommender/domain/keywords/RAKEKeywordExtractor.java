@@ -6,6 +6,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.TextPreprocessing;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -14,6 +15,7 @@ import java.util.*;
 public class RAKEKeywordExtractor {
 
     private Double cutoff = 3.0;
+    private TextPreprocessing preprocess=new TextPreprocessing();
 
     public List<Map<String, Double>> extractKeywords(List<String> corpus) throws IOException {
         List<Map<String, Double>> res = new ArrayList<>();
@@ -67,6 +69,7 @@ public class RAKEKeywordExtractor {
     }
 
     List<String> RAKEanalyze(String text) throws IOException {
+        text=preprocess.text_preprocess(text);
         Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("lowercase")
@@ -90,7 +93,7 @@ public class RAKEKeywordExtractor {
         return getAnalyzedStrings(text, analyzer, result);
     }
 
-    public List<String> getAnalyzedStrings(String text, Analyzer analyzer, List<String> result) throws IOException {
+    public static List<String> getAnalyzedStrings(String text, Analyzer analyzer, List<String> result) throws IOException {
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(text));
         CharTermAttribute attr = tokenStream.addAttribute(CharTermAttribute.class);
         tokenStream.reset();

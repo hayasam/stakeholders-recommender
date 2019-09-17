@@ -1,9 +1,14 @@
 package upc.stakeholdersrecommender.domain.keywords;
 
+import edu.stanford.nlp.util.ArraySet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import upc.stakeholdersrecommender.domain.Requirement;
+import upc.stakeholdersrecommender.domain.TextPreprocessing;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -12,7 +17,7 @@ public class TFIDFKeywordExtractor {
 
     private Double cutoffParameter = 4.0; //This can be set to different values for different selectivity (more or less keywords)
     private HashMap<String, Integer> corpusFrequency = new HashMap<>();
-
+    private TextPreprocessing text_preprocess=new TextPreprocessing();
 
     private Map<String, Integer> tf(List<String> doc) {
         Map<String, Integer> frequency = new HashMap<>();
@@ -37,7 +42,7 @@ public class TFIDFKeywordExtractor {
     private List<String> analyze(String text, Analyzer analyzer) throws IOException {
         List<String> result = new ArrayList<>();
         text = clean_text(text);
-        return new RAKEKeywordExtractor().getAnalyzedStrings(text, analyzer, result);
+        return RAKEKeywordExtractor.getAnalyzedStrings(text, analyzer, result);
     }
 
     private List<String> englishAnalyze(String text) throws IOException {
@@ -132,11 +137,8 @@ public class TFIDFKeywordExtractor {
 
     }
 
-    private String clean_text(String text) {
-        text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'[0-9]]", " ");
-        text = text.replaceAll("] \\[", "][");
-
+    private String clean_text(String text) throws IOException {
+        text= text_preprocess.text_preprocess(text);
         String result = "";
         if (text.contains("[")) {
             String[] p = text.split("]\\[");
