@@ -39,13 +39,9 @@ Next sections provide a general overview of the technical details of the stakeho
 
     2. Download and install 8 JDK and last Maven version. 
 
-    3. If the project will use the microservices of rilogging or keyword-preprocessing, and these are not deployed, to generate the .jar file use:
+    3. To generate the jar file use
 
 	mvn clean install package
-
-	Else use:
-
-	mvn clean install package -Dmaven.test.skip=true
 
 
 ### How to use it
