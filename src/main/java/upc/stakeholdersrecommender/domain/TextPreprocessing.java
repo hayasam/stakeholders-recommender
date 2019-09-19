@@ -14,27 +14,28 @@ public class TextPreprocessing {
     Set<String> exclusions=null;
 
     public String text_preprocess(String text) throws IOException {
-
-        text = text.replaceAll("(\\{.*?})", " code ");
-        text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'+%[0-9]]", " ");
-        text = text.replaceAll("] \\[", "][");
-
         String trueRes="";
-        if (exclusions==null) {
-            BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/ExcludedWords.txt"));
-            String word = null;
-            exclusions = new ArraySet<>();
+        if (text!=null) {
+            text = text.replaceAll("(\\{.*?})", " code ");
+            text = text.replaceAll("[$,;\\\"/:|!?=()><_{}'+%[0-9]]", " ");
+            text = text.replaceAll("] \\[", "][");
 
-            while ((word = reader.readLine()) != null) {
-                exclusions.add(word);
+            if (exclusions == null) {
+                BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/ExcludedWords.txt"));
+                String word = null;
+                exclusions = new ArraySet<>();
+
+                while ((word = reader.readLine()) != null) {
+                    exclusions.add(word);
+                }
+                reader.close();
             }
-            reader.close();
-        }
-        for (String l:text.split(" ")) {
-            if (l != null && !exclusions.contains(l) && l.length() > 1) {
-                if (!(l.toLowerCase().equals("null") && !l.equals("null") && !l.equals("Null")) && !l.toUpperCase().equals(l))
-                    l=l.toLowerCase();
-                trueRes = trueRes.concat(l + " ");
+            for (String l : text.split(" ")) {
+                if (l != null && !exclusions.contains(l) && l.length() > 1) {
+                    if (!(l.toLowerCase().equals("null") && !l.equals("null") && !l.equals("Null")) && !l.toUpperCase().equals(l))
+                        l = l.toLowerCase();
+                    trueRes = trueRes.concat(l + " ");
+                }
             }
         }
         //trueRes=trueRes.replaceAll("[.]","");

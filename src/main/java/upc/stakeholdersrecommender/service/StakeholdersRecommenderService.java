@@ -160,7 +160,7 @@ public class StakeholdersRecommenderService {
         for (PersonSR pers : people) {
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, pers, skillTrad);
-            if (appropiateness>0) {
+            if (appropiateness>0.0) {
                 PersonMinimal min = new PersonMinimal();
                 min.setUsername(pers.getName());
                 ret.add(new RecommendReturnSchema(new RequirementMinimal(req.getId().getRequirementId()), min, appropiateness, pers.getAvailability()));
@@ -179,21 +179,33 @@ public class StakeholdersRecommenderService {
         return ret;
     }
 
-    private Double getPercentage(RecommendReturnSchema best,PersonSR[] people,RequirementSR req) {
+    private Double getPercentage(RecommendReturnSchema best,PersonSR[] people,RequirementSR req) throws IOException {
         Double percentage=0.0;
+        Double intersect=0.0;
         PersonSR chosen=null;
         for (PersonSR pers:people) {
             if (pers.getName().equals(best.getPerson().getUsername())) chosen=pers;
         }
-        Integer intersect=0;
-        for (Skill j:chosen.getSkills()) {
-            for (String sk:req.getSkillsSet()) {
-                if (sk.equals(j.getName())) {
-                    intersect++;
+        for (String sk:req.getSkillsSet()) {
+            Double weightToAdd=0.0;
+            for (Skill j:chosen.getSkills()) {
+                if (j.getName().equals(sk)) {
+                    weightToAdd=100.0;
+                    ++intersect;
+                    break;
+                } else {
+                    Double val = WordEmbedding.computeSimilarity(j.getName(), sk);
+                    if (val > weightToAdd) {
+                        weightToAdd = val;
+                    }
                 }
             }
+            if (weightToAdd != 100.0) {
+                if (weightToAdd!=0.0)
+                    intersect = intersect + (weightToAdd * 1);
+            }
         }
-        percentage=intersect.doubleValue()/(double)req.getSkillsSet().size();
+        percentage=intersect/(double)req.getSkillsSet().size();
         return percentage;
     }
 
@@ -244,10 +256,10 @@ public class StakeholdersRecommenderService {
             Map<String, Skill> skillTrad = new HashMap<>();
             Double appropiateness = getAppropiateness(req, person, skillTrad);
             res = res * 3 + person.getAvailability() + resComp * 10;
-            if (projectSpecific && person.getAvailability() >= hours / person.getHours() && appropiateness != 0) {
+            if ((projectSpecific && person.getAvailability() >= (hours / person.getHours())) && appropiateness != 0.0) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
-            } else if (!projectSpecific && appropiateness != 0) {
+            } else if (!projectSpecific && appropiateness != 0.0) {
                 Pair<PersonSR, Double> valuePair = new Pair<>(person, res);
                 valuesForSR.add(valuePair);
             }
