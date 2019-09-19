@@ -37,7 +37,7 @@ public class TextPreprocessing {
                 trueRes = trueRes.concat(l + " ");
             }
         }
-        trueRes=trueRes.replaceAll("[.]","");
+        //trueRes=trueRes.replaceAll("[.]","");
         return trueRes;
 
     }
