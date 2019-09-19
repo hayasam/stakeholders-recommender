@@ -28,6 +28,7 @@ public class TextPreprocessing {
             while ((word = reader.readLine()) != null) {
                 exclusions.add(word);
             }
+            reader.close();
         }
         for (String l:text.split(" ")) {
             if (l != null && !exclusions.contains(l) && l.length() > 1) {
